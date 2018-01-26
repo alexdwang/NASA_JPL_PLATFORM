@@ -18,7 +18,7 @@ class NetListGenerator:
                          '.dc VIN 0 30 0.01',
                          '',
                          '*Output',
-                         '.print dc format=noindex file=AD590_Prerad_27C_V1.txt',
+                         '.print dc format=noindex file=AD590_' + radiation + '_27C_V1.txt',
                          '+ V(1)',
                          '+ I(ROUT)',
                          '',
