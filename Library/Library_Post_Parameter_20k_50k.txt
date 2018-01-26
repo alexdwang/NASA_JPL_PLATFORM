@@ -1,0 +1,40 @@
+* npn 2e4 off ctp 3b
+.model QNMOD NPN  (                      IS     = 1.68208E-16        
++ BF     = 45.95           NF     = 0.986787        VAF    = 345.2016293        
++ IKF    = 0.0229087       NK     = 0.47574         ISE    = 1.122018E-14       
++ NE     = 1.65            BR     = 0.697           NR     = 2                  
++ VAR    = 100             IKR    = 0.1             ISC    = 1E-17              
++ NC     = 2               RB     = 140.86          IRB    = 1E-3               
++ RBM    = 50              RE     = 2               RC     = 250.75      )
+*$
+
+* npn 5e4 off ctp 3b
+.model QNMOD NPN  (                      IS     = 1.684E-16          
++ BF     = 38.7            NF     = 0.986787        VAF    = 342.7968454        
++ IKF    = 0.0251189       NK     = 0.47574         ISE    = 1.41254E-13        
++ NE     = 1.82            BR     = 0.697           NR     = 2                  
++ VAR    = 100             IKR    = 0.1             ISC    = 1E-17              
++ NC     = 2               RB     = 170.83          IRB    = 1E-3               
++ RBM    = 50              RE     = 2               RC     = 366.4     ) 
+*$
+
+
+* lpnp 2e4 off ctp 3b
+.model QLPMOD PNP (                      IS     = 8.70964E-16        
++ BF     = 264.9           NF     = 0.99            VAF    = 35.8970174         
++ IKF    = 9.549926E-5     NK     = 0.52            ISE    = 5.495409E-14       
++ NE     = 1.42            BR     = 0.697           NR     = 2                  
++ VAR    = 100             IKR    = 0.1             ISC    = 1E-17              
++ NC     = 2               RB     = 1E3             IRB    = 3.6E-5             
++ RBM    = 100             RE     = 4.096           RC     = 1               )
+
+* lpnp 5e4 off ctp 3b
+.model QLPMOD PNP (                      IS     = 1E-15              
++ BF     = 47.4            NF     = 0.99            VAF    = 34.9777903         
++ IKF    = 1.09648E-4      NK     = 0.37            ISE    = 1.65959E-13        
++ NE     = 1.44            BR     = 0.697           NR     = 2                  
++ VAR    = 100             IKR    = 0.1             ISC    = 1E-17              
++ NC     = 2               RB     = 1.90546E3       IRB    = 3.16228E-5         
++ RBM    = 57.544          RE     = 7.093           RC     = 1               )  
+*                                                                                        
+
