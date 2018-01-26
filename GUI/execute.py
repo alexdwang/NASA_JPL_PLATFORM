@@ -7,4 +7,3 @@ class Execute:
         result = subprocess.getoutput(command)
         # print(result)
         return result
-        pass

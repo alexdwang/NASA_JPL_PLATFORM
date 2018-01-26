@@ -71,4 +71,4 @@ class NetListGenerator:
             text = (line + '\r\n').encode('ascii')
             file.write(text)
         file.close()
-        pass
+        return

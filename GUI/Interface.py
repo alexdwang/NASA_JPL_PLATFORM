@@ -15,7 +15,7 @@ class Interface(object):
         self.options.set(('pre_rad', '20k', '50k'))
         self.lb = tkinter.Listbox(self.window, listvariable=self.options)
 
-        pass
+        return
 
     def execute_hit(self):
         if self.input_check():
@@ -23,7 +23,7 @@ class Interface(object):
             netListGenerator.generate(value)
             my_result = execute.execute_module3()
             self.result_text.set(my_result)
-        pass
+        return
 
     def input_check(self):
         if self.lb.curselection() == ():
@@ -36,8 +36,7 @@ class Interface(object):
         self.button.pack()
         self.label_result_text.pack()
         self.window.mainloop()
-
-        pass
+        return
 
 
 if __name__ == "__main__":
