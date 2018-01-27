@@ -2,36 +2,36 @@ import matplotlib.pyplot as plt
 
 
 def plotfigure(X, Y):
-    plt.figure(1, figsize=(8,4))
+    plt.figure(1, figsize=(8,6))
     plt.plot(X, Y, 'b*')
     plt.plot(X, Y, 'r',label="X and Y")
     plt.xlabel("V(1)")
     plt.ylabel("I(ROUT)")
-    plt.legend(loc='upper left')
+    plt.legend(loc='lower right')
 
     plt.show()
     return
 
 
-XnY = [0.00000000e+00,   -1.01069697e-25,
-   1.00000000e-02,    6.15573305e-14,
-   2.00000000e-02,    1.29470429e-13,
-   3.00000000e-02,    2.05947558e-13,
-   4.00000000e-02,    2.93800992e-13,
-   5.00000000e-02,    3.96509653e-13,
-   6.00000000e-02,    5.18209364e-13,
-   7.00000000e-02,    6.63614326e-13,
-   8.00000000e-02,    8.37909876e-13,
-   9.00000000e-02,    1.04656993e-12,
-   1.00000000e-01,    1.29528593e-12,
-   1.10000000e-01,    1.58997740e-12,
-   1.20000000e-01,    1.93685414e-12,
-   1.30000000e-01,    2.34268014e-12,
-   1.40000000e-01,    2.81504634e-12,
-   1.50000000e-01,    3.36271856e-12,
-   1.60000000e-01,    3.99603329e-12,
-   1.70000000e-01,    4.72734208e-12,
-   1.80000000e-01,    5.57152556e-12]
+f = open('AD590_pre_rad_27C_V1.txt', 'r')
+lines = f.readlines()
+f.close()
+
+
+XnY = []
+
+cnt = 0
+
+for line in lines:
+    line = line.strip('\n')
+    my_line = line.split(' ')
+    for word in my_line:
+        if word != '':
+            try:
+                XnY.append(float(word))
+            except:
+                cnt += 1
+# print(lines)
 
 X = [XnY[i] for i in range(len(XnY)) if i % 2 == 0]
 Y = [XnY[i] for i in range(len(XnY)) if i % 2 != 0]
