@@ -3,7 +3,7 @@ import GUI.Library
 
 # generate a Netlist based on the input parameters and save it to ProjectHome/Netlist
 class NetListGenerator:
-    def generate(self, radiation): # generate Netlist
+    def generate(self, radiation, output_filepath, netlist_filepath): # generate Netlist
         content_AD590 = ['Title: AD590 / '+ radiation + ' / T= 300.15K = 27C',
                          '*',
                          '',
@@ -18,7 +18,8 @@ class NetListGenerator:
                          '.dc VIN 0 30 0.01',
                          '',
                          '*Output',
-                         '.print dc format=noindex file=AD590_' + radiation + '_27C_V1.txt',
+                         # '.print dc format=noindex file=AD590_' + radiation + '_27C_V1.txt',
+                         '.print dc format=noindex file=' + output_filepath,
                          '+ V(1)',
                          '+ I(ROUT)',
                          '',
@@ -66,7 +67,7 @@ class NetListGenerator:
                               '',
                               '*end of the netlist',
                               '.end'])
-        file = open("./Netlist/test.cir", 'wb')
+        file = open(netlist_filepath, 'wb')
         for line in content_AD590:
             text = (line + '\r\n').encode('ascii')
             file.write(text)
