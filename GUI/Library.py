@@ -1,8 +1,14 @@
-'''
-Library.py is used to store the values of npn and lpnp under pre_rad, 20k or 50k
-Values in this file are constant and should not be modified at any time
-'''
-CONST_LIBRARY = {'pre_rad': ['* npn prerad off ctp 3b',
+"""
+' Library.py is used to store the constant values
+' Contents in this file should not be modified by program at any time
+"""
+TITLE = 'NASA JPL'
+
+PARTS = ['LT1175', 'AD590']
+
+SIMULATION = ['model', 'source']
+
+TID_LEVEL_MODEL = {'pre_rad': ['* npn prerad off ctp 3b',
                              '.model QNMOD NPN (',
                              '+ IS = 1.68208E-16',
                              '+ BF = 84.058    NF = 0.986787 VAF = 351.9861415',
@@ -10,21 +16,21 @@ CONST_LIBRARY = {'pre_rad': ['* npn prerad off ctp 3b',
                              '+ NE = 2.06453   BR = 0.697    NR = 2',
                              '+ VAR = 100      IKR = 0.1     ISC = 1E-17',
                              '+ NC = 2         RB = 140.86   IRB = 1E-3',
-                             '+ RBM = 50       RE = 2        RC = 250.75)',
-                             '',
-                             '*lpnp prerad off ctp 3b',
-                             '.model QLPMOD PNP (',
-                             '+ IS = 8.70964E-16',
-                             '+ BF = 786.9		NF = 0.99                           VAF = 36.3423711',
-                             '+ IKF = 6.30957E-5       NK = 0.52                           ISE = 9.54993E-17',
-                             '+ NE = 1.27089           BR = 0.697                          NR = 2',
-                             '+ VAR = 100              IKR = 0.1                           ISC = 1E-17',
-                             '+ NC = 2                 RB = 758.578                        IRB = 3.6E-5',
-                             '+ RBM = 100              RE = 4.096                           RC = 1)'
-                             ],
+                               '+ RBM = 50       RE = 2        RC = 250.75)',
+                               '',
+                               '*lpnp prerad off ctp 3b',
+                               '.model QLPMOD PNP (',
+                               '+ IS = 8.70964E-16',
+                               '+ BF = 786.9		NF = 0.99                           VAF = 36.3423711',
+                               '+ IKF = 6.30957E-5       NK = 0.52                           ISE = 9.54993E-17',
+                               '+ NE = 1.27089           BR = 0.697                          NR = 2',
+                               '+ VAR = 100              IKR = 0.1                           ISC = 1E-17',
+                               '+ NC = 2                 RB = 758.578                        IRB = 3.6E-5',
+                               '+ RBM = 100              RE = 4.096                           RC = 1)'
+                               ],
 
 
-                 '20k': ['* npn 2e4 off ctp 3b',
+                   '20k': ['* npn 2e4 off ctp 3b',
                          '.model QNMOD NPN  (                      ',
                          '+ IS     = 1.68208E-16',
                          '+ BF     = 45.95           NF     = 0.986787        VAF    = 345.2016293',
@@ -43,26 +49,92 @@ CONST_LIBRARY = {'pre_rad': ['* npn prerad off ctp 3b',
                          '+ VAR    = 100             IKR    = 0.1             ISC    = 1E-17',
                          '+ NC     = 2               RB     = 1E3             IRB    = 3.6E-5',
                          '+ RBM    = 100             RE     = 4.096           RC     = 1)'
-                         ],
+                     ],
 
 
-                 '50k': ['* npn 5e4 off ctp 3b',
+                   '50k': ['* npn 5e4 off ctp 3b',
+                     '.model QNMOD NPN  (',
+                     '+ IS     = 1.684E-16',
+                     '+ BF     = 38.7            NF     = 0.986787        VAF    = 342.7968454',
+                     '+ IKF    = 0.0251189       NK     = 0.47574         ISE    = 1.41254E-13',
+                     '+ NE     = 1.82            BR     = 0.697           NR     = 2',
+                     '+ VAR    = 100             IKR    = 0.1             ISC    = 1E-17',
+                     '+ NC     = 2               RB     = 170.83          IRB    = 1E-3',
+                     '+ RBM    = 50              RE     = 2               RC     = 366.4)',
+                     '',
+                     '* lpnp 5e4 off ctp 3b',
+                     '.model QLPMOD PNP (',
+                     '+ IS     = 1E-15',
+                     '+ BF     = 47.4            NF     = 0.99            VAF    = 34.9777903',
+                     '+ IKF    = 1.09648E-4      NK     = 0.37            ISE    = 1.65959E-13',
+                     '+ NE     = 1.44            BR     = 0.697           NR     = 2',
+                     '+ VAR    = 100             IKR    = 0.1             ISC    = 1E-17',
+                     '+ NC     = 2               RB     = 1.90546E3       IRB    = 3.16228E-5',
+                     '+ RBM    = 57.544          RE     = 7.093           RC     = 1)'
+                     ],
+
+                   '100k': ['* npn 1e5 off ctp 3b',
+                         '.model QNMOD NPN  (',
+                         '+ IS     = 1.68208E-16',
+                         '+ BF     = 45.95           NF     = 0.986787        VAF    = 342.3319825',
+                         '+ IKF    = 0.0229087       NK     = 0.47574         ISE    = 2.238721E-13',
+                         '+ NE     = 1.701           BR     = 0.697           NR     = 2',
+                         '+ VAR    = 100             IKR    = 0.1             ISC    = 1E-17',
+                         '+ NC     = 2               RB     = 140.86          IRB    = 1E-3',
+                         '+ RBM    = 50              RE     = 2               RC     = 250.75)'
+                         '',
+                         '* lpnp 1e5 off ctp 3b',
+                         '.model QLPMOD PNP (',
+                         '+ IS     = 1E-15',
+                         '+ BF     = 47.4            NF     = 0.99            VAF    = 33.7331598',
+                         '+ IKF    = 1.09648E-4      NK     = 0.37            ISE    = 2.884032E-13',
+                         '+ NE     = 1.44            BR     = 0.697           NR     = 2',
+                         '+ VAR    = 100             IKR    = 0.1             ISC    = 1E-17',
+                         '+ NC     = 2               RB     = 1.737801E3      IRB    = 3.16228E-5',
+                         '+ RBM    = 57.544          RE     = 7.093           RC     = 1               )',
+                      ],
+
+                   '200k': ['* npn 2e5 off ctp 3b',
                          '.model QNMOD NPN  (',
                          '+ IS     = 1.684E-16',
-                         '+ BF     = 38.7            NF     = 0.986787        VAF    = 342.7968454',
-                         '+ IKF    = 0.0251189       NK     = 0.47574         ISE    = 1.41254E-13',
-                         '+ NE     = 1.82            BR     = 0.697           NR     = 2',
+                         '+ BF     = 38.7            NF     = 0.986787        VAF    = 313.65875',
+                         '+ IKF    = 0.0251189       NK     = 0.47574         ISE    = 1.28825E-12',
+                         '+ NE     = 1.854           BR     = 0.697           NR     = 2',
                          '+ VAR    = 100             IKR    = 0.1             ISC    = 1E-17',
                          '+ NC     = 2               RB     = 170.83          IRB    = 1E-3',
                          '+ RBM    = 50              RE     = 2               RC     = 366.4)',
                          '',
-                         '* lpnp 5e4 off ctp 3b',
+                         '* lpnp 2e5 off ctp 3b',
                          '.model QLPMOD PNP (',
                          '+ IS     = 1E-15',
-                         '+ BF     = 47.4            NF     = 0.99            VAF    = 34.9777903',
-                         '+ IKF    = 1.09648E-4      NK     = 0.37            ISE    = 1.65959E-13',
+                         '+ BF     = 38.7            NF     = 0.99            VAF    = 32.8110824',
+                         '+ IKF    = 1.09648E-4      NK     = 0.37            ISE    = 3.31131E-13',
                          '+ NE     = 1.44            BR     = 0.697           NR     = 2',
                          '+ VAR    = 100             IKR    = 0.1             ISC    = 1E-17',
-                         '+ NC     = 2               RB     = 1.90546E3       IRB    = 3.16228E-5',
+                         '+ NC     = 2               RB     = 1.58489E3       IRB    = 3.16228E-5',
                          '+ RBM    = 57.544          RE     = 7.093           RC     = 1)'
-                         ]}
+                      ],
+
+                   '300k': ['* npn 3e5 off ctp 3b',
+                         '.model QNMOD NPN (',
+                         '+ IS     = 1.684E-16',
+                         '+ BF     = 38.7            NF     = 0.986787        VAF    = 329.7773204',
+                         '+ IKF    = 0.0251189       NK     = 0.47574         ISE    = 2.089296E-12',
+                         '+ NE     = 1.871           BR     = 0.697           NR     = 2',
+                         '+ VAR    = 100             IKR    = 0.1             ISC    = 1E-17',
+                         '+ NC     = 2               RB     = 170.83          IRB    = 1E-3',
+                         '+ RBM    = 50              RE     = 2               RC     = 366.4     )',
+                         '',
+                         '* lpnp 3e5 off ctp 3b',
+                         '.model QLPMOD PNP (',
+                         '+ IS     = 1E-15',
+                         '+ BF     = 33              NF     = 0.99            VAF    = 33.1203665',
+                         '+ IKF    = 1.09648E-4      NK     = 0.37            ISE    = 3.801894E-13',
+                         '+ NE     = 1.44            BR     = 0.697           NR     = 2',
+                         '+ VAR    = 100             IKR    = 0.1             ISC    = 1E-17',
+                         '+ NC     = 2               RB     = 1.58489E3       IRB    = 3.16228E-5',
+                         '+ RBM    = 57.544          RE     = 7.093           RC     = 1               )'
+                      ]
+                   }
+TID_LEVEL_SOURCE = {'2.5k': [],
+                    '5k': []}

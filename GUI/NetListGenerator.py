@@ -3,8 +3,8 @@ import GUI.Library
 
 # generate a Netlist based on the input parameters and save it to ProjectHome/Netlist
 class NetListGenerator:
-    def generate(self, radiation, output_filepath, netlist_filepath): # generate Netlist
-        content_AD590 = ['Title: AD590 / '+ radiation + ' / T= 300.15K = 27C',
+    def generate(self, TID_level, output_filepath, netlist_filepath): # generate Netlist
+        content_AD590 = ['Title: AD590 / ' + TID_level + ' / T= 300.15K = 27C',
                          '*',
                          '',
                          '*Voltage Source',
@@ -18,7 +18,7 @@ class NetListGenerator:
                          '.dc VIN 0 30 0.01',
                          '',
                          '*Output',
-                         # '.print dc format=noindex file=AD590_' + radiation + '_27C_V1.txt',
+                         # '.print dc format=noindex file=AD590_' + TID_level + '_27C_V1.txt',
                          '.print dc format=noindex file=' + output_filepath,
                          '+ V(1)',
                          '+ I(ROUT)',
@@ -56,8 +56,8 @@ class NetListGenerator:
                          '*end of the subcircuit',
                          '.ends',
                          '',
-                         '*Library',]
-        content_AD590.extend(GUI.Library.CONST_LIBRARY[radiation])
+                         '*Library', ]
+        content_AD590.extend(GUI.Library.TID_LEVEL_MODEL[TID_level])
         content_AD590.extend(['',
                               '*JFET',
                               '.model NJF_TYP NJF (',
