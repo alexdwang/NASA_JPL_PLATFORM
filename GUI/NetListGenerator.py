@@ -89,7 +89,7 @@ class NetListGenerator:
         return content_AD590
 
     def content_AD590_ABM(self, TID_level, output_filepath):
-        content_AD590_ABM = ['Title: AD590 / 20k / T= 300.15K = 27C',
+        content_AD590_ABM = ['Title: AD590 / ' + TID_level + ' / T= 300.15K = 27C',
                              '*',
                              '',
                              '*Voltage Source',
@@ -154,7 +154,7 @@ class NetListGenerator:
                              '.dc VIN 0 30 0.01',
                              '',
                              '*Output',
-                             '.print dc format=noindex file=AD590_20k_27C_V3_ABM.txt',
+                             '.print dc format=noindex file=' + output_filepath,
                              '+ V(2)',
                              '',
                              '+ I(VOUT)',
@@ -353,7 +353,7 @@ class NetListGenerator:
         return content_LT1175
 
     def content_LT1175_ABM(self, TID_level, output_filepath):
-        content_LT1175_ABM = ['Title: LT1175 / Line Regulation / ABM / 2.5krad / T= 300.15K = 27C',
+        content_LT1175_ABM = ['Title: LT1175 / Line Regulation / ABM / ' + TID_level + ' / T= 300.15K = 27C',
                               '',
                               '*Input Voltage Source',
                               'V2 4 0 DC 0V',
@@ -382,11 +382,9 @@ class NetListGenerator:
                               '.PARAM a1=-39.30421',
                               '.PARAM b1=48.21879',
                               '.PARAM c1=-15.6477',
-                              '',
-                              '*2.5krad',
-                              '.PARAM a2=-39.12298',
-                              '.PARAM b2=53.5479',
-                              '.PARAM c2=-21.84106',
+                              '']
+        content_LT1175_ABM.extend(GUI.Library.TID_LEVEL_SOURCE[TID_level])
+        content_LT1175_ABM.extend([
                               '',
                               '*SCALE',
                               '.PARAM scale1=1',
@@ -419,7 +417,7 @@ class NetListGenerator:
                               '.dc V2 0 -20 -0.1',
                               '',
                               '*Output',
-                              '.print dc format=noindex file=LT1175_Prerad_LineRegulation_V12_ABM_2krad.txt',
+                              '.print dc format=noindex file=' + output_filepath,
                               '+ V(4)',
                               '+ V(1)',
                               '',
@@ -522,6 +520,5 @@ class NetListGenerator:
                               '+ RBM = 100              RE = 4.096                           RC = 1)',
                               '',
                               '*end of the netlist',
-                              '.end',
-                              '']
+                              '.end'])
         return content_LT1175_ABM

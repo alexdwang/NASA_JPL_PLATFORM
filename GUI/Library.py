@@ -136,5 +136,11 @@ TID_LEVEL_MODEL = {'pre_rad': ['* npn prerad off ctp 3b',
                          '+ RBM    = 57.544          RE     = 7.093           RC     = 1               )'
                       ]
                    }
-TID_LEVEL_SOURCE = {'2.5k': [],
-                    '5k': []}
+TID_LEVEL_SOURCE = {'2.5k': ['*2.5krad',
+                            '.PARAM a2=-39.12298',
+                            '.PARAM b2=53.5479',
+                            '.PARAM c2=-21.84106'],
+                    '5k': ['*5krad',
+                            '.PARAM a2=-38.8789',
+                            '.PARAM b2=59.74651',
+                            '.PARAM c2=-23.3925']}

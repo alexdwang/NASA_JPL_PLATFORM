@@ -55,7 +55,7 @@ class Interface(object):
             self.result_text.set(message)
 
             X, Y = self.load_and_finalize_output(part, TID_level)
-            self.plotfigure(X, Y, TID_level)
+            self.plotfigure(X, Y, part, TID_level)
         return
 
     def input_check(self):
@@ -73,6 +73,7 @@ class Interface(object):
                 self.TID_options_tuple = (list(Library.TID_LEVEL_MODEL))
             elif value == Library.SIMULATION[1]:
                 self.TID_options_tuple = (list(Library.TID_LEVEL_SOURCE))
+            self.TID_options_tuple.sort()
             self.TID_options.set(self.TID_options_tuple)
         except:
             pass
@@ -101,28 +102,29 @@ class Interface(object):
         return
 
     def load_and_finalize_output(self, device, TID_level):
-        f = open(self.output_filepath, 'r')
-        lines = f.readlines()
-        f.close()
-
-        n = open(self.output_filepath, 'w')
-        n.write('device: ' + device + ', TID level = ' + TID_level + '\n')
-        n.writelines(lines)
 
         XnY = []
         X = []
         Y = []
-        cnt = 0
-        for line in lines:
+        f = open(self.output_filepath, 'r')
+        # lines = f.readlines()
+
+        # n = open(self.output_filepath, 'w')
+        # n.write('device: ' + device + ', TID level = ' + TID_level + '\n')
+        # n.writelines(lines)
+        for line in f:
             line = line.strip('\n')
             my_line = line.split(' ')
+            cnt = 0
             for word in my_line:
-                if word != '':
+                if cnt < 2 and word != '':
                     try:
                         XnY.append(float(word))
-                    except:
                         cnt += 1
-        # print(lines)
+                    except:
+                        cnt = cnt
+        f.close()
+
         for i in range(len(XnY)):
             if i % 2 == 0:
                 X.append(XnY[i])
@@ -130,16 +132,18 @@ class Interface(object):
                 Y.append(XnY[i])
         return X, Y
 
-    def plotfigure(self, X, Y, TID_level):
+    def plotfigure(self, X, Y, part, TID_level):
         plt.figure(1, figsize=(8,6))
         # plt.plot(X, Y, 'b*')
-        if TID_level == self.TID_options_tuple[0]:
-            plt.plot(X, Y, 'r', label="X and Y, TID level=" + TID_level)
-        elif TID_level == self.TID_options_tuple[1]:
-            plt.plot(X, Y, 'g', label="X and Y, TID level=" + TID_level)
-        elif TID_level == self.TID_options_tuple[2]:
-            plt.plot(X, Y, 'y', label="X and Y, TID level=" + TID_level)
-            plt.plot(X, Y, 'y', label="X and Y, TID level=" + TID_level)
+        color={'pre_rad': 'r-',
+               '2.5k': 'y-',
+               '5k': 'c-',
+               '20k': 'y-',
+               '50k': 'c-',
+               '100k': 'g-',
+               '200k': 'm-',
+               '300k': 'k-'}
+        plt.plot(X, Y, color[TID_level], label="V(1) and I(ROUT), Part=" + part + "TID level=" + TID_level)
         plt.xlabel("V(1)")
         plt.ylabel("I(ROUT)")
         plt.legend(loc='lower right')
