@@ -35,7 +35,7 @@ class Interface(object):
         self.button = tkinter.Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
 
         self.result_text = tkinter.StringVar()
-        self.label_result_text = tkinter.Label(self.window, textvariable=self.result_text, font=('Arial', 12), width=30, height=5)
+        self.label_result_text = tkinter.Label(self.window, textvariable=self.result_text, font=('Arial', 12), width=80, height=5)
 
         self.netlist_filepath = relative_path('Netlist/test.cir')
         self.output_filepath = ''
@@ -43,16 +43,18 @@ class Interface(object):
 
     def execute_hit(self):
         if self.input_check():
-            TID_level = self.lb_TID.get(self.lb_TID.curselection())
             part = self.lb_parts.get(self.lb_parts.curselection())
+            simulation = self.lb_simulation.get(self.lb_simulation.curselection())
+            TID_level = self.lb_TID.get(self.lb_TID.curselection())
+
             self.output_filepath = relative_path('Output/' + TID_level + '_test.txt')
 
-            netListGenerator.generate(part, TID_level, self.output_filepath, self.netlist_filepath)
+            netListGenerator.generate(part, simulation, TID_level, self.output_filepath, self.netlist_filepath)
             my_result = execute.execute_module3(self.netlist_filepath)
             message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
             self.result_text.set(message)
 
-            X, Y = self.load_finalized_output(part, TID_level)
+            X, Y = self.load_and_finalize_output(part, TID_level)
             self.plotfigure(X, Y, TID_level)
         return
 
@@ -92,13 +94,13 @@ class Interface(object):
         self.lb_simulation.grid(row=1, column=1)
         self.lb_TID.grid(row=1, column=2)
 
-        self.button.grid(row=2,sticky='E')
+        self.button.grid(row=2, sticky='E', columnspan=3, pady=10)
 
-        self.label_result_text.grid(row=3,sticky='W')
+        self.label_result_text.grid(row=3, column=0, columnspan=3)
         self.window.mainloop()
         return
 
-    def load_finalized_output(self, device, TID_level):
+    def load_and_finalize_output(self, device, TID_level):
         f = open(self.output_filepath, 'r')
         lines = f.readlines()
         f.close()
