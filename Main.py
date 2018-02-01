@@ -16,20 +16,21 @@ class Interface(object):
         self.parts_options = tkinter.StringVar()
         self.parts_options_tuple = (Library.PARTS)
         self.parts_options.set(self.parts_options_tuple)
-        self.lb_parts = tkinter.Listbox(self.window, listvariable=self.parts_options, height=len(self.parts_options_tuple))
+        self.lb_parts = tkinter.Listbox(self.window, listvariable=self.parts_options, height=6, exportselection=False)
 
         self.label_simulation = tkinter.Label(self.window, text='simulation:', font=('Arial', 0), width=21, height=2)
         self.simulation_options = tkinter.StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
         self.simulation_options.set(self.simulation_options_tuple)
         self.lb_simulation = tkinter.Listbox(self.window, listvariable=self.simulation_options,
-                                             height=max(len(self.simulation_options_tuple), 1))
+                                             height=6, exportselection=False)
 
         self.label_TID_level = tkinter.Label(self.window, text='TID level:', font=('Arial', 0), width=21, height=2)
         self.TID_options = tkinter.StringVar()
         self.TID_options_tuple = ()
         self.TID_options.set(self.TID_options_tuple)
-        self.lb_TID = tkinter.Listbox(self.window, listvariable=self.TID_options, height=len(self.TID_options_tuple))
+        self.lb_TID = tkinter.Listbox(self.window, listvariable=self.TID_options,
+                                      height=len(self.TID_options_tuple), exportselection=False)
 
         self.button = tkinter.Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
 
@@ -43,20 +44,20 @@ class Interface(object):
     def execute_hit(self):
         if self.input_check():
             TID_level = self.lb_TID.get(self.lb_TID.curselection())
-            device = 'AD590'
+            part = self.lb_parts.get(self.lb_parts.curselection())
             self.output_filepath = relative_path('Output/' + TID_level + '_test.txt')
 
-            netListGenerator.generate(TID_level, self.output_filepath, self.netlist_filepath)
+            netListGenerator.generate(part, TID_level, self.output_filepath, self.netlist_filepath)
             my_result = execute.execute_module3(self.netlist_filepath)
-            message = 'device: ' + device + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
+            message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
             self.result_text.set(message)
 
-            X, Y = self.load_finalized_output(device, TID_level)
+            X, Y = self.load_finalized_output(part, TID_level)
             self.plotfigure(X, Y, TID_level)
         return
 
     def input_check(self):
-        if self.lb_TID.curselection() == ():
+        if self.lb_TID.curselection() == () or self.lb_parts.curselection() == () or self.lb_simulation.curselection() == ():
             self.result_text.set('please check your input')
             return False
         self.result_text.set('in process, please wait...')
