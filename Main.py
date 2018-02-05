@@ -133,7 +133,7 @@ class Interface(object):
         return X, Y
 
     def plotfigure(self, X, Y, part, TID_level):
-        plt.figure(1, figsize=(8,6))
+        plt.figure(1, figsize=(8,8))
         # plt.plot(X, Y, 'b*')
         color={'pre_rad': 'r-',
                '2.5k': 'y-',

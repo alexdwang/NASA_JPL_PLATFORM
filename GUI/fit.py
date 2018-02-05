@@ -47,10 +47,10 @@ def plot_log_scale(xdata, y2, popt):
     plt.subplot()
     plt.plot(xdata, y2, 'b*', label='data')
     plt.plot(xdata, f(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
-    # plt.plot(xdata, f(xdata, -41.935,47.6314,-11.045), 'y-', label='fit:a=-41.935, b=47.6314, c=-11.045')
+    plt.plot(xdata, f(xdata, -41.935,47.6314,-11.045), 'y-', label='fit:a=-41.935, b=47.6314, c=-11.045')
 
     plt.yscale('log')
-    plt.legend()
+    plt.legend(loc='upper left')
     plt.show()
     return
 
