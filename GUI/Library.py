@@ -1,6 +1,6 @@
 """
 ' Library.py is used to store the constant values
-' Contents in this file should not be modified by program at any time
+' Contents in this file should not be modified by program unless you are updating the library
 """
 TITLE = 'NASA JPL'
 
@@ -8,7 +8,245 @@ PARTS = ['LT1175', 'AD590']
 
 SIMULATION = ['model', 'source']
 
-TID_LEVEL_MODEL = {'pre_rad': ['* npn prerad off ctp 3b',
+TPRE_RAD = 'pre_rad'
+T2_5KRAD = '2.5k'
+T5KRAD = '5k'
+T20KRAD = '20k'
+T50KRAD = '50k'
+T100KRAD = '100k'
+T200KRAD = '200k'
+T300KRAD = '300k'
+
+TID_LEVEL = [TPRE_RAD,        # 0
+             T2_5KRAD,        # 1
+             T5KRAD,          # 2
+             T20KRAD,         # 3
+             T50KRAD,         # 4
+             T100KRAD,        # 5
+             T200KRAD,        # 6
+             T300KRAD]        # 7
+
+COL_NAME = {'VE':           'Ve_PRE_RAD',
+            TID_LEVEL[0]:   'Ib_Pre_Rad',
+            TID_LEVEL[3]:   'Ib_20krad'}
+
+LT1175_OUTPUT_OPTION = ['Line_Regulation']
+
+AD590_OUTPUT_OPTION = ['AD']
+
+# circuit code:
+                        # LT1175:
+INPUT_VOLTAGE_SOURCE = {PARTS[0]: ['V2 4 0 DC 0V'],
+
+                        # AD590:
+                        PARTS[1]: ['VIN 2 0 DC 0V']
+                        }
+
+CIRCUIT_CORE = {PARTS[0]: ['*Subcircuit',
+                           '*X1 VCC VEE VREF',
+                           'X1 0 4 5 BG_sc',
+                           '',
+                           '*X4 V+ V- VCC VEE VO',
+                           'X4 6 5 0 4 7 OPAMP_sc',
+                           '',
+                           '*Resistance: R<name> <+ node> <- node> [model name] <value>',
+                           'r1 0 6 350k',
+                           'r2 6 1 100k',
+                           'rLIM 3 4 0.001',
+                           '',
+                           '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
+                           'Q1 1 2 3 QNMOD 1000',
+                           'Q2 0 7 2 QNMOD 10'],
+                PARTS[1]: ['XZ 2 20 AD590',
+                           'R0 20 0 1m']
+                }
+
+INPUT = {PARTS[0]: ['.dc V2 0 -20 -0.1'],
+         PARTS[1]: ['.dc VIN 0 30 0.01']
+         }
+
+OUTPUT = {PARTS[0]: {LT1175_OUTPUT_OPTION[0]: ['+ V(4)',
+                                               '+ V(1)']},
+          PARTS[1]: {AD590_OUTPUT_OPTION[0]: ['+ V(2)',
+                                              '+ I(R0)']}}
+
+SUBCIRCUIT = {PARTS[0]: {SIMULATION[0]: ['.subckt BG_sc VCC VEE VREF',
+                                            '*Resistance: R<name> <+ node> <- node> [model name] <value>',
+                                            'r1 VCC 1 10k',
+                                            'r2 1 8 2.93e6',
+                                            'r3 8 9 109k',
+                                            'r4 4 VEE 600',
+                                            'r5 6 VEE 600',
+                                         '',
+                                         '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
+                                         'Q1 2 2 VCC QLPMOD 1',
+                                         'Q2 3 2 1 QLPMOD 1',
+                                         'Q3 12 5 9 QLPMOD 1',
+                                         'Q4 11 5 8 QLPMOD 0.1',
+                                         'Q5 12 12 7 QNMOD 1',
+                                         'Q6 11 12 7 QNMOD 1',
+                                         'Q7 VCC 5 7 QNMOD 1',
+                                         'Q8 3 3 4 QNMOD 1',
+                                         'Q9 7 3 6 QNMOD 1',
+                                         '',
+                                         '*Voltage Controlled Voltage Source: E<name> <+ node> <-node> <+ controlling node> <- controlling node> <gain>',
+                                         'E1 VCC VREF VCC 5 1',
+                                         '',
+                                         '*Independent Current Source: I<name> <+ node> <-node> [[DC] <value>]',
+                                         'I1 2 0 DC 3.23uA',
+                                         '',
+                                         '*end of the BG_sc subcircuit',
+                                         '.ends BG_sc'],
+                         SIMULATION[1]: ['.subckt BG_sc VCC VEE VREF',
+                                          '*Voltage Controlled Current Source BG',
+                                          'B1 VCC 2 I={deltaIb1(V(VCC)-V(2))}',
+                                          'B2 1 2 I={deltaIb2(V(1)-V(2))}',
+                                          'B3 9 5 I={deltaIb3(V(9)-V(5))}',
+                                          'B4 8 5 I={deltaIb4(V(8)-V(5))}',
+                                          '',
+                                          '*Resistance: R<name> <+ node> <- node> [model name] <value>',
+                                          'r1 VCC 1 10k',
+                                          'r2 1 8 2.93e6',
+                                          'r3 8 9 109k',
+                                          'r4 4 VEE 600',
+                                          'r5 6 VEE 600',
+                                          '',
+                                          '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
+                                          'Q1 2 2 VCC QLPMOD 1',
+                                          'Q2 3 2 1 QLPMOD 1',
+                                          'Q3 12 5 9 QLPMOD 1',
+                                          'Q4 11 5 8 QLPMOD 0.1',
+                                          'Q5 12 12 7 QNMOD 1',
+                                          'Q6 11 12 7 QNMOD 1',
+                                          'Q7 VCC 5 7 QNMOD 1',
+                                          'Q8 3 3 4 QNMOD 1',
+                                          'Q9 7 3 6 QNMOD 1',
+                                          '',
+                                          '*Voltage Controlled Voltage Source: E<name> <+ node> <-node> <+ controlling node> <- controlling node> <gain>',
+                                          'E1 VCC VREF VCC 5 1',
+                                          '',
+                                          '*Independent Current Source: I<name> <+ node> <-node> [[DC] <value>]',
+                                          'I1 2 0 DC 3.23uA',
+                                          '',
+                                          '*end of the BG_sc subcircuit',
+                                          '.ends BG_sc',
+                                          '',
+                                          '',
+                                          '.subckt OPAMP_sc V10 V11 VCC VEE VO',
+                                          '',
+                                          '*Voltage Controlled Current Source OPAMP',
+                                          'B6 5 V10 I={deltaIb6(V(5)-V(V10))}',
+                                          'B7 5 V11 I={deltaIb7(V(5)-V(V11))}',
+                                          'B8 6 VCC I={deltaIb8(V(6)-V(VCC))}',
+                                          'B9 6 VCC I={deltaIb9(V(6)-V(VCC))}',
+                                          'B10 6 VCC I={deltaIb10(V(6)-V(VCC))}',
+                                          '',
+                                          '*Resistance: R<name> <+ node> <- node> [model name] <value>',
+                                          'r1 7 VEE 4.7k',
+                                          'r2 3 VEE 4.7k',
+                                          'r3 VO VEE 60k',
+                                          'r4 11 VEE 60k',
+                                          '',
+                                          '*Capacitance: C<name> <+ node> <- node> [model name] <value> + [IC=<initial value>]',
+                                          'C1 1 9 0.0056p',
+                                          '',
+                                          '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
+                                          'Q1 1 11 VEE QNMOD 10',
+                                          'Q2 VCC 1 VO QNMOD 1',
+                                          'Q3 VCC 9 11 QNMOD 1',
+                                          'Q4 9 4 7 QNMOD 1',
+                                          'Q5 4 4 3 QNMOD 1',
+                                          'Q6 9 V10 5 QLPMOD 20',
+                                          'Q7 4 V11 5 QLPMOD 20',
+                                          'Q8 6 6 VCC QLPMOD 1',
+                                          'Q9 5 6 VCC QLPMOD 10',
+                                          'Q10 1 6 VCC QLPMOD 10',
+                                          '',
+                                          '*Independent Current Source: I<name> <+ node> <-node> [[DC] <value>]',
+                                          'I1 6 0 DC 1.4u',
+                                          '',
+                                          '*end of the OPAMP_sc subcircuit',
+                                          '.ends OPAMP_sc']},
+              PARTS[1]: {SIMULATION[0]: ['.subckt AD590 2 20',
+                                           '',
+                                           '*Capacitance: C<name> <+ node> <- node> [model name] <value> + [IC=<initial value>]',
+                                           'c1 1 8 26p',
+                                           '',
+                                           '*Resistance: R<name> <+ node> <- node> [model name] <value>',
+                                           'r1 2 4 260',
+                                           'r2 2 3 1040',
+                                           'r3 5 16 5000',
+                                           'r4 11 5 11000',
+                                           'r5 12 20 146',
+                                           'r6 15 20 820',
+                                           '',
+                                           '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
+                                           'Q11 1 5 12 QNMOD 35 temp=27',
+                                           'Q10 5 5 12 QNMOD 35 temp=27',
+                                           'Q9 6 5 15 QNMOD 280 temp=27',
+                                           'Q6 7 7 2 QLPMOD 10 temp=27',
+                                           'Q4 1 8 4 QLPMOD 10 temp=27',
+                                           'Q3 1 8 4 QLPMOD 10 temp=27',
+                                           'Q5 8 8 3 QLPMOD 10 temp=27',
+                                           'Q2 6 8 4 QLPMOD 10 temp=27',
+                                           'Q1 6 8 4 QLPMOD 10 temp=27',
+                                           'Q7 7 6 11 QNMOD 10 temp=27',
+                                           'Q8 8 1 11 QNMOD 10 temp=27',
+                                           '',
+                                           '*JFET: J<name> <drain> <gate> <source> <model name> [area value]',
+                                           'J1 8 16 11 NJF_TYP',
+                                           '',
+                                           '*end of the subcircuit',
+                                           '.ends'],
+                          SIMULATION[1]: ['.subckt AD590 2 20',
+                                           '',
+                                           '*Voltage Controlled Current Source',
+                                           '*PNP',
+                                           'B1 4 8 I={deltaIb1(V(4)-V(8))}',
+                                           'B2 4 8 I={deltaIb2(V(4)-V(8))}',
+                                           'B3 4 8 I={deltaIb3(V(4)-V(8))}',
+                                           'B4 4 8 I={deltaIb4(V(4)-V(8))}',
+                                           'B5 3 8 I={deltaIb5(V(3)-V(8))}',
+                                           'B6 2 7 I={deltaIb6(V(2)-V(7))}',
+                                           '*NPN',
+                                           'B7 6 11 I={deltaIb7(V(6,11))}',
+                                           'B8 1 11 I={deltaIb8(V(1,11))}',
+                                           'B9 5 15 I={deltaIb9(V(5,15))}',
+                                           'B10 5 12 I={deltaIb10(V(5,12))}',
+                                           'B11 5 12 I={deltaIb11(V(5,12))}',
+                                           '',
+                                           '*Capacitance: C<name> <+ node> <- node> [model name] <value> + [IC=<initial value>]',
+                                           'c1 1 8 26p',
+                                           '',
+                                           '*Resistance: R<name> <+ node> <- node> [model name] <value>',
+                                           'r1 2 4 260',
+                                           'r2 2 3 1040',
+                                           'r3 5 16 5000',
+                                           'r4 11 5 11000',
+                                           'r5 12 20 146',
+                                           'r6 15 20 820',
+                                           '',
+                                           '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
+                                           'Q11 1 5 12 QNMOD 35 temp=27',
+                                           'Q10 5 5 12 QNMOD 35 temp=27',
+                                           'Q9 6 5 15 QNMOD 280 temp=27',
+                                           'Q6 7 7 2 QLPMOD 10 temp=27',
+                                           'Q4 1 8 4 QLPMOD 10 temp=27',
+                                           'Q3 1 8 4 QLPMOD 10 temp=27',
+                                           'Q5 8 8 3 QLPMOD 10 temp=27',
+                                           'Q2 6 8 4 QLPMOD 10 temp=27',
+                                           'Q1 6 8 4 QLPMOD 10 temp=27',
+                                           'Q7 7 6 11 QNMOD 10 temp=27',
+                                           'Q8 8 1 11 QNMOD 10 temp=27',
+                                           '',
+                                           '*JFET: J<name> <drain> <gate> <source> <model name> [area value]',
+                                           'J1 8 16 11 NJF_TYP',
+                                           '',
+                                           '*end of the subcircuit',
+                                           '.ends']}
+              }
+
+LIBRARY_TID_LEVEL_MODEL = {TID_LEVEL[0]: ['* npn prerad off ctp 3b',
                                '.model QNMOD NPN (',
                                '+ IS = 1.68208E-16',
                                '+ BF = 84.058    NF = 0.986787 VAF = 351.9861415',
@@ -16,21 +254,20 @@ TID_LEVEL_MODEL = {'pre_rad': ['* npn prerad off ctp 3b',
                                '+ NE = 2.06453   BR = 0.697    NR = 2',
                                '+ VAR = 100      IKR = 0.1     ISC = 1E-17',
                                '+ NC = 2         RB = 140.86   IRB = 1E-3',
-                               '+ RBM = 50       RE = 2        RC = 250.75)',
-                               '',
-                               '*lpnp prerad off ctp 3b',
-                               '.model QLPMOD PNP (',
-                               '+ IS = 8.70964E-16',
-                               '+ BF = 786.9		NF = 0.99                           VAF = 36.3423711',
-                               '+ IKF = 6.30957E-5       NK = 0.52                           ISE = 9.54993E-17',
-                               '+ NE = 1.27089           BR = 0.697                          NR = 2',
-                               '+ VAR = 100              IKR = 0.1                           ISC = 1E-17',
-                               '+ NC = 2                 RB = 758.578                        IRB = 3.6E-5',
-                               '+ RBM = 100              RE = 4.096                           RC = 1)'
-                               ],
+                                          '+ RBM = 50       RE = 2        RC = 250.75)',
+                                          '',
+                                          '*lpnp prerad off ctp 3b',
+                                          '.model QLPMOD PNP (',
+                                          '+ IS = 8.70964E-16',
+                                          '+ BF = 786.9		NF = 0.99                           VAF = 36.3423711',
+                                          '+ IKF = 6.30957E-5       NK = 0.52                           ISE = 9.54993E-17',
+                                          '+ NE = 1.27089           BR = 0.697                          NR = 2',
+                                          '+ VAR = 100              IKR = 0.1                           ISC = 1E-17',
+                                          '+ NC = 2                 RB = 758.578                        IRB = 3.6E-5',
+                                          '+ RBM = 100              RE = 4.096                           RC = 1)'
+                                          ],
 
-
-                   '20k': ['* npn 2e4 off ctp 3b',
+                           TID_LEVEL[3]: ['* npn 2e4 off ctp 3b',
                            '.model QNMOD NPN  (                      ',
                            '+ IS     = 1.68208E-16',
                            '+ BF     = 45.95           NF     = 0.986787        VAF    = 345.2016293',
@@ -51,8 +288,7 @@ TID_LEVEL_MODEL = {'pre_rad': ['* npn prerad off ctp 3b',
                            '+ RBM    = 100             RE     = 4.096           RC     = 1)'
                            ],
 
-
-                   '50k': ['* npn 5e4 off ctp 3b',
+                           TID_LEVEL[4]: ['* npn 5e4 off ctp 3b',
                      '.model QNMOD NPN  (',
                      '+ IS     = 1.684E-16',
                      '+ BF     = 38.7            NF     = 0.986787        VAF    = 342.7968454',
@@ -73,7 +309,7 @@ TID_LEVEL_MODEL = {'pre_rad': ['* npn prerad off ctp 3b',
                      '+ RBM    = 57.544          RE     = 7.093           RC     = 1)'
                      ],
 
-                   '100k': ['* npn 1e5 off ctp 3b',
+                           TID_LEVEL[5]: ['* npn 1e5 off ctp 3b',
                          '.model QNMOD NPN  (',
                          '+ IS     = 1.68208E-16',
                          '+ BF     = 45.95           NF     = 0.986787        VAF    = 342.3319825',
@@ -94,7 +330,7 @@ TID_LEVEL_MODEL = {'pre_rad': ['* npn prerad off ctp 3b',
                          '+ RBM    = 57.544          RE     = 7.093           RC     = 1               )',
                       ],
 
-                   '200k': ['* npn 2e5 off ctp 3b',
+                           TID_LEVEL[6]: ['* npn 2e5 off ctp 3b',
                          '.model QNMOD NPN  (',
                          '+ IS     = 1.684E-16',
                          '+ BF     = 38.7            NF     = 0.986787        VAF    = 313.65875',
@@ -115,7 +351,7 @@ TID_LEVEL_MODEL = {'pre_rad': ['* npn prerad off ctp 3b',
                          '+ RBM    = 57.544          RE     = 7.093           RC     = 1)'
                       ],
 
-                   '300k': ['* npn 3e5 off ctp 3b',
+                           TID_LEVEL[7]: ['* npn 3e5 off ctp 3b',
                          '.model QNMOD NPN (',
                          '+ IS     = 1.684E-16',
                          '+ BF     = 38.7            NF     = 0.986787        VAF    = 329.7773204',
@@ -135,12 +371,14 @@ TID_LEVEL_MODEL = {'pre_rad': ['* npn prerad off ctp 3b',
                          '+ NC     = 2               RB     = 1.58489E3       IRB    = 3.16228E-5',
                          '+ RBM    = 57.544          RE     = 7.093           RC     = 1               )'
                       ]
-                   }
-TID_LEVEL_SOURCE = {'2.5k': ['*2.5krad',
+                           }
+PARAMETER_TID_LEVEL_SOURCE = {TID_LEVEL[1]: ['*2.5krad',
                             '.PARAM a2=-39.12298',
                             '.PARAM b2=53.5479',
                             '.PARAM c2=-21.84106'],
-                    '5k': ['*5krad',
+                              TID_LEVEL[2]: ['*5krad',
                             '.PARAM a2=-38.8789',
                             '.PARAM b2=59.74651',
                             '.PARAM c2=-23.3925']}
+
+FUNCTIONS = {}

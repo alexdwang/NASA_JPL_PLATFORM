@@ -3,18 +3,66 @@ import GUI.Library
 
 # generate a Netlist based on the input parameters and save it to ProjectHome/Netlist
 class NetListGenerator:
-    def generate(self, part, simulation, TID_level, output_filepath, netlist_filepath): # generate Netlist
+    def generate(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath): # generate Netlist
         content = []
-        if part == GUI.Library.PARTS[0]:
-            if simulation == GUI.Library.SIMULATION[0]:
-                content = self.content_LT1175(TID_level, output_filepath)
-            elif simulation == GUI.Library.SIMULATION[1]:
-                content = self.content_LT1175_ABM(TID_level, output_filepath)
-        elif part == GUI.Library.PARTS[1]:
-            if simulation == GUI.Library.SIMULATION[0]:
-                content = self.content_AD590(TID_level, output_filepath)
-            elif simulation == GUI.Library.SIMULATION[1]:
-                content = self.content_AD590_ABM(TID_level, output_filepath)
+        # if part == GUI.Library.PARTS[0]:
+        #     if simulation == GUI.Library.SIMULATION[0]:
+        #         content = self.content_LT1175(TID_level, output_filepath)
+        #     elif simulation == GUI.Library.SIMULATION[1]:
+        #         content = self.content_LT1175_ABM(TID_level, output_filepath)
+        # elif part == GUI.Library.PARTS[1]:
+        #     if simulation == GUI.Library.SIMULATION[0]:
+        #         content = self.content_AD590(TID_level, output_filepath)
+        #     elif simulation == GUI.Library.SIMULATION[1]:
+        #         content = self.content_AD590_ABM(TID_level, output_filepath)
+        # Section 1: Title
+        content.extend(['Title: ' + part + ' / ' + TID_level + ' / ' + 'T= 300.15K = 27C',
+                        ''])
+        # Section 2: Input Voltage Source
+        content.extend(['*Input Voltage Source',
+                        '***************'])
+        content.extend(GUI.Library.INPUT_VOLTAGE_SOURCE[part])
+        content.append('')
+        # Section 3: Circuit core
+        content.extend(['*Circuit Core',
+                        '*************',])
+        content.extend(GUI.Library.CIRCUIT_CORE[part])
+        content.append('')
+
+        if simulation == GUI.Library.SIMULATION[1]:
+            # Section Parameters (only if use current source):
+            content.extend()
+            # Section Function (only if use current source):
+            content.extend()
+        # Section 4: Input
+        content.extend(['*Input',
+                        '******',])
+        content.extend(GUI.Library.INPUT[part])
+        content.append('')
+        # Section 5: Output
+        content.extend(['*Output',
+                        '*******',
+                        '.print dc format=noindex file=' + output_filepath])
+        content.extend(GUI.Library.OUTPUT[part][output_option])
+        content.append('')
+        # Section 6: Subcircuit
+        content.extend(['*Subcircuit',
+                        '************'])
+        content.extend(GUI.Library.SUBCIRCUIT[part][simulation])
+        content.extend(['*End Subcircuit',
+                        ''])
+        # Section 7: Library
+        content.extend(['Library',
+                        '*******'])
+        if simulation == GUI.Library.SIMULATION[0]:
+            content.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
+        else:
+            content.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[GUI.Library.TPRE_RAD])
+        content.extend(['',
+                        '*end of the netlist',
+                        '.end'])
+
+        # print content to netlist file
         file = open(netlist_filepath, 'wb')
         for line in content:
             text = (line + '\r\n').encode('ascii')
@@ -76,7 +124,7 @@ class NetListGenerator:
                          '.ends',
                          '',
                          '*Library', ]
-        content_AD590.extend(GUI.Library.TID_LEVEL_MODEL[TID_level])
+        content_AD590.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
         content_AD590.extend(['',
                               '*JFET',
                               '.model NJF_TYP NJF (',
@@ -345,7 +393,7 @@ class NetListGenerator:
                         '*Library',
                         '********'
                         ]
-        content_LT1175.extend(GUI.Library.TID_LEVEL_MODEL[TID_level])
+        content_LT1175.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
         content_LT1175.extend(['',
                         '*end of the netlist',
                         '.end',
@@ -383,7 +431,7 @@ class NetListGenerator:
                               '.PARAM b1=48.21879',
                               '.PARAM c1=-15.6477',
                               '']
-        content_LT1175_ABM.extend(GUI.Library.TID_LEVEL_SOURCE[TID_level])
+        content_LT1175_ABM.extend(GUI.Library.PARAMETER_TID_LEVEL_SOURCE[TID_level])
         content_LT1175_ABM.extend([
                               '',
                               '*SCALE',

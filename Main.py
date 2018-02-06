@@ -25,6 +25,8 @@ class Interface(object):
         self.lb_simulation = tkinter.Listbox(self.window, listvariable=self.simulation_options,
                                              height=6, exportselection=False)
 
+        self.output_option = Library.AD590_OUTPUT_OPTION[0]
+
         self.label_TID_level = tkinter.Label(self.window, text='TID level:', font=('Arial', 0), width=21, height=2)
         self.TID_options = tkinter.StringVar()
         self.TID_options_tuple = ()
@@ -46,10 +48,11 @@ class Interface(object):
             part = self.lb_parts.get(self.lb_parts.curselection())
             simulation = self.lb_simulation.get(self.lb_simulation.curselection())
             TID_level = self.lb_TID.get(self.lb_TID.curselection())
+            output_option = self.output_option
 
             self.output_filepath = relative_path('Output/' + TID_level + '_test.txt')
 
-            netListGenerator.generate(part, simulation, TID_level, self.output_filepath, self.netlist_filepath)
+            netListGenerator.generate(part, simulation, TID_level, output_option, self.output_filepath, self.netlist_filepath)
             my_result = execute.execute_module3(self.netlist_filepath)
             message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
             self.result_text.set(message)
@@ -70,9 +73,9 @@ class Interface(object):
             index = int(self.lb_simulation.curselection()[0])
             value = self.lb_simulation.get(index)
             if value == Library.SIMULATION[0]:
-                self.TID_options_tuple = (list(Library.TID_LEVEL_MODEL))
+                self.TID_options_tuple = (list(Library.LIBRARY_TID_LEVEL_MODEL))
             elif value == Library.SIMULATION[1]:
-                self.TID_options_tuple = (list(Library.TID_LEVEL_SOURCE))
+                self.TID_options_tuple = (list(Library.PARAMETER_TID_LEVEL_SOURCE))
             self.TID_options_tuple.sort()
             self.TID_options.set(self.TID_options_tuple)
         except:
@@ -80,24 +83,19 @@ class Interface(object):
         return
 
     def start(self):
-        #     self.label_topline.pack()
-        #     self.label_TIDlevel.pack()
-        #     self.lb.pack()
-        #     self.button.pack()
-        #     self.label_result_text.pack()
-        # self.label_topline.grid(row=0,sticky='E')
+        self.label_topline.grid(row=0, columnspan=3)
         self.lb_simulation.bind('<<ListboxSelect>>', self.simulation_onselect)
-        self.label_parts.grid(row=0)
-        self.label_simulation.grid(row=0, column=1)
-        self.label_TID_level.grid(row=0, column=2)
+        self.label_parts.grid(row=1)
+        self.label_simulation.grid(row=1, column=1)
+        self.label_TID_level.grid(row=1, column=2)
 
-        self.lb_parts.grid(row=1)
-        self.lb_simulation.grid(row=1, column=1)
-        self.lb_TID.grid(row=1, column=2)
+        self.lb_parts.grid(row=2)
+        self.lb_simulation.grid(row=2, column=1)
+        self.lb_TID.grid(row=2, column=2)
 
-        self.button.grid(row=2, sticky='E', columnspan=3, pady=10)
+        self.button.grid(row=3, sticky='E', columnspan=3, pady=10)
 
-        self.label_result_text.grid(row=3, column=0, columnspan=3)
+        self.label_result_text.grid(row=4, column=0, columnspan=3)
         self.window.mainloop()
         return
 
@@ -135,14 +133,14 @@ class Interface(object):
     def plotfigure(self, X, Y, part, TID_level):
         plt.figure(1, figsize=(8,8))
         # plt.plot(X, Y, 'b*')
-        color={'pre_rad': 'r-',
-               '2.5k': 'y-',
-               '5k': 'c-',
-               '20k': 'y-',
-               '50k': 'c-',
-               '100k': 'g-',
-               '200k': 'm-',
-               '300k': 'k-'}
+        color={Library.TID_LEVEL[0]: 'r-',
+               Library.TID_LEVEL[1]: 'y-',
+               Library.TID_LEVEL[2]: 'c-',
+               Library.TID_LEVEL[3]: 'y-',
+               Library.TID_LEVEL[4]: 'c-',
+               Library.TID_LEVEL[5]: 'g-',
+               Library.TID_LEVEL[6]: 'm-',
+               Library.TID_LEVEL[7]: 'k-'}
         plt.plot(X, Y, color[TID_level], label="V(1) and I(ROUT), Part=" + part + "TID level=" + TID_level)
         plt.xlabel("V(1)")
         plt.ylabel("I(ROUT)")
