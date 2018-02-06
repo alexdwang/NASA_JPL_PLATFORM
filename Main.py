@@ -55,6 +55,7 @@ class Interface(object):
             netListGenerator.generate(part, simulation, TID_level, output_option, self.output_filepath, self.netlist_filepath)
             my_result = execute.execute_module3(self.netlist_filepath)
             message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
+            message = my_result
             self.result_text.set(message)
 
             X, Y = self.load_and_finalize_output(part, TID_level)

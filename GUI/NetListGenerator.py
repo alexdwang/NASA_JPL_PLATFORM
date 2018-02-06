@@ -52,16 +52,23 @@ class NetListGenerator:
         content.extend(['*End Subcircuit',
                         ''])
         # Section 7: Library
-        content.extend(['Library',
+        content.extend(['*Library',
                         '*******'])
         if simulation == GUI.Library.SIMULATION[0]:
             content.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
         else:
             content.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[GUI.Library.TPRE_RAD])
+        if part == GUI.Library.PARTS[1]:
+            content.extend(['*JFET',
+            '.model NJF_TYP NJF (',
+            '+ VTO = -1.0	BETA = 6.2E-4	LAMBDA = 0.003',
+            '+ RD = 0.01      RS = 1e-4',
+            '+ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)',
+            '']),
         content.extend(['',
                         '*end of the netlist',
                         '.end'])
-
+        
         # print content to netlist file
         file = open(netlist_filepath, 'wb')
         for line in content:
