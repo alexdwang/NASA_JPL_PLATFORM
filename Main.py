@@ -8,31 +8,36 @@ class Interface(object):
     def __init__(self):
         self.window = tkinter.Tk()
         self.window.title('Platform')
-        self.window.geometry('800x400')
+        self.window.geometry('1000x500')
 
-        self.label_topline = tkinter.Label(self.window, text=Library.TITLE, font=('Arial', 12), width=10, height=2)
+        self.label_topline = tkinter.Label(self.window, text=Library.TITLE, font=('Arial', 20), width=30, height=2)
 
-        self.label_parts = tkinter.Label(self.window, text='parts:', font=('Arial', 0), width=21, height=2)
+        self.label_parts = tkinter.Label(self.window, text='parts:', font=('Arial', 0), width=16, height=2)
         self.parts_options = tkinter.StringVar()
         self.parts_options_tuple = (Library.PARTS)
         self.parts_options.set(self.parts_options_tuple)
         self.lb_parts = tkinter.Listbox(self.window, listvariable=self.parts_options, height=6, exportselection=False)
 
-        self.label_simulation = tkinter.Label(self.window, text='simulation:', font=('Arial', 0), width=21, height=2)
+        self.label_simulation = tkinter.Label(self.window, text='simulation:', font=('Arial', 0), width=16, height=2)
         self.simulation_options = tkinter.StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
         self.simulation_options.set(self.simulation_options_tuple)
         self.lb_simulation = tkinter.Listbox(self.window, listvariable=self.simulation_options,
                                              height=6, exportselection=False)
 
-        self.output_option = Library.AD590_OUTPUT_OPTION[0]
-
-        self.label_TID_level = tkinter.Label(self.window, text='TID level:', font=('Arial', 0), width=21, height=2)
+        self.label_TID_level = tkinter.Label(self.window, text='TID level:', font=('Arial', 0), width=16, height=2)
         self.TID_options = tkinter.StringVar()
         self.TID_options_tuple = ()
         self.TID_options.set(self.TID_options_tuple)
         self.lb_TID = tkinter.Listbox(self.window, listvariable=self.TID_options,
                                       height=len(self.TID_options_tuple), exportselection=False)
+
+        self.label_output = tkinter.Label(self.window, text='Output:', font=('Arial', 0), width=16, height=2)
+        self.output_options = tkinter.StringVar()
+        self.output_options_tuple = (Library.LT1175_OUTPUT_OPTION)
+        self.output_options.set(self.output_options_tuple)
+        self.lb_output = tkinter.Listbox(self.window, listvariable=self.output_options,
+                                      height=len(self.output_options_tuple), exportselection=False)
 
         self.button = tkinter.Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
 
@@ -48,14 +53,17 @@ class Interface(object):
             part = self.lb_parts.get(self.lb_parts.curselection())
             simulation = self.lb_simulation.get(self.lb_simulation.curselection())
             TID_level = self.lb_TID.get(self.lb_TID.curselection())
-            output_option = self.output_option
+            if (part == Library.PART_LT1175):
+                output_option = self.lb_output.get(self.lb_output.curselection())
+            else:
+                output_option = Library.AD590_OUTPUT_OPTION[0]
 
             self.output_filepath = relative_path('Output/' + TID_level + '_test.txt')
 
             netListGenerator.generate(part, simulation, TID_level, output_option, self.output_filepath, self.netlist_filepath)
             my_result = execute.execute_module3(self.netlist_filepath)
             message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
-            message = my_result
+            # message = my_result
             self.result_text.set(message)
 
             X, Y = self.load_and_finalize_output(part, TID_level)
@@ -63,21 +71,42 @@ class Interface(object):
         return
 
     def input_check(self):
-        if self.lb_TID.curselection() == () or self.lb_parts.curselection() == () or self.lb_simulation.curselection() == ():
+        if self.lb_TID.curselection() == () or self.lb_parts.curselection() == () or self.lb_simulation.curselection() == () or \
+                (self.lb_parts.get(self.lb_parts.curselection()) == Library.PART_LT1175 and self.lb_output.curselection() == ()):
             self.result_text.set('please check your input')
             return False
         self.result_text.set('in process, please wait...')
         return True
 
+    def part_onselect(self, evt):
+        try:
+            index = int(self.lb_parts.curselection()[0])
+            value = self.lb_parts.get(index)
+            if value == Library.PART_LT1175:
+                self.label_output.grid()
+                self.lb_output.grid()
+                if self.lb_simulation.get(self.lb_simulation.curselection()) == Library.SIMULATION_SOURCE:
+                    self.TID_options_tuple = (list(Library.PARAMETER_TID_LEVEL_SOURCE))
+                else:
+                    self.TID_options_tuple = (list(Library.LIBRARY_TID_LEVEL_MODEL))
+            elif value == Library.PART_AD590:
+                self.label_output.grid_remove()
+                self.lb_output.grid_remove()
+                self.TID_options_tuple = (list(Library.LIBRARY_TID_LEVEL_MODEL))
+            self.TID_options.set(self.TID_options_tuple)
+        except:
+            pass
+        return
+
     def simulation_onselect(self, evt):
         try:
             index = int(self.lb_simulation.curselection()[0])
             value = self.lb_simulation.get(index)
-            if value == Library.SIMULATION[0]:
-                self.TID_options_tuple = (list(Library.LIBRARY_TID_LEVEL_MODEL))
-            elif value == Library.SIMULATION[1]:
+            if value == Library.SIMULATION_SOURCE and self.lb_parts.get(self.lb_parts.curselection()) == Library.PART_LT1175:
                 self.TID_options_tuple = (list(Library.PARAMETER_TID_LEVEL_SOURCE))
-            self.TID_options_tuple.sort()
+            else:
+                self.TID_options_tuple = (list(Library.LIBRARY_TID_LEVEL_MODEL))
+            # self.TID_options_tuple.sort()
             self.TID_options.set(self.TID_options_tuple)
         except:
             pass
@@ -85,18 +114,25 @@ class Interface(object):
 
     def start(self):
         self.label_topline.grid(row=0, columnspan=3)
+
+        self.lb_parts.bind('<<ListboxSelect>>', self.part_onselect)
         self.lb_simulation.bind('<<ListboxSelect>>', self.simulation_onselect)
         self.label_parts.grid(row=1)
         self.label_simulation.grid(row=1, column=1)
         self.label_TID_level.grid(row=1, column=2)
+        self.label_output.grid(row=1, column=3)
 
         self.lb_parts.grid(row=2)
         self.lb_simulation.grid(row=2, column=1)
         self.lb_TID.grid(row=2, column=2)
+        self.lb_output.grid(row=2, column=3)
 
         self.button.grid(row=3, sticky='E', columnspan=3, pady=10)
 
         self.label_result_text.grid(row=4, column=0, columnspan=3)
+
+        self.label_output.grid_remove()
+        self.lb_output.grid_remove()
         self.window.mainloop()
         return
 

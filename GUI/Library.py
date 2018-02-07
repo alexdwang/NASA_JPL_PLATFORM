@@ -2,11 +2,15 @@
 ' Library.py is used to store the constant values
 ' Contents in this file should not be modified by program unless you are updating the library
 """
-TITLE = 'NASA JPL'
+TITLE = 'NASA JPL Platform'
 
-PARTS = ['LT1175', 'AD590']
+PART_LT1175 = 'LT1175'
+PART_AD590 = 'AD590'
+PARTS = [PART_LT1175, PART_AD590]
 
-SIMULATION = ['model', 'source']
+SIMULATION_MODEL = 'model'
+SIMULATION_SOURCE = 'source'
+SIMULATION = [SIMULATION_MODEL, SIMULATION_SOURCE]
 
 TPRE_RAD = 'pre_rad'
 T2_5KRAD = '2.5k'
@@ -16,7 +20,6 @@ T50KRAD = '50k'
 T100KRAD = '100k'
 T200KRAD = '200k'
 T300KRAD = '300k'
-
 TID_LEVEL = [TPRE_RAD,        # 0
              T2_5KRAD,        # 1
              T5KRAD,          # 2
@@ -27,22 +30,22 @@ TID_LEVEL = [TPRE_RAD,        # 0
              T300KRAD]        # 7
 
 COL_NAME = {'VE':           'Ve_PRE_RAD',
-            TID_LEVEL[0]:   'Ib_Pre_Rad',
-            TID_LEVEL[3]:   'Ib_20krad'}
+            TPRE_RAD:   'Ib_Pre_Rad',
+            T20KRAD:   'Ib_20krad'}
 
 LT1175_OUTPUT_OPTION = ['Line_Regulation']
 
-AD590_OUTPUT_OPTION = ['AD']
+AD590_OUTPUT_OPTION = ['Default']
 
 # circuit code:
                         # LT1175:
-INPUT_VOLTAGE_SOURCE = {PARTS[0]: ['V2 4 0 DC 0V'],
+INPUT_VOLTAGE_SOURCE = {PART_LT1175: ['V2 4 0 DC 0V'],
 
                         # AD590:
-                        PARTS[1]: ['VIN 2 0 DC 0V']
+                        PART_AD590: ['VIN 2 0 DC 0V']
                         }
 
-CIRCUIT_CORE = {PARTS[0]: ['*Subcircuit',
+CIRCUIT_CORE = {PART_LT1175: ['*Subcircuit',
                            '*X1 VCC VEE VREF',
                            'X1 0 4 5 BG_sc',
                            '',
@@ -57,20 +60,73 @@ CIRCUIT_CORE = {PARTS[0]: ['*Subcircuit',
                            '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
                            'Q1 1 2 3 QNMOD 1000',
                            'Q2 0 7 2 QNMOD 10'],
-                PARTS[1]: ['XZ 2 20 AD590',
+                PART_AD590: ['XZ 2 20 AD590',
                            'R0 20 0 1m']
                 }
 
-INPUT = {PARTS[0]: ['.dc V2 0 -20 -0.1'],
-         PARTS[1]: ['.dc VIN 0 30 0.01']
+SCALE = {PART_LT1175: ['*SCALE',
+                       '.PARAM scale1=1',
+                       '.PARAM scale2=1',
+                       '.PARAM scale3=1',
+                       '.PARAM scale4=0.1',
+                       '',
+                       '.PARAM scale6=20',
+                       '.PARAM scale7=20',
+                       '.PARAM scale8=1',
+                       '.PARAM scale9=10',
+                       '.PARAM scale10=10'],
+         PART_AD590: ['*SCALE',
+                       '.PARAM scale1=10',
+                       '.PARAM scale2=10',
+                       '.PARAM scale3=10',
+                       '.PARAM scale4=10',
+                       '.PARAM scale5=10',
+                       '.PARAM scale6=10',
+                       '.PARAM scale7=10',
+                       '.PARAM scale8=10',
+                       '.PARAM scale9=280',
+                       '.PARAM scale10=35',
+                       '.PARAM scale11=35']}
+
+FUNCTIONS = {PART_LT1175: ['*DeltaIb = 1*(exp(a2+(b2*Veb)+(c2*(Veb*Veb))) - exp(a1+(b1*Veb)+(c1*(Veb*Veb))))',
+                          '*.func deltaIb(x) {scale*(exp(a2+(b2*x)+(c2*(pow(x,2)))) - exp(a1+(b1*x)+(c1*(pow(x,2)))))}',
+                          '.func deltaIb1(x) {scale1*(exp(a2+(b2*x)+(c2*(x*x))) - exp(a1+(b1*x)+(c1*(x*x))))}',
+                          '.func deltaIb2(x) {scale2*(exp(a2+(b2*x)+(c2*(x*x))) - exp(a1+(b1*x)+(c1*(x*x))))}',
+                          '.func deltaIb3(x) {scale3*(exp(a2+(b2*x)+(c2*(x*x))) - exp(a1+(b1*x)+(c1*(x*x))))}',
+                          '.func deltaIb4(x) {scale4*(exp(a2+(b2*x)+(c2*(x*x))) - exp(a1+(b1*x)+(c1*(x*x))))}',
+                          '',
+                          '.func deltaIb6(x) {scale6*(exp(a2+(b2*x)+(c2*(x*x))) - exp(a1+(b1*x)+(c1*(x*x))))}',
+                          '.func deltaIb7(x) {scale7*(exp(a2+(b2*x)+(c2*(x*x))) - exp(a1+(b1*x)+(c1*(x*x))))}',
+                          '.func deltaIb8(x) {scale8*(exp(a2+(b2*x)+(c2*(x*x))) - exp(a1+(b1*x)+(c1*(x*x))))}',
+                          '.func deltaIb9(x) {scale9*(exp(a2+(b2*x)+(c2*(x*x))) - exp(a1+(b1*x)+(c1*(x*x))))}',
+                          '.func deltaIb10(x) {scale10*(exp(a2+(b2*x)+(c2*(x*x))) - exp(a1+(b1*x)+(c1*(x*x))))}'],
+             PART_AD590: ['*DeltaIb = 1*(exp(a2+(b2*Veb)+(c2*(Veb*Veb))) - exp(a1+(b1*Veb)+(c1*(Veb*Veb))))',
+                         '*.func deltaIb(x) {scale*(exp(a2+(b2*x)+(c2*(pow(x,2)))) - exp(a1+(b1*x)+(c1*(pow(x,2)))))}',
+                         '*PNP',
+                         '.func deltaIb1(x) {scale1*((exp(a2+(b2*x)+(c2*(x*x)))) - (exp(a1+(b1*x)+(c1*(x*x)))))}',
+                         '.func deltaIb2(x) {scale2*((exp(a2+(b2*x)+(c2*(x*x)))) - (exp(a1+(b1*x)+(c1*(x*x)))))}',
+                         '.func deltaIb3(x) {scale3*((exp(a2+(b2*x)+(c2*(x*x)))) - (exp(a1+(b1*x)+(c1*(x*x)))))}',
+                         '.func deltaIb4(x) {scale4*((exp(a2+(b2*x)+(c2*(x*x)))) - (exp(a1+(b1*x)+(c1*(x*x)))))}',
+                         '.func deltaIb5(x) {scale5*((exp(a2+(b2*x)+(c2*(x*x)))) - (exp(a1+(b1*x)+(c1*(x*x)))))}',
+                         '.func deltaIb6(x) {scale6*((exp(a2+(b2*x)+(c2*(x*x)))) - (exp(a1+(b1*x)+(c1*(x*x)))))}',
+                         '',
+                         '*NPN',
+                         '.func deltaIb7(x) {scale7*((exp(a4+(b4*x)+(c4*(x*x)))) - (exp(a3+(b3*x)+(c3*(x*x)))))}',
+                         '.func deltaIb8(x) {scale8*((exp(a4+(b4*x)+(c4*(x*x)))) - (exp(a3+(b3*x)+(c3*(x*x)))))}',
+                         '.func deltaIb9(x) {scale9*((exp(a4+(b4*x)+(c4*(x*x)))) - (exp(a3+(b3*x)+(c3*(x*x)))))}',
+                         '.func deltaIb10(x) {scale10*((exp(a4+(b4*x)+(c4*(x*x)))) - (exp(a3+(b3*x)+(c3*(x*x)))))}',
+                         '.func deltaIb11(x) {scale11*((exp(a4+(b4*x)+(c4*(x*x)))) - (exp(a3+(b3*x)+(c3*(x*x)))))}']}
+
+INPUT = {PART_LT1175: ['.dc V2 0 -20 -0.1'],
+         PART_AD590: ['.dc VIN 0 30 0.01']
          }
 
-OUTPUT = {PARTS[0]: {LT1175_OUTPUT_OPTION[0]: ['+ V(4)',
+OUTPUT = {PART_LT1175: {LT1175_OUTPUT_OPTION[0]: ['+ V(4)',
                                                '+ V(1)']},
-          PARTS[1]: {AD590_OUTPUT_OPTION[0]: ['+ V(2)',
+          PART_AD590: {AD590_OUTPUT_OPTION[0]: ['+ V(2)',
                                               '+ I(R0)']}}
 
-SUBCIRCUIT = {PARTS[0]: {SIMULATION[0]: ['.subckt BG_sc VCC VEE VREF',
+SUBCIRCUIT = {PART_LT1175: {SIMULATION_MODEL: ['.subckt BG_sc VCC VEE VREF',
                                             '*Resistance: R<name> <+ node> <- node> [model name] <value>',
                                             'r1 VCC 1 10k',
                                             'r2 1 8 2.93e6',
@@ -97,7 +153,7 @@ SUBCIRCUIT = {PARTS[0]: {SIMULATION[0]: ['.subckt BG_sc VCC VEE VREF',
                                          '',
                                          '*end of the BG_sc subcircuit',
                                          '.ends BG_sc'],
-                         SIMULATION[1]: ['.subckt BG_sc VCC VEE VREF',
+                            SIMULATION_SOURCE: ['.subckt BG_sc VCC VEE VREF',
                                           '*Voltage Controlled Current Source BG',
                                           'B1 VCC 2 I={deltaIb1(V(VCC)-V(2))}',
                                           'B2 1 2 I={deltaIb2(V(1)-V(2))}',
@@ -167,7 +223,7 @@ SUBCIRCUIT = {PARTS[0]: {SIMULATION[0]: ['.subckt BG_sc VCC VEE VREF',
                                           '',
                                           '*end of the OPAMP_sc subcircuit',
                                           '.ends OPAMP_sc']},
-              PARTS[1]: {SIMULATION[0]: ['.subckt AD590 2 20',
+              PART_AD590: {SIMULATION_MODEL: ['.subckt AD590 2 20',
                                            '',
                                            '*Capacitance: C<name> <+ node> <- node> [model name] <value> + [IC=<initial value>]',
                                            'c1 1 8 26p',
@@ -198,7 +254,7 @@ SUBCIRCUIT = {PARTS[0]: {SIMULATION[0]: ['.subckt BG_sc VCC VEE VREF',
                                            '',
                                            '*end of the subcircuit',
                                            '.ends'],
-                          SIMULATION[1]: ['.subckt AD590 2 20',
+                           SIMULATION_SOURCE: ['.subckt AD590 2 20',
                                            '',
                                            '*Voltage Controlled Current Source',
                                            '*PNP',
@@ -246,7 +302,7 @@ SUBCIRCUIT = {PARTS[0]: {SIMULATION[0]: ['.subckt BG_sc VCC VEE VREF',
                                            '.ends']}
               }
 
-LIBRARY_TID_LEVEL_MODEL = {TID_LEVEL[0]: ['* npn prerad off ctp 3b',
+LIBRARY_TID_LEVEL_MODEL = {TPRE_RAD: ['* npn prerad off ctp 3b',
                                '.model QNMOD NPN (',
                                '+ IS = 1.68208E-16',
                                '+ BF = 84.058    NF = 0.986787 VAF = 351.9861415',
@@ -267,7 +323,7 @@ LIBRARY_TID_LEVEL_MODEL = {TID_LEVEL[0]: ['* npn prerad off ctp 3b',
                                           '+ RBM = 100              RE = 4.096                           RC = 1)'
                                           ],
 
-                           TID_LEVEL[3]: ['* npn 2e4 off ctp 3b',
+                           T20KRAD: ['* npn 2e4 off ctp 3b',
                            '.model QNMOD NPN  (                      ',
                            '+ IS     = 1.68208E-16',
                            '+ BF     = 45.95           NF     = 0.986787        VAF    = 345.2016293',
@@ -288,7 +344,7 @@ LIBRARY_TID_LEVEL_MODEL = {TID_LEVEL[0]: ['* npn prerad off ctp 3b',
                            '+ RBM    = 100             RE     = 4.096           RC     = 1)'
                            ],
 
-                           TID_LEVEL[4]: ['* npn 5e4 off ctp 3b',
+                           T50KRAD: ['* npn 5e4 off ctp 3b',
                      '.model QNMOD NPN  (',
                      '+ IS     = 1.684E-16',
                      '+ BF     = 38.7            NF     = 0.986787        VAF    = 342.7968454',
@@ -309,7 +365,7 @@ LIBRARY_TID_LEVEL_MODEL = {TID_LEVEL[0]: ['* npn prerad off ctp 3b',
                      '+ RBM    = 57.544          RE     = 7.093           RC     = 1)'
                      ],
 
-                           TID_LEVEL[5]: ['* npn 1e5 off ctp 3b',
+                           T100KRAD: ['* npn 1e5 off ctp 3b',
                          '.model QNMOD NPN  (',
                          '+ IS     = 1.68208E-16',
                          '+ BF     = 45.95           NF     = 0.986787        VAF    = 342.3319825',
@@ -330,7 +386,7 @@ LIBRARY_TID_LEVEL_MODEL = {TID_LEVEL[0]: ['* npn prerad off ctp 3b',
                          '+ RBM    = 57.544          RE     = 7.093           RC     = 1               )',
                       ],
 
-                           TID_LEVEL[6]: ['* npn 2e5 off ctp 3b',
+                           T200KRAD: ['* npn 2e5 off ctp 3b',
                          '.model QNMOD NPN  (',
                          '+ IS     = 1.684E-16',
                          '+ BF     = 38.7            NF     = 0.986787        VAF    = 313.65875',
@@ -351,7 +407,7 @@ LIBRARY_TID_LEVEL_MODEL = {TID_LEVEL[0]: ['* npn prerad off ctp 3b',
                          '+ RBM    = 57.544          RE     = 7.093           RC     = 1)'
                       ],
 
-                           TID_LEVEL[7]: ['* npn 3e5 off ctp 3b',
+                           T300KRAD: ['* npn 3e5 off ctp 3b',
                          '.model QNMOD NPN (',
                          '+ IS     = 1.684E-16',
                          '+ BF     = 38.7            NF     = 0.986787        VAF    = 329.7773204',
@@ -372,13 +428,3 @@ LIBRARY_TID_LEVEL_MODEL = {TID_LEVEL[0]: ['* npn prerad off ctp 3b',
                          '+ RBM    = 57.544          RE     = 7.093           RC     = 1               )'
                       ]
                            }
-PARAMETER_TID_LEVEL_SOURCE = {TID_LEVEL[1]: ['*2.5krad',
-                            '.PARAM a2=-39.12298',
-                            '.PARAM b2=53.5479',
-                            '.PARAM c2=-21.84106'],
-                              TID_LEVEL[2]: ['*5krad',
-                            '.PARAM a2=-38.8789',
-                            '.PARAM b2=59.74651',
-                            '.PARAM c2=-23.3925']}
-
-FUNCTIONS = {}

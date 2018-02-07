@@ -1,19 +1,20 @@
 import string
-import GUI.Library
+import GUI.Library as Library
+import GUI.fit as fit
 
 # generate a Netlist based on the input parameters and save it to ProjectHome/Netlist
 class NetListGenerator:
     def generate(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath): # generate Netlist
         content = []
-        # if part == GUI.Library.PARTS[0]:
-        #     if simulation == GUI.Library.SIMULATION[0]:
+        # if part == Library.PARTS[0]:
+        #     if simulation == Library.SIMULATION[0]:
         #         content = self.content_LT1175(TID_level, output_filepath)
-        #     elif simulation == GUI.Library.SIMULATION[1]:
+        #     elif simulation == Library.SIMULATION[1]:
         #         content = self.content_LT1175_ABM(TID_level, output_filepath)
-        # elif part == GUI.Library.PARTS[1]:
-        #     if simulation == GUI.Library.SIMULATION[0]:
+        # elif part == Library.PARTS[1]:
+        #     if simulation == Library.SIMULATION[0]:
         #         content = self.content_AD590(TID_level, output_filepath)
-        #     elif simulation == GUI.Library.SIMULATION[1]:
+        #     elif simulation == Library.SIMULATION[1]:
         #         content = self.content_AD590_ABM(TID_level, output_filepath)
         # Section 1: Title
         content.extend(['Title: ' + part + ' / ' + TID_level + ' / ' + 'T= 300.15K = 27C',
@@ -21,50 +22,98 @@ class NetListGenerator:
         # Section 2: Input Voltage Source
         content.extend(['*Input Voltage Source',
                         '***************'])
-        content.extend(GUI.Library.INPUT_VOLTAGE_SOURCE[part])
+        content.extend(Library.INPUT_VOLTAGE_SOURCE[part])
         content.append('')
         # Section 3: Circuit core
         content.extend(['*Circuit Core',
                         '*************',])
-        content.extend(GUI.Library.CIRCUIT_CORE[part])
+        content.extend(Library.CIRCUIT_CORE[part])
         content.append('')
 
-        if simulation == GUI.Library.SIMULATION[1]:
+        # 2 additional sections for current source simulation
+        if simulation == Library.SIMULATION_SOURCE:
             # Section Parameters (only if use current source):
-            content.extend()
+            content.extend(['*Parameters',
+                            '***********'])
+            # a,b,c
+            if part == Library.PART_AD590:
+                paras = ['*PRE_RAD_PNP',
+                         '.PARAM a1=-41.935',
+                         '.PARAM b1=47.6314',
+                         '.PARAM c1=-11.045',
+                         '',
+                         '*20krad_PNP',
+                         '.PARAM a2=-32.249',
+                         '.PARAM b2=35.6571',
+                         '.PARAM c2=-9.1636',
+                         '',
+                         '*PRE_RAD_NPN',
+                         '.PARAM a3=-39.91',
+                         '.PARAM b3=40.6194',
+                         '.PARAM c3=-4.4288',
+                         '',
+                         '*20krad_NPN',
+                         '.PARAM a4=-34.92',
+                         '.PARAM b4=30.4499',
+                         '.PARAM c4=1.11115']
+                content.extend(paras)
+            elif part == Library.PART_LT1175:
+                paras = ['*PRE_RAD',
+                         '.PARAM a1=-39.30421',
+                         '.PARAM b1=48.21879',
+                         '.PARAM c1=-15.6477',
+                         '',]
+                if TID_level == Library.T2_5KRAD:
+                    paras.extend(['*2.5krad',
+                                  '.PARAM a2=-39.12298',
+                                  '.PARAM b2=53.5479',
+                                  '.PARAM c2=-21.84106'])
+                elif TID_level == Library.T5KRAD:
+                    paras.extend(['*5krad',
+                                  '.PARAM a2=-38.8789',
+                                  '.PARAM b2=59.74651',
+                                  '.PARAM c2=-23.3925'])
+                content.extend(paras)
+            # scale
+            content.append('')
+            content.extend(Library.SCALE[part])
+            content.append('')
             # Section Function (only if use current source):
-            content.extend()
+            content.extend(['*Function'
+                            '*********'])
+            content.extend(Library.FUNCTIONS[part])
+            content.append('')
         # Section 4: Input
         content.extend(['*Input',
                         '******',])
-        content.extend(GUI.Library.INPUT[part])
+        content.extend(Library.INPUT[part])
         content.append('')
         # Section 5: Output
         content.extend(['*Output',
                         '*******',
                         '.print dc format=noindex file=' + output_filepath])
-        content.extend(GUI.Library.OUTPUT[part][output_option])
+        content.extend(Library.OUTPUT[part][output_option])
         content.append('')
         # Section 6: Subcircuit
         content.extend(['*Subcircuit',
                         '************'])
-        content.extend(GUI.Library.SUBCIRCUIT[part][simulation])
+        content.extend(Library.SUBCIRCUIT[part][simulation])
         content.extend(['*End Subcircuit',
                         ''])
         # Section 7: Library
         content.extend(['*Library',
                         '*******'])
-        if simulation == GUI.Library.SIMULATION[0]:
-            content.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
+        if simulation == Library.SIMULATION_MODEL:
+            content.extend(Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
         else:
-            content.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[GUI.Library.TPRE_RAD])
-        if part == GUI.Library.PARTS[1]:
+            content.extend(Library.LIBRARY_TID_LEVEL_MODEL[Library.TPRE_RAD])
+        if part == Library.PART_AD590:
             content.extend(['*JFET',
-            '.model NJF_TYP NJF (',
-            '+ VTO = -1.0	BETA = 6.2E-4	LAMBDA = 0.003',
-            '+ RD = 0.01      RS = 1e-4',
-            '+ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)',
-            '']),
+                            '.model NJF_TYP NJF (',
+                            '+ VTO = -1.0	BETA = 6.2E-4	LAMBDA = 0.003',
+                            '+ RD = 0.01      RS = 1e-4',
+                            '+ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)',
+                            '']),
         content.extend(['',
                         '*end of the netlist',
                         '.end'])
@@ -131,7 +180,7 @@ class NetListGenerator:
                          '.ends',
                          '',
                          '*Library', ]
-        content_AD590.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
+        content_AD590.extend(Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
         content_AD590.extend(['',
                               '*JFET',
                               '.model NJF_TYP NJF (',
@@ -400,7 +449,7 @@ class NetListGenerator:
                         '*Library',
                         '********'
                         ]
-        content_LT1175.extend(GUI.Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
+        content_LT1175.extend(Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
         content_LT1175.extend(['',
                         '*end of the netlist',
                         '.end',
@@ -438,7 +487,7 @@ class NetListGenerator:
                               '.PARAM b1=48.21879',
                               '.PARAM c1=-15.6477',
                               '']
-        content_LT1175_ABM.extend(GUI.Library.PARAMETER_TID_LEVEL_SOURCE[TID_level])
+        content_LT1175_ABM.extend(Library.PARAMETER_TID_LEVEL_SOURCE[TID_level])
         content_LT1175_ABM.extend([
                               '',
                               '*SCALE',
