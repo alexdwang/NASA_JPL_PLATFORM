@@ -49,25 +49,29 @@ class Interface(object):
         return
 
     def execute_hit(self):
-        if self.input_check():
-            part = self.lb_parts.get(self.lb_parts.curselection())
-            simulation = self.lb_simulation.get(self.lb_simulation.curselection())
-            TID_level = self.lb_TID.get(self.lb_TID.curselection())
-            if (part == Library.PART_LT1175):
-                output_option = self.lb_output.get(self.lb_output.curselection())
-            else:
-                output_option = Library.AD590_OUTPUT_OPTION[0]
+        try:
+            if self.input_check():
+                part = self.lb_parts.get(self.lb_parts.curselection())
+                simulation = self.lb_simulation.get(self.lb_simulation.curselection())
+                TID_level = self.lb_TID.get(self.lb_TID.curselection())
+                if (part == Library.PART_LT1175):
+                    output_option = self.lb_output.get(self.lb_output.curselection())
+                else:
+                    output_option = Library.AD590_OUTPUT_OPTION[0]
 
-            self.output_filepath = relative_path('Output/' + TID_level + '_test.txt')
+                self.output_filepath = relative_path('Output/' + part + '_' + TID_level + '_test.txt')
 
-            netListGenerator.generate(part, simulation, TID_level, output_option, self.output_filepath, self.netlist_filepath)
-            my_result = execute.execute_module3(self.netlist_filepath)
-            message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
-            # message = my_result
-            self.result_text.set(message)
+                netListGenerator.generate(part, simulation, TID_level, output_option, self.output_filepath, self.netlist_filepath)
+                my_result = execute.execute_module3(self.netlist_filepath)
+                message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
+                # message = my_result
+                self.result_text.set(message)
 
-            X, Y = self.load_and_finalize_output(part, TID_level)
-            self.plotfigure(X, Y, part, TID_level)
+                X_label, Y_label, X, Y = self.load_and_finalize_output(part, TID_level)
+                self.plotfigure(X_label, Y_label, X, Y, part, TID_level)
+        except Exception as error:
+            print(error)
+            self.result_text.set('Error! Do you have ' + str(error) + ' data in excel?')
         return
 
     def input_check(self):
@@ -78,6 +82,13 @@ class Interface(object):
         self.result_text.set('in process, please wait...')
         return True
 
+    def TID_option_update(self):
+        cur_part = self.lb_parts.get(self.lb_parts.curselection())
+        cur_sim = self.lb_simulation.get(self.lb_simulation.curselection())
+        self.TID_options_tuple = Library.TID_LIST[cur_part][cur_sim]
+        self.TID_options.set(self.TID_options_tuple)
+
+
     def part_onselect(self, evt):
         try:
             index = int(self.lb_parts.curselection()[0])
@@ -85,29 +96,17 @@ class Interface(object):
             if value == Library.PART_LT1175:
                 self.label_output.grid()
                 self.lb_output.grid()
-                if self.lb_simulation.get(self.lb_simulation.curselection()) == Library.SIMULATION_SOURCE:
-                    self.TID_options_tuple = (list(Library.PARAMETER_TID_LEVEL_SOURCE))
-                else:
-                    self.TID_options_tuple = (list(Library.LIBRARY_TID_LEVEL_MODEL))
             elif value == Library.PART_AD590:
                 self.label_output.grid_remove()
                 self.lb_output.grid_remove()
-                self.TID_options_tuple = (list(Library.LIBRARY_TID_LEVEL_MODEL))
-            self.TID_options.set(self.TID_options_tuple)
+            self.TID_option_update()
         except:
             pass
         return
 
     def simulation_onselect(self, evt):
         try:
-            index = int(self.lb_simulation.curselection()[0])
-            value = self.lb_simulation.get(index)
-            if value == Library.SIMULATION_SOURCE and self.lb_parts.get(self.lb_parts.curselection()) == Library.PART_LT1175:
-                self.TID_options_tuple = (list(Library.PARAMETER_TID_LEVEL_SOURCE))
-            else:
-                self.TID_options_tuple = (list(Library.LIBRARY_TID_LEVEL_MODEL))
-            # self.TID_options_tuple.sort()
-            self.TID_options.set(self.TID_options_tuple)
+            self.TID_option_update()
         except:
             pass
         return
@@ -136,8 +135,10 @@ class Interface(object):
         self.window.mainloop()
         return
 
-    def load_and_finalize_output(self, device, TID_level):
+    def load_and_finalize_output(self, part, TID_level):
 
+        X_label = ''
+        Y_label = ''
         XnY = []
         X = []
         Y = []
@@ -145,7 +146,7 @@ class Interface(object):
         # lines = f.readlines()
 
         # n = open(self.output_filepath, 'w')
-        # n.write('device: ' + device + ', TID level = ' + TID_level + '\n')
+        # n.write('part: ' + part + ', TID level = ' + TID_level + '\n')
         # n.writelines(lines)
         for line in f:
             line = line.strip('\n')
@@ -153,11 +154,16 @@ class Interface(object):
             cnt = 0
             for word in my_line:
                 if cnt < 2 and word != '':
-                    try:
-                        XnY.append(float(word))
-                        cnt += 1
-                    except:
-                        cnt = cnt
+                    if X_label == '':
+                        X_label = word
+                    elif Y_label == '':
+                        Y_label = word
+                    else:
+                        try:
+                            XnY.append(float(word))
+                            cnt += 1
+                        except:
+                            cnt = cnt
         f.close()
 
         for i in range(len(XnY)):
@@ -165,24 +171,29 @@ class Interface(object):
                 X.append(XnY[i])
             else:
                 Y.append(XnY[i])
-        return X, Y
+        return X_label, Y_label, X, Y
 
-    def plotfigure(self, X, Y, part, TID_level):
-        plt.figure(1, figsize=(8,8))
+    def plotfigure(self, X_label, Y_label, X, Y, part, TID_level):
+        color = {Library.TPRE_RAD: 'r-',
+                 Library.T2_5KRAD: 'y-',
+                 Library.T5KRAD: 'c-',
+                 Library.T10KRAD: 'c-',
+                 Library.T20KRAD: 'y-',
+                 Library.T30KRAD: 'g-',
+                 Library.T50KRAD: 'c-',
+                 Library.T100KRAD: 'g-',
+                 Library.T200KRAD: 'm-',
+                 Library.T300KRAD: 'k-'}
+        figure_num = {Library.PART_LT1175: 1,
+                      Library.PART_AD590: 2}
+        location = {Library.PART_LT1175: 'upper left',
+                      Library.PART_AD590: 'lower right'}
+        plt.figure(figure_num[part], figsize=(8,8))
+        plt.plot(X, Y, color[TID_level], label="Part=" + part + "TID level=" + TID_level)
+        plt.xlabel(X_label)
+        plt.ylabel(Y_label)
         # plt.plot(X, Y, 'b*')
-        color={Library.TID_LEVEL[0]: 'r-',
-               Library.TID_LEVEL[1]: 'y-',
-               Library.TID_LEVEL[2]: 'c-',
-               Library.TID_LEVEL[3]: 'y-',
-               Library.TID_LEVEL[4]: 'c-',
-               Library.TID_LEVEL[5]: 'g-',
-               Library.TID_LEVEL[6]: 'm-',
-               Library.TID_LEVEL[7]: 'k-'}
-        plt.plot(X, Y, color[TID_level], label="V(1) and I(ROUT), Part=" + part + "TID level=" + TID_level)
-        plt.xlabel("V(1)")
-        plt.ylabel("I(ROUT)")
-        plt.legend(loc='lower right')
-
+        plt.legend(loc=location[part])
         plt.show()
         return
 

@@ -1,20 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import xlrd
 from scipy.optimize import curve_fit
-import Library
+import xlrd
+import os
+
+import GUI.Library as Library
 
 
-def fit(TID_level):
-    Ve, Ib_Pre_Rad = excel_table_byname(TID_level)
+def fit(sheet, TID_level, file_path):
+    Ve, Ib_Pre_Rad = excel_table_byname(sheet, TID_level, file_path)
     xdata = np.array(Ve)
     ydata = np.array(np.log(Ib_Pre_Rad))
     popt, pcov = curve_fit(func, xdata, ydata)
     # plot_data(xdata, ydata, popt)
-    y2 = np.array(Ib_Pre_Rad)
-    plot_log_scale(xdata, y2, popt)
+    # y2 = np.array(Ib_Pre_Rad)
+    # plot_log_scale(xdata, y2, popt)
     return popt
 
+def relative_path(path):
+    dirname = os.path.dirname(os.path.realpath('__file__'))
+    path = os.path.join(dirname, path)
+    return os.path.normpath(path)
 
 def get_titles(table):
     col_dict = {}
@@ -25,21 +31,22 @@ def get_titles(table):
     return col_dict
 
 
-def excel_table_byname(TID_level, file='../FitCurve/Fit_Curve.xlsx'):
+def excel_table_byname(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
+    file = relative_path(file_path)
     data = xlrd.open_workbook(file)
-    table_npn = data.sheet_by_name('NPN_FIT_Xyce')
-    table_pnp = data.sheet_by_name('PNP_FIT_Xyce')
+    table = data.sheet_by_name(Library.SHEET_NAME[sheet])
 
     Ve = []
-    Ib_Pre_Rad = []
-    nrows = table_npn.nrows
-    col_dict = get_titles(table_npn)
+    Ib = []
+    nrows = table.nrows
+    col_dict = get_titles(table)
     for row in range(2, nrows):
-        ve = table_npn.cell(row,col_dict[Library.COL_NAME['VE']]).value
-        if 0.3 <= ve <= 0.7:
+        ve = table.cell(row,col_dict[Library.COL_NAME['VE']]).value
+        ib = table.cell(row, col_dict[Library.COL_NAME[TID_level]]).value
+        if 0.3 <= ve <= 0.7 and ib > 0:
             Ve.append(ve)
-            Ib_Pre_Rad.append(table_npn.cell(row,col_dict[Library.COL_NAME[TID_level]]).value)
-    return Ve, Ib_Pre_Rad
+            Ib.append(ib)
+    return Ve, Ib
 
 
 def plot_data(xdata, ydata, popt):
