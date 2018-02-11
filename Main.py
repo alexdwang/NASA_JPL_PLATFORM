@@ -49,29 +49,29 @@ class Interface(object):
         return
 
     def execute_hit(self):
-        try:
-            if self.input_check():
-                part = self.lb_parts.get(self.lb_parts.curselection())
-                simulation = self.lb_simulation.get(self.lb_simulation.curselection())
-                TID_level = self.lb_TID.get(self.lb_TID.curselection())
-                if (part == Library.PART_LT1175):
-                    output_option = self.lb_output.get(self.lb_output.curselection())
-                else:
-                    output_option = Library.AD590_OUTPUT_OPTION[0]
+        # try:
+        if self.input_check():
+            part = self.lb_parts.get(self.lb_parts.curselection())
+            simulation = self.lb_simulation.get(self.lb_simulation.curselection())
+            TID_level = self.lb_TID.get(self.lb_TID.curselection())
+            if (part == Library.PART_LT1175):
+                output_option = self.lb_output.get(self.lb_output.curselection())
+            else:
+                output_option = Library.AD590_OUTPUT_OPTION[0]
 
-                self.output_filepath = relative_path('Output/' + part + '_' + TID_level + '_test.txt')
+            self.output_filepath = relative_path('Output/' + part + '_' + TID_level + '_test.txt')
 
-                netListGenerator.generate(part, simulation, TID_level, output_option, self.output_filepath, self.netlist_filepath)
-                my_result = execute.execute_module3(self.netlist_filepath)
-                message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
-                # message = my_result
-                self.result_text.set(message)
+            netListGenerator.generate(part, simulation, TID_level, output_option, self.output_filepath, self.netlist_filepath)
+            my_result = execute.execute_module3(self.netlist_filepath)
+            message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
+            # message = my_result
+            self.result_text.set(message)
 
-                X_label, Y_label, X, Y = self.load_and_finalize_output(part, TID_level)
-                self.plotfigure(X_label, Y_label, X, Y, part, TID_level)
-        except Exception as error:
-            print(error)
-            self.result_text.set('Error! Do you have ' + str(error) + ' data in excel?')
+            X_label, Y_label, X, Y = self.load_and_finalize_output(part, TID_level)
+            self.plotfigure(X_label, Y_label, X, Y, part, TID_level)
+        # except Exception as error:
+        #     print(error)
+        #     self.result_text.set('Error! Do you have ' + str(error) + ' data in excel?')
         return
 
     def input_check(self):

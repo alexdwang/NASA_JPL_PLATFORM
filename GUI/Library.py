@@ -65,20 +65,24 @@ LT1175_OUTPUT_OPTION = ['Line_Regulation']
 AD590_OUTPUT_OPTION = ['Default']
 
 # Excel file path
-EXCEL_FILE_PATH = {PART_AD590: 'FitCurve/Fit_Curve.xlsx',
+EXCEL_FILE_PATH = {PART_AD590: 'FitCurve/NPN_PNP_Data_Yidi.xlsx',
                    PART_LT1175: 'FitCurve/PNP_Data_Yidi_LT1175.xlsx'}
 
 # Excel sheet name & column name
 COL_NAME = {'VE':       'Ve_PRE_RAD',
-            TPRE_RAD:   'Ib_Pre_Rad',
+            TPRE_RAD:   'Ib_PRE_RAD',
             T2_5KRAD:   'Ib_2.5krad',
             T5KRAD:     'Ib_5krad',
             T10KRAD:    'Ib_10krad',
             T20KRAD:    'Ib_20krad',
-            T30KRAD:    'Ib_30krad'}
+            T30KRAD:    'Ib_30krad',
+            T50KRAD:    'Ib_50krad',
+            T100KRAD:   'Ib_100krad',
+            T200KRAD:   'Ib_200krad',
+            T300KRAD:   'Ib_300krad'}
 
-SHEET_NAME = {'NPN': 'NPN_FIT_Xyce',
-              'PNP': 'PNP_FIT_Xyce',
+SHEET_NAME = {'NPN': 'NPN_Compact_Xyce',
+              'PNP': 'PNP_Compact_Xyce',
               'LDR': 'LDR',
               'HDR': 'HDR'}
 
@@ -87,7 +91,8 @@ SHEET_NAME = {'NPN': 'NPN_FIT_Xyce',
 INPUT_VOLTAGE_SOURCE = {PART_LT1175: ['V2 4 0 DC 0V'],
 
                         # AD590:
-                        PART_AD590: ['VIN 2 0 DC 0V']
+                        PART_AD590: ['VIN 2 0 DC 0V',
+                                     'VOUT 20 0 0']
                         }
 
 CIRCUIT_CORE = {PART_LT1175: ['*Subcircuit',
@@ -105,8 +110,10 @@ CIRCUIT_CORE = {PART_LT1175: ['*Subcircuit',
                            '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
                            'Q1 1 2 3 QNMOD 1000',
                            'Q2 0 7 2 QNMOD 10'],
-                PART_AD590: ['XZ 2 20 AD590',
-                           'R0 20 0 1m']
+                PART_AD590: [
+                             #'XZ 2 20 AD590',
+                             #'R0 20 0 1m'
+                ]
                 }
 
 SCALE = {PART_LT1175: ['*SCALE',
@@ -169,7 +176,7 @@ INPUT = {PART_LT1175: ['.dc V2 0 -20 -0.1'],
 OUTPUT = {PART_LT1175: {LT1175_OUTPUT_OPTION[0]: ['+ V(4)',
                                                '+ V(1)']},
           PART_AD590: {AD590_OUTPUT_OPTION[0]: ['+ V(2)',
-                                              '+ I(R0)']}}
+                                              '+ I(VOUT)']}}
 
 SUBCIRCUIT = {PART_LT1175: {SIMULATION_MODEL: [
                                 '.subckt BG_sc VCC VEE VREF',
