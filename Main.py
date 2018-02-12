@@ -39,7 +39,7 @@ class Interface(object):
         self.lb_output = tkinter.Listbox(self.window, listvariable=self.output_options,
                                       height=len(self.output_options_tuple), exportselection=False)
 
-        self.button = tkinter.Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
+        self.button_execute = tkinter.Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
 
         self.result_text = tkinter.StringVar()
         self.label_result_text = tkinter.Label(self.window, textvariable=self.result_text, font=('Arial', 12), width=80, height=5)
@@ -88,7 +88,6 @@ class Interface(object):
         self.TID_options_tuple = Library.TID_LIST[cur_part][cur_sim]
         self.TID_options.set(self.TID_options_tuple)
 
-
     def part_onselect(self, evt):
         try:
             index = int(self.lb_parts.curselection()[0])
@@ -112,26 +111,35 @@ class Interface(object):
         return
 
     def start(self):
+        # row 0
         self.label_topline.grid(row=0, columnspan=3)
 
-        self.lb_parts.bind('<<ListboxSelect>>', self.part_onselect)
-        self.lb_simulation.bind('<<ListboxSelect>>', self.simulation_onselect)
+        # row 1
         self.label_parts.grid(row=1)
         self.label_simulation.grid(row=1, column=1)
         self.label_TID_level.grid(row=1, column=2)
         self.label_output.grid(row=1, column=3)
 
+        # row 2
         self.lb_parts.grid(row=2)
         self.lb_simulation.grid(row=2, column=1)
         self.lb_TID.grid(row=2, column=2)
         self.lb_output.grid(row=2, column=3)
 
-        self.button.grid(row=3, sticky='E', columnspan=3, pady=10)
+        # row 3
+        self.button_execute.grid(row=3, sticky='E', columnspan=3, pady=10)
 
+        # row 4
         self.label_result_text.grid(row=4, column=0, columnspan=3)
 
+        # bind onselect function with widget
+        self.lb_parts.bind('<<ListboxSelect>>', self.part_onselect)
+        self.lb_simulation.bind('<<ListboxSelect>>', self.simulation_onselect)
+
+        # remove output option listbox
         self.label_output.grid_remove()
         self.lb_output.grid_remove()
+
         self.window.mainloop()
         return
 

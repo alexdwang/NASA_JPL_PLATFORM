@@ -1,7 +1,16 @@
+import json
+
 """
 ' Library.py is used to store the constant values
 ' Contents in this file should not be modified by program unless you are updating the library
 """
+
+with open("GUI/output.json", 'r') as f:
+    jsonObject = f.readline()
+f.close()
+global json_dict
+json_dict = json.loads(jsonObject)
+
 TITLE = 'NASA JPL Platform'
 
 PART_LT1175 = 'LT1175'
@@ -59,10 +68,6 @@ TID_LIST = {PART_AD590: {SIMULATION_MODEL: [
                                      T20KRAD,
                                      T30KRAD]}
 }
-
-LT1175_OUTPUT_OPTION = ['Line_Regulation']
-
-AD590_OUTPUT_OPTION = ['Default']
 
 # Excel file path
 EXCEL_FILE_PATH = {PART_AD590: 'FitCurve/NPN_PNP_Data_Yidi.xlsx',
@@ -173,10 +178,10 @@ INPUT = {PART_LT1175: ['.dc V2 0 -20 -0.1'],
          PART_AD590: ['.dc VIN 0 30 0.01']
          }
 
-OUTPUT = {PART_LT1175: {LT1175_OUTPUT_OPTION[0]: ['+ V(4)',
-                                               '+ V(1)']},
-          PART_AD590: {AD590_OUTPUT_OPTION[0]: ['+ V(2)',
-                                              '+ I(VOUT)']}}
+LT1175_OUTPUT_OPTION = json_dict['LT1175_OUTPUT_OPTION']
+AD590_OUTPUT_OPTION = json_dict['AD590_OUTPUT_OPTION']
+
+OUTPUT = json_dict['OUTPUT']
 
 SUBCIRCUIT = {PART_LT1175: {SIMULATION_MODEL: [
                                 '.subckt BG_sc VCC VEE VREF',
