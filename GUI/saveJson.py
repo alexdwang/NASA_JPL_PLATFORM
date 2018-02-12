@@ -34,7 +34,7 @@ print(OUTPUT[PART_LT1175][LT1175_OUTPUT_OPTION[0]])
 
 LT1175_OUTPUT_OPTION.append('AAA')
 LT1175_OUTPUT_OPTION = list(set(LT1175_OUTPUT_OPTION))
-OUTPUT[PART_LT1175]['AAA'] = ['+ V(10)',
+OUTPUT[PART_LT1175]['AAA'] = ['+ V(4)',
                                       '+ V(5)']
 
 output_object = {'LT1175_OUTPUT_OPTION': LT1175_OUTPUT_OPTION,
