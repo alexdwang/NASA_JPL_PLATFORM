@@ -116,8 +116,8 @@ CIRCUIT_CORE = {PART_LT1175: ['*Subcircuit',
                            'Q1 1 2 3 QNMOD 1000',
                            'Q2 0 7 2 QNMOD 10'],
                 PART_AD590: [
-                             #'XZ 2 20 AD590',
-                             #'R0 20 0 1m'
+                             'XZ 2 20 AD590',
+                             'R0 20 0 1m'
                 ]
                 }
 

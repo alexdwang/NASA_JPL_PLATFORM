@@ -32,10 +32,11 @@ print(OUTPUT)
 print(OUTPUT[PART_LT1175])
 print(OUTPUT[PART_LT1175][LT1175_OUTPUT_OPTION[0]])
 
-LT1175_OUTPUT_OPTION.append('AAA')
+LT1175_OUTPUT_OPTION.append('BBB')
 LT1175_OUTPUT_OPTION = list(set(LT1175_OUTPUT_OPTION))
-OUTPUT[PART_LT1175]['AAA'] = ['+ V(4)',
-                                      '+ V(5)']
+OUTPUT[PART_LT1175]['BBB'] = ['+ V(4)',
+                                      '+ V(5)',
+                                      '+ V(1)']
 
 output_object = {'LT1175_OUTPUT_OPTION': LT1175_OUTPUT_OPTION,
                  'AD590_OUTPUT_OPTION': AD590_OUTPUT_OPTION,
