@@ -1,7 +1,40 @@
 import json
+import GUI.FILEPATHS as CONSTANT
 
-NAME_FILE_PATH = "../Library/name.json"
-LIBRARY_FILE_PATH = "../Library/library.json"
+
+def save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, EXCEL_FILE_PATH, COL_NAME, SHEET_NAME, NUM_OF_PARAMETER):
+    output_object = {'TITLE': TITLE,
+                     'PARTS': PARTS,
+                     'SIMULATION': SIMULATION,
+                     'TID_LEVEL': TID_LEVEL,
+                     'TID_LIST': TID_LIST,
+                     'EXCEL_FILE_PATH': EXCEL_FILE_PATH,
+                     'COL_NAME': COL_NAME,
+                     'SHEET_NAME': SHEET_NAME,
+                     'NUM_OF_PARAMETER': NUM_OF_PARAMETER}
+    with open(CONSTANT.NAME_FILE_PATH, 'w') as f:
+        json.dump(output_object, f)
+    f.close()
+    return
+
+
+def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION,
+                         OUTPUT, SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET):
+    output_object = {'INPUT_VOLTAGE_SOURCE': INPUT_VOLTAGE_SOURCE,
+                     'CIRCUIT_CORE': CIRCUIT_CORE,
+                     'SCALE': SCALE,
+                     'FUNCTIONS': FUNCTIONS,
+                     'INPUT': INPUT,
+                     'OUTPUT_OPTION': OUTPUT_OPTION,
+                     'OUTPUT': OUTPUT,
+                     'SUBCIRCUIT': SUBCIRCUIT,
+                     'LIBRARY_TID_LEVEL_MODEL': LIBRARY_TID_LEVEL_MODEL,
+                     'LIBRARY_JFET': LIBRARY_JFET}
+
+    with open(CONSTANT.LIBRARY_FILE_PATH, 'w') as f:
+        json.dump(output_object, f)
+    f.close()
+    return
 
 # names
 TITLE = 'NASA JPL Platform'
@@ -83,18 +116,7 @@ SHEET_NAME = {'NPN': 'NPN_Compact_Xyce',
               'HDR': 'HDR'}
 NUM_OF_PARAMETER = {PART_AD590: 4,
                     PART_LT1175: 2}
-output_object = {'TITLE': TITLE,
-                 'PARTS': PARTS,
-                 'SIMULATION': SIMULATION,
-                 'TID_LEVEL': TID_LEVEL,
-                 'TID_LIST': TID_LIST,
-                 'EXCEL_FILE_PATH': EXCEL_FILE_PATH,
-                 'COL_NAME': COL_NAME,
-                 'SHEET_NAME': SHEET_NAME,
-                 'NUM_OF_PARAMETER': NUM_OF_PARAMETER}
-with open(NAME_FILE_PATH, 'w') as f:
-    json.dump(output_object, f)
-f.close()
+save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, EXCEL_FILE_PATH, COL_NAME, SHEET_NAME, NUM_OF_PARAMETER)
 
 # circuit code library
                         # LT1175:
@@ -530,26 +552,13 @@ LIBRARY_JFET = {PART_LT1175: [],
                             '+ RD = 0.01      RS = 1e-4',
                             '+ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)',
                             '']}
+save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION,
+                         OUTPUT, SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET)
 
-output_object = {'INPUT_VOLTAGE_SOURCE': INPUT_VOLTAGE_SOURCE,
-                 'CIRCUIT_CORE': CIRCUIT_CORE,
-                 'SCALE': SCALE,
-                 'FUNCTIONS': FUNCTIONS,
-                 'INPUT': INPUT,
-                 'OUTPUT_OPTION': OUTPUT_OPTION,
-                 'OUTPUT': OUTPUT,
-                 'SUBCIRCUIT': SUBCIRCUIT,
-                 'LIBRARY_TID_LEVEL_MODEL': LIBRARY_TID_LEVEL_MODEL,
-                 'LIBRARY_JFET': LIBRARY_JFET}
-
-with open(LIBRARY_FILE_PATH, 'w') as f:
-    json.dump(output_object, f)
-f.close()
-
-with open(LIBRARY_FILE_PATH,'r') as f:
-    jsonObject = f.readline()
-f.close()
-json_dict = json.loads(jsonObject)
+# with open(CONSTANT.LIBRARY_FILE_PATH,'r') as f:
+#     jsonObject = f.readline()
+# f.close()
+# json_dict = json.loads(jsonObject)
 
 # LT1175_OUTPUT_OPTION.append('BBB')
 # LT1175_OUTPUT_OPTION = list(set(LT1175_OUTPUT_OPTION))

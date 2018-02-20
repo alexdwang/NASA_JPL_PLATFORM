@@ -11,14 +11,16 @@ class NetListGenerator:
                         ''])
         # Section 2: Input Voltage Source
         content.extend(['*Input Voltage Source',
-                        '***************'])
+                        '*********************'])
         content.extend(Library.INPUT_VOLTAGE_SOURCE[part])
-        content.append('')
+        content.extend(['*End Input Voltage Source',
+                        ''])
         # Section 3: Circuit core
         content.extend(['*Circuit Core',
                         '*************',])
         content.extend(Library.CIRCUIT_CORE[part])
-        content.append('')
+        content.extend(['*End Circuit Core',
+                        ''])
 
         # 2 additional sections for current source simulation
         if simulation == Library.SIMULATION_SOURCE:
@@ -69,17 +71,21 @@ class NetListGenerator:
             # scale
             content.append('')
             content.extend(Library.SCALE[part])
-            content.append('')
+            content.extend(['*End Parameters',
+                            ''])
             # Section Function (only if use current source):
-            content.extend(['*Function'
+            content.extend(['*Function',
                             '*********'])
             content.extend(Library.FUNCTIONS[part])
-            content.append('')
+            content.extend(['*End Function',
+                            ''])
         # Section 4: Input
         content.extend(['*Input',
                         '******',])
         content.extend(Library.INPUT[part])
-        content.append('')
+
+        content.extend(['*End Input',
+                        ''])
         # Section 5: Output
         content.extend(['*Output',
                         '*******',
@@ -87,7 +93,8 @@ class NetListGenerator:
         # content.extend(Library.OUTPUT[part][output_option_x])
         content.append(output_option_x)
         content.append(output_option_y)
-        content.append('')
+        content.extend(['*End Output',
+                        ''])
         # Section 6: Subcircuit
         content.extend(['*Subcircuit',
                         '************'])
@@ -103,7 +110,8 @@ class NetListGenerator:
             content.extend(Library.LIBRARY_TID_LEVEL_MODEL[Library.TPRE_RAD])
         # JFET
         content.extend(Library.LIBRARY_JFET[part]),
-        content.extend(['',
+        content.extend(['*End Library',
+                        '',
                         '*end of the netlist',
                         '.end'])
         

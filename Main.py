@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 import tkinter
+from itertools import cycle
 from GUI import execute, NetListGenerator, Library
 
 
@@ -53,6 +54,7 @@ class Interface(object):
 
         self.netlist_filepath = relative_path('Netlist/test.cir')
         self.output_filepath = ''
+        self.color_gen = cycle('bgrcmykw')
         return
 
     def execute_hit(self):
@@ -200,26 +202,16 @@ class Interface(object):
         return X_label, Y_label, X, Y
 
     def plotfigure(self, X_label, Y_label, X, Y, part, TID_level):
-        color = {Library.TPRE_RAD: 'r-',
-                 Library.T2_5KRAD: 'y-',
-                 Library.T5KRAD: 'c-',
-                 Library.T10KRAD: 'c-',
-                 Library.T20KRAD: 'y-',
-                 Library.T30KRAD: 'g-',
-                 Library.T50KRAD: 'c-',
-                 Library.T100KRAD: 'g-',
-                 Library.T200KRAD: 'm-',
-                 Library.T300KRAD: 'k-'}
-        figure_num = {Library.PART_LT1175: 1,
-                      Library.PART_AD590: 2}
-        location = {Library.PART_LT1175: 'upper left',
-                      Library.PART_AD590: 'lower right'}
-        plt.figure(figure_num[part], figsize=(8,8))
-        plt.plot(X, Y, color[TID_level], label="Part=" + part + "TID level=" + TID_level)
+        # figure_num = {Library.PART_LT1175: 1,
+        #               Library.PART_AD590: 2}
+        # location = {Library.PART_LT1175: 'upper left',
+        #               Library.PART_AD590: 'lower right'}
+        plt.figure(part + ' X=' + X_label + ' Y=' + Y_label, figsize=(10,8))
+        plt.plot(X, Y, next(self.color_gen), label="Part=" + part + "TID level=" + TID_level)
         plt.xlabel(X_label)
         plt.ylabel(Y_label)
         # plt.plot(X, Y, 'b*')
-        plt.legend(loc=location[part])
+        plt.legend(loc='upper left')
         plt.show()
         return
 
@@ -235,7 +227,3 @@ if __name__ == "__main__":
     execute = execute.Execute()
     netListGenerator = NetListGenerator.NetListGenerator()
     interface.start()
-
-
-
-

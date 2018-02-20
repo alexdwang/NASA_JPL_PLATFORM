@@ -1,0 +1,36 @@
+* Replace content surrounded by {}, including '{}' signs, with your circuit file content. Do not modify or delete anything else including comments
+Title: {Your Part Name} / {Your TID Level} / {Your Temperature}
+
+*Input Voltage Source
+*********************
+{Your Input Voltage Source}
+*End Input Voltage Source
+
+*Circuit Core
+*************
+{Your Circuit Core}
+*End Circuit Core
+
+*Input
+******
+{Your Input}
+*End Input
+
+*Output
+*******
+{You do need to specify the output format(.print dc ...). The platform pre-defined its own output format and your format won't work in this platform}
+{Your Output excluding output format}
+*End Output
+
+*Subcircuit
+************
+{Your subcircuit(s). You can put one or multiple subcircuits in this area}
+*End Subcircuit
+
+*Library
+*******
+{Your Library}
+*End Library
+
+*end of the netlist
+.end
