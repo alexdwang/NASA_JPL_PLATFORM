@@ -1,5 +1,5 @@
 * Replace content surrounded by {}, including '{}' signs, with your circuit file content. Do not modify or delete anything else including comments
-Title: {Your Part Name} / {Your TID Level} / {Your Temperature}
+Title: model / {Your Part Name} / {Your TID Level} / {Your Temperature}
 
 *Input Voltage Source
 *********************
@@ -18,7 +18,7 @@ Title: {Your Part Name} / {Your TID Level} / {Your Temperature}
 
 *Output
 *******
-{You do need to specify the output format(.print dc ...). The platform pre-defined its own output format and your format won't work in this platform}
+{You do need to specify the output format(.print dc ...). The platform pre-defined its own output format and your format will not work in this platform}
 {Your Output excluding output format}
 *End Output
 

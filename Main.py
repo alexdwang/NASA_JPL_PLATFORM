@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import os
 import tkinter
 from itertools import cycle
+import importlib
+
 from GUI import execute, NetListGenerator, Library
 
 
@@ -33,20 +35,21 @@ class Interface(object):
         self.lb_TID = tkinter.Listbox(self.window, listvariable=self.TID_options,
                                       height=len(self.TID_options_tuple), exportselection=False)
 
-        self.label_output_x = tkinter.Label(self.window, text='X:', font=('Arial', 0), width=16, height=2)
+        self.label_output_x = tkinter.Label(self.window, text='X Label:', font=('Arial', 0), width=16, height=2)
         self.output_options_x = tkinter.StringVar()
         self.output_options_tuple_x = ()
         self.output_options_x.set(self.output_options_tuple_x)
         self.lb_output_x = tkinter.Listbox(self.window, listvariable=self.output_options_x,
                                            height=len(self.output_options_tuple_x), exportselection=False)
 
-        self.label_output_y = tkinter.Label(self.window, text='Y:', font=('Arial', 0), width=16, height=2)
+        self.label_output_y = tkinter.Label(self.window, text='Y Label:', font=('Arial', 0), width=16, height=2)
         self.output_options_y = tkinter.StringVar()
         self.output_options_tuple_y = ()
         self.output_options_y.set(self.output_options_tuple_y)
         self.lb_output_y = tkinter.Listbox(self.window, listvariable=self.output_options_y,
                                          height=len(self.output_options_tuple_y), exportselection=False)
 
+        self.button_import = tkinter.Button(self.window, text='Import', width=15, height=2, command=self.import_hit)
         self.button_execute = tkinter.Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
 
         self.result_text = tkinter.StringVar()
@@ -55,6 +58,108 @@ class Interface(object):
         self.netlist_filepath = relative_path('Netlist/test.cir')
         self.output_filepath = ''
         self.color_gen = cycle('bgrcmykw')
+        return
+
+    def import_hit(self):
+        filename = tkinter.filedialog.askopenfilename(initialdir=relative_path('Netlist'))
+        # print(filename)
+        f = open(filename, 'r')
+        line = next(f)
+        while line[0:5] != 'Title':
+            line = next(f, None)
+            if line is None:
+                print('Missing title')
+        title = line.split(':')[1].replace(' ', '').split('/')
+        my_simulation = title[0]
+        my_part = title[1]
+        my_voltage_source = list()
+        my_circuit_core = list()
+        my_input = list()
+        my_output = list()
+        my_subcircuit = list()
+        my_library = list()
+
+        my_parameters = list()
+        my_functions = list()
+
+        line = next(f)
+        while line is not None:
+            if line.find('*Input Voltage Source') != -1:
+                line = next(f)
+                while line.find('*End Input Voltage Source') == -1:
+                    if line is None:
+                        print('Missing \'*End Input Voltage Source\', abort import')
+                        return
+                    elif line.find('*****') == -1:
+                        my_voltage_source.append(line.replace('\n', ''))
+                    line = next(f)
+            elif line.find('*Circuit Core') != -1:
+                line = next(f)
+                while line.find('*End Circuit Core') == -1:
+                    if line is None:
+                        print('Missing \'*End Circuit Core\', abort import')
+                        return
+                    elif line.find('*****') == -1:
+                        my_circuit_core.append(line.replace('\n', ''))
+                    line = next(f)
+            elif line.find('*Input') != -1:
+                line = next(f)
+                while line.find('*End Input') == -1:
+                    if line is None:
+                        print('Missing \'*End Input\', abort import')
+                        return
+                    elif line.find('*****') == -1:
+                        my_input.append(line.replace('\n', ''))
+                    line = next(f)
+            elif line.find('*Output') != -1:
+                line = next(f)
+                while line.find('*End Output') == -1:
+                    if line is None:
+                        print('Missing \'*End Output\', abort import')
+                        return
+                    elif line.find('**') == -1 and line.find('.print') == -1:
+                        my_output.append(line.replace('\n', ''))
+                    line = next(f)
+            elif line.find('*Subcircuit') != -1:
+                line = next(f)
+                while line.find('*End Subcircuit') == -1:
+                    if line is None:
+                        print('Missing \'*End Subcircuit\', abort import')
+                        return
+                    elif line.find('*****') == -1:
+                        my_subcircuit.append(line.replace('\n', ''))
+                    line = next(f)
+            elif line.find('*Library') != -1:
+                line = next(f)
+                while line.find('*End Library') == -1:
+                    if line is None:
+                        print('Missing \'*End Library\', abort import')
+                        return
+                    elif line.find('*****') == -1:
+                        my_library.append(line.replace('\n', ''))
+                    line = next(f)
+            line = next(f, None)
+        f.close()
+        # print(my_part)
+        # print(my_voltage_source)
+        # print(my_circuit_core)
+        # print(my_input)
+        # print(my_output)
+        # print(my_subcircuit)
+        # print(my_library)
+        Library.PARTS.append(my_part)
+        Library.PARTS = list(set(Library.PARTS))
+        Library.save_name_to_json(Library.TITLE, Library.PARTS, Library.SIMULATION, Library.TID_LEVEL, Library.TID_LIST,
+                          Library.EXCEL_FILE_PATH, Library.COL_NAME, Library.SHEET_NAME, Library.NUM_OF_PARAMETER)
+        Library.INPUT_VOLTAGE_SOURCE[my_part] = my_voltage_source
+        Library.CIRCUIT_CORE[my_part] = my_circuit_core
+        Library.INPUT[my_part] = my_input
+        Library.OUTPUT_OPTION[my_part] = my_output
+        Library.SUBCIRCUIT[my_part][my_simulation] = my_subcircuit
+        Library.save_library_to_json(Library.INPUT_VOLTAGE_SOURCE, Library.CIRCUIT_CORE, Library.SCALE,
+                                      Library.FUNCTIONS, Library.INPUT, Library.OUTPUT_OPTION, Library.SUBCIRCUIT,
+                                      Library.LIBRARY_TID_LEVEL_MODEL, Library.LIBRARY_JFET)
+        self.refresh()
         return
 
     def execute_hit(self):
@@ -83,6 +188,22 @@ class Interface(object):
         # except Exception as error:
         #     print(error)
         #     self.result_text.set('Error! Do you have ' + str(error) + ' data in excel?')
+        return
+
+    def refresh(self):
+        importlib.reload(Library)
+        self.parts_options_tuple = (Library.PARTS)
+        self.parts_options.set(self.parts_options_tuple)
+        self.lb_parts.selection_clear(0, len(self.parts_options_tuple))
+        self.simulation_options_tuple = (Library.SIMULATION)
+        self.simulation_options.set(self.simulation_options_tuple)
+        self.TID_options_tuple = ()
+        self.TID_options.set(self.TID_options_tuple)
+        self.output_options_tuple_x = ()
+        self.output_options_x.set(self.output_options_tuple_x)
+        self.output_options_tuple_y = ()
+        self.output_options_y.set(self.output_options_tuple_y)
+        self.result_text.set('')
         return
 
     def input_check(self):
@@ -147,6 +268,7 @@ class Interface(object):
         self.lb_output_y.grid(row=2, column=4)
 
         # row 3
+        self.button_import.grid(row=3, column=0)
         self.button_execute.grid(row=3, sticky='E', columnspan=3, pady=10)
 
         # row 4

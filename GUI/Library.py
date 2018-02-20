@@ -1,4 +1,5 @@
 import json
+import GUI.FILEPATHS as FILEPATHS
 
 """
 ' Library.py is used to load constant values from json files
@@ -36,7 +37,39 @@ SCALE = library_json_dict['SCALE']
 FUNCTIONS = library_json_dict['FUNCTIONS']
 INPUT = library_json_dict['INPUT']
 OUTPUT_OPTION = library_json_dict['OUTPUT_OPTION']
-OUTPUT = library_json_dict['OUTPUT']
 SUBCIRCUIT = library_json_dict['SUBCIRCUIT']
 LIBRARY_TID_LEVEL_MODEL = library_json_dict['LIBRARY_TID_LEVEL_MODEL']
 LIBRARY_JFET = library_json_dict['LIBRARY_JFET']
+
+def save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, EXCEL_FILE_PATH, COL_NAME, SHEET_NAME, NUM_OF_PARAMETER):
+    output_object = {'TITLE': TITLE,
+                     'PARTS': PARTS,
+                     'SIMULATION': SIMULATION,
+                     'TID_LEVEL': TID_LEVEL,
+                     'TID_LIST': TID_LIST,
+                     'EXCEL_FILE_PATH': EXCEL_FILE_PATH,
+                     'COL_NAME': COL_NAME,
+                     'SHEET_NAME': SHEET_NAME,
+                     'NUM_OF_PARAMETER': NUM_OF_PARAMETER}
+    with open(FILEPATHS.NAME_FILE_PATH, 'w') as f:
+        json.dump(output_object, f)
+    f.close()
+    return
+
+
+def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION,
+                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET):
+    output_object = {'INPUT_VOLTAGE_SOURCE': INPUT_VOLTAGE_SOURCE,
+                     'CIRCUIT_CORE': CIRCUIT_CORE,
+                     'SCALE': SCALE,
+                     'FUNCTIONS': FUNCTIONS,
+                     'INPUT': INPUT,
+                     'OUTPUT_OPTION': OUTPUT_OPTION,
+                     'SUBCIRCUIT': SUBCIRCUIT,
+                     'LIBRARY_TID_LEVEL_MODEL': LIBRARY_TID_LEVEL_MODEL,
+                     'LIBRARY_JFET': LIBRARY_JFET}
+
+    with open(FILEPATHS.LIBRARY_FILE_PATH, 'w') as f:
+        json.dump(output_object, f)
+    f.close()
+    return

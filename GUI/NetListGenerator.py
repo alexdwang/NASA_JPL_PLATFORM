@@ -2,6 +2,7 @@ import string
 import GUI.Library as Library
 import GUI.fit as fit
 
+
 # generate a Netlist based on the input parameters and save it to ProjectHome/Netlist
 class NetListGenerator:
     def generate(self, part, simulation, TID_level, output_option_x, output_option_y, output_filepath, netlist_filepath): # generate Netlist

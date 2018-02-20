@@ -1,5 +1,5 @@
 import json
-import GUI.FILEPATHS as CONSTANT
+import GUI.FILEPATHS as FILEPATHS
 
 
 def save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, EXCEL_FILE_PATH, COL_NAME, SHEET_NAME, NUM_OF_PARAMETER):
@@ -12,26 +12,25 @@ def save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, EXCEL_FILE_
                      'COL_NAME': COL_NAME,
                      'SHEET_NAME': SHEET_NAME,
                      'NUM_OF_PARAMETER': NUM_OF_PARAMETER}
-    with open(CONSTANT.NAME_FILE_PATH, 'w') as f:
+    with open("../" + FILEPATHS.NAME_FILE_PATH, 'w') as f:
         json.dump(output_object, f)
     f.close()
     return
 
 
 def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION,
-                         OUTPUT, SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET):
+                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET):
     output_object = {'INPUT_VOLTAGE_SOURCE': INPUT_VOLTAGE_SOURCE,
                      'CIRCUIT_CORE': CIRCUIT_CORE,
                      'SCALE': SCALE,
                      'FUNCTIONS': FUNCTIONS,
                      'INPUT': INPUT,
                      'OUTPUT_OPTION': OUTPUT_OPTION,
-                     'OUTPUT': OUTPUT,
                      'SUBCIRCUIT': SUBCIRCUIT,
                      'LIBRARY_TID_LEVEL_MODEL': LIBRARY_TID_LEVEL_MODEL,
                      'LIBRARY_JFET': LIBRARY_JFET}
 
-    with open(CONSTANT.LIBRARY_FILE_PATH, 'w') as f:
+    with open("../" + FILEPATHS.LIBRARY_FILE_PATH, 'w') as f:
         json.dump(output_object, f)
     f.close()
     return
@@ -208,10 +207,10 @@ OUTPUT_OPTION = {PART_LT1175: ['+ V(4)',
                                '+ V(1)'],
                  PART_AD590: ['+ V(2)',
                               '+ I(VOUT)']}
-OUTPUT = {PART_LT1175: {OUTPUT_OPTION[PART_LT1175][0]: ['+ V(4)',
-                                               '+ V(1)']},
-          PART_AD590: {OUTPUT_OPTION[PART_AD590][0]: ['+ V(2)',
-                                              '+ I(VOUT)']}}
+# OUTPUT = {PART_LT1175: {OUTPUT_OPTION[PART_LT1175][0]: ['+ V(4)',
+#                                                '+ V(1)']},
+#           PART_AD590: {OUTPUT_OPTION[PART_AD590][0]: ['+ V(2)',
+#                                               '+ I(VOUT)']}}
 SUBCIRCUIT = {PART_LT1175: {SIMULATION_MODEL: [
                                 '.subckt BG_sc VCC VEE VREF',
                                 '*Resistance: R<name> <+ node> <- node> [model name] <value>',
@@ -553,7 +552,7 @@ LIBRARY_JFET = {PART_LT1175: [],
                             '+ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)',
                             '']}
 save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION,
-                         OUTPUT, SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET)
+                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET)
 
 # with open(CONSTANT.LIBRARY_FILE_PATH,'r') as f:
 #     jsonObject = f.readline()
