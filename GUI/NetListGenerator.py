@@ -4,7 +4,7 @@ import GUI.fit as fit
 
 # generate a Netlist based on the input parameters and save it to ProjectHome/Netlist
 class NetListGenerator:
-    def generate(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath): # generate Netlist
+    def generate(self, part, simulation, TID_level, output_option_x, output_option_y, output_filepath, netlist_filepath): # generate Netlist
         content = []
         # Section 1: Title
         content.extend(['Title: ' + part + ' / ' + TID_level + ' / ' + 'T= 300.15K = 27C',
@@ -27,7 +27,7 @@ class NetListGenerator:
                             '***********'])
             excel_file_path = Library.EXCEL_FILE_PATH[part]
             # a,b,c
-            if part == Library.PART_AD590:
+            if Library.NUM_OF_PARAMETER[part] == 4:
                 a1, b1, c1 = fit.fit('PNP', Library.TPRE_RAD, excel_file_path)
                 a2, b2, c2 = fit.fit('PNP', TID_level, excel_file_path)
                 a3, b3, c3 = fit.fit('NPN', Library.TPRE_RAD, excel_file_path)
@@ -52,7 +52,7 @@ class NetListGenerator:
                          '.PARAM b4=' + str(b4)[0:8],
                          '.PARAM c4=' + str(c4)[0:8]]
                 content.extend(paras)
-            elif part == Library.PART_LT1175:
+            elif Library.NUM_OF_PARAMETER[part] == 2:
                 a1, b1, c1 = fit.fit('LDR', Library.TPRE_RAD, excel_file_path)
                 a2, b2, c2 = fit.fit('LDR', TID_level, excel_file_path)
                 paras = ['*PRE_RAD',
@@ -84,7 +84,9 @@ class NetListGenerator:
         content.extend(['*Output',
                         '*******',
                         '.print dc format=noindex file=' + output_filepath])
-        content.extend(Library.OUTPUT[part][output_option])
+        # content.extend(Library.OUTPUT[part][output_option_x])
+        content.append(output_option_x)
+        content.append(output_option_y)
         content.append('')
         # Section 6: Subcircuit
         content.extend(['*Subcircuit',
@@ -99,14 +101,8 @@ class NetListGenerator:
             content.extend(Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
         else:
             content.extend(Library.LIBRARY_TID_LEVEL_MODEL[Library.TPRE_RAD])
-        if part == Library.PART_AD590:
-            content.extend(['',
-                            '*JFET',
-                            '.model NJF_TYP NJF (',
-                            '+ VTO = -1.0	BETA = 6.2E-4	LAMBDA = 0.003',
-                            '+ RD = 0.01      RS = 1e-4',
-                            '+ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)',
-                            '']),
+        # JFET
+        content.extend(Library.LIBRARY_JFET[part]),
         content.extend(['',
                         '*end of the netlist',
                         '.end'])

@@ -1,1 +1,0 @@
-{"AD590_OUTPUT_OPTION": ["Default"], "LT1175_OUTPUT_OPTION": ["AAA", "Line_Regulation", "BBB"], "OUTPUT": {"LT1175": {"AAA": ["+ V(4)", "+ V(5)"], "Line_Regulation": ["+ V(4)", "+ V(1)"], "BBB": ["+ V(4)", "+ V(5)", "+ V(1)"]}, "AD590": {"Default": ["+ V(2)", "+ I(VOUT)"]}}}

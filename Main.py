@@ -8,7 +8,7 @@ class Interface(object):
     def __init__(self):
         self.window = tkinter.Tk()
         self.window.title('Platform')
-        self.window.geometry('1000x500')
+        self.window.geometry('1200x500')
 
         self.label_topline = tkinter.Label(self.window, text=Library.TITLE, font=('Arial', 20), width=30, height=2)
 
@@ -32,12 +32,19 @@ class Interface(object):
         self.lb_TID = tkinter.Listbox(self.window, listvariable=self.TID_options,
                                       height=len(self.TID_options_tuple), exportselection=False)
 
-        self.label_output = tkinter.Label(self.window, text='Output:', font=('Arial', 0), width=16, height=2)
-        self.output_options = tkinter.StringVar()
-        self.output_options_tuple = (Library.LT1175_OUTPUT_OPTION)
-        self.output_options.set(self.output_options_tuple)
-        self.lb_output = tkinter.Listbox(self.window, listvariable=self.output_options,
-                                      height=len(self.output_options_tuple), exportselection=False)
+        self.label_output_x = tkinter.Label(self.window, text='X:', font=('Arial', 0), width=16, height=2)
+        self.output_options_x = tkinter.StringVar()
+        self.output_options_tuple_x = ()
+        self.output_options_x.set(self.output_options_tuple_x)
+        self.lb_output_x = tkinter.Listbox(self.window, listvariable=self.output_options_x,
+                                           height=len(self.output_options_tuple_x), exportselection=False)
+
+        self.label_output_y = tkinter.Label(self.window, text='Y:', font=('Arial', 0), width=16, height=2)
+        self.output_options_y = tkinter.StringVar()
+        self.output_options_tuple_y = ()
+        self.output_options_y.set(self.output_options_tuple_y)
+        self.lb_output_y = tkinter.Listbox(self.window, listvariable=self.output_options_y,
+                                         height=len(self.output_options_tuple_y), exportselection=False)
 
         self.button_execute = tkinter.Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
 
@@ -54,15 +61,17 @@ class Interface(object):
             part = self.lb_parts.get(self.lb_parts.curselection())
             simulation = self.lb_simulation.get(self.lb_simulation.curselection())
             TID_level = self.lb_TID.get(self.lb_TID.curselection())
-            if (part == Library.PART_LT1175):
-                output_option = self.lb_output.get(self.lb_output.curselection())
-            else:
-                output_option = Library.AD590_OUTPUT_OPTION[0]
-
+            output_option_x = self.lb_output_x.get(self.lb_output_x.curselection())
+            output_option_y = self.lb_output_y.get(self.lb_output_y.curselection())
+            # if (part == Library.PART_LT1175):
+            #     output_option = self.lb_output.get(self.lb_output.curselection())
+            # else:
+            #     output_option = Library.AD590_OUTPUT_OPTION[0]
             self.output_filepath = relative_path('Output/' + part + '_' + TID_level + '_test.txt')
 
-            netListGenerator.generate(part, simulation, TID_level, output_option, self.output_filepath, self.netlist_filepath)
+            netListGenerator.generate(part, simulation, TID_level, output_option_x, output_option_y, self.output_filepath, self.netlist_filepath)
             my_result = execute.execute_module3(self.netlist_filepath)
+            print(my_result)
             message = 'part: ' + part + ', TID level = ' + TID_level + '\n' + 'result file path = ' + self.output_filepath
             # message = my_result
             self.result_text.set(message)
@@ -75,8 +84,11 @@ class Interface(object):
         return
 
     def input_check(self):
-        if self.lb_TID.curselection() == () or self.lb_parts.curselection() == () or self.lb_simulation.curselection() == () or \
-                (self.lb_parts.get(self.lb_parts.curselection()) == Library.PART_LT1175 and self.lb_output.curselection() == ()):
+        if self.lb_TID.curselection() == () or \
+                self.lb_parts.curselection() == () or \
+                self.lb_simulation.curselection() == () or \
+                self.lb_output_x.curselection() == () or \
+                self.lb_output_y.curselection() == ():
             self.result_text.set('please check your input')
             return False
         self.result_text.set('in process, please wait...')
@@ -91,13 +103,17 @@ class Interface(object):
     def part_onselect(self, evt):
         try:
             index = int(self.lb_parts.curselection()[0])
-            value = self.lb_parts.get(index)
-            if value == Library.PART_LT1175:
-                self.label_output.grid()
-                self.lb_output.grid()
-            elif value == Library.PART_AD590:
-                self.label_output.grid_remove()
-                self.lb_output.grid_remove()
+            part = self.lb_parts.get(index)
+            self.output_options_tuple_x = (Library.OUTPUT_OPTION[part])
+            self.output_options_x.set(self.output_options_tuple_x)
+            self.output_options_tuple_y = (Library.OUTPUT_OPTION[part])
+            self.output_options_y.set(self.output_options_tuple_y)
+            # if value == Library.PART_LT1175:
+            #     self.label_output.grid()
+            #     self.lb_output.grid()
+            # elif value == Library.PART_AD590:
+            #     self.label_output.grid_remove()
+            #     self.lb_output.grid_remove()
             self.TID_option_update()
         except:
             pass
@@ -118,13 +134,15 @@ class Interface(object):
         self.label_parts.grid(row=1)
         self.label_simulation.grid(row=1, column=1)
         self.label_TID_level.grid(row=1, column=2)
-        self.label_output.grid(row=1, column=3)
+        self.label_output_x.grid(row=1, column=3)
+        self.label_output_y.grid(row=1, column=4)
 
         # row 2
         self.lb_parts.grid(row=2)
         self.lb_simulation.grid(row=2, column=1)
         self.lb_TID.grid(row=2, column=2)
-        self.lb_output.grid(row=2, column=3)
+        self.lb_output_x.grid(row=2, column=3)
+        self.lb_output_y.grid(row=2, column=4)
 
         # row 3
         self.button_execute.grid(row=3, sticky='E', columnspan=3, pady=10)
@@ -137,8 +155,8 @@ class Interface(object):
         self.lb_simulation.bind('<<ListboxSelect>>', self.simulation_onselect)
 
         # remove output option listbox
-        self.label_output.grid_remove()
-        self.lb_output.grid_remove()
+        # self.label_output_x.grid_remove()
+        # self.lb_output_x.grid_remove()
 
         self.window.mainloop()
         return
