@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import os
-import tkinter
-from itertools import cycle
+import tkinter.filedialog as filedialog
+from tkinter import *
+from tkinter.ttk import *
+# from itertools import cycle
 import importlib
 
 from GUI import execute, NetListGenerator, Library
@@ -9,51 +11,51 @@ from GUI import execute, NetListGenerator, Library
 
 class Interface(object):
     def __init__(self):
-        self.window = tkinter.Tk()
+        self.window = Tk()
         self.window.title('Platform')
         self.window.geometry('1200x500')
 
-        self.label_topline = tkinter.Label(self.window, text=Library.TITLE, font=('Arial', 20), width=30, height=2)
+        self.label_topline = Label(self.window, text=Library.TITLE, font=('Arial', 20), width=30, height=2)
 
-        self.label_parts = tkinter.Label(self.window, text='parts:', font=('Arial', 0), width=16, height=2)
-        self.parts_options = tkinter.StringVar()
+        self.label_parts = Label(self.window, text='parts:', font=('Arial', 0), width=16, height=2)
+        self.parts_options = StringVar()
         self.parts_options_tuple = (Library.PARTS)
         self.parts_options.set(self.parts_options_tuple)
-        self.lb_parts = tkinter.Listbox(self.window, listvariable=self.parts_options, height=6, exportselection=False)
+        self.lb_parts = Listbox(self.window, listvariable=self.parts_options, height=6, exportselection=False)
 
-        self.label_simulation = tkinter.Label(self.window, text='simulation:', font=('Arial', 0), width=16, height=2)
-        self.simulation_options = tkinter.StringVar()
+        self.label_simulation = Label(self.window, text='simulation:', font=('Arial', 0), width=16, height=2)
+        self.simulation_options = StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
         self.simulation_options.set(self.simulation_options_tuple)
-        self.lb_simulation = tkinter.Listbox(self.window, listvariable=self.simulation_options,
+        self.lb_simulation = Listbox(self.window, listvariable=self.simulation_options,
                                              height=6, exportselection=False)
 
-        self.label_TID_level = tkinter.Label(self.window, text='TID level:', font=('Arial', 0), width=16, height=2)
-        self.TID_options = tkinter.StringVar()
+        self.label_TID_level = Label(self.window, text='TID level:', font=('Arial', 0), width=16, height=2)
+        self.TID_options = StringVar()
         self.TID_options_tuple = ()
         self.TID_options.set(self.TID_options_tuple)
-        self.lb_TID = tkinter.Listbox(self.window, listvariable=self.TID_options,
+        self.lb_TID = Listbox(self.window, listvariable=self.TID_options,
                                       height=len(self.TID_options_tuple), exportselection=False)
 
-        self.label_output_x = tkinter.Label(self.window, text='X Label:', font=('Arial', 0), width=16, height=2)
-        self.output_options_x = tkinter.StringVar()
+        self.label_output_x = Label(self.window, text='X Label:', font=('Arial', 0), width=16, height=2)
+        self.output_options_x = StringVar()
         self.output_options_tuple_x = ()
         self.output_options_x.set(self.output_options_tuple_x)
-        self.lb_output_x = tkinter.Listbox(self.window, listvariable=self.output_options_x,
+        self.lb_output_x = Listbox(self.window, listvariable=self.output_options_x,
                                            height=len(self.output_options_tuple_x), exportselection=False)
 
-        self.label_output_y = tkinter.Label(self.window, text='Y Label:', font=('Arial', 0), width=16, height=2)
-        self.output_options_y = tkinter.StringVar()
+        self.label_output_y = Label(self.window, text='Y Label:', font=('Arial', 0), width=16, height=2)
+        self.output_options_y = StringVar()
         self.output_options_tuple_y = ()
         self.output_options_y.set(self.output_options_tuple_y)
-        self.lb_output_y = tkinter.Listbox(self.window, listvariable=self.output_options_y,
+        self.lb_output_y = Listbox(self.window, listvariable=self.output_options_y,
                                          height=len(self.output_options_tuple_y), exportselection=False)
 
-        self.button_import = tkinter.Button(self.window, text='Import', width=15, height=2, command=self.import_hit)
-        self.button_execute = tkinter.Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
+        self.button_import = Button(self.window, text='Import', width=15, height=2, command=self.import_hit)
+        self.button_execute = Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
 
-        self.result_text = tkinter.StringVar()
-        self.label_result_text = tkinter.Label(self.window, textvariable=self.result_text, font=('Arial', 12), width=80, height=5)
+        self.result_text = StringVar()
+        self.label_result_text = Label(self.window, textvariable=self.result_text, font=('Arial', 12), width=80, height=5)
 
         self.netlist_filepath = relative_path('Netlist/test.cir')
         self.output_filepath = ''
@@ -61,7 +63,7 @@ class Interface(object):
         return
 
     def import_hit(self):
-        filename = tkinter.filedialog.askopenfilename(initialdir=relative_path('Netlist'))
+        filename = filedialog.askopenfilename(initialdir=relative_path('Netlist'))
         # print(filename)
         f = open(filename, 'r')
         line = next(f)
@@ -155,7 +157,12 @@ class Interface(object):
         Library.CIRCUIT_CORE[my_part] = my_circuit_core
         Library.INPUT[my_part] = my_input
         Library.OUTPUT_OPTION[my_part] = my_output
-        Library.SUBCIRCUIT[my_part][my_simulation] = my_subcircuit
+        temp = dict()
+        temp[my_simulation] = my_subcircuit
+        Library.SUBCIRCUIT[my_part] = temp
+        if Library.LIBRARY_JFET.get(my_part) is None:
+            Library.LIBRARY_JFET[my_part] = []
+
         Library.save_library_to_json(Library.INPUT_VOLTAGE_SOURCE, Library.CIRCUIT_CORE, Library.SCALE,
                                       Library.FUNCTIONS, Library.INPUT, Library.OUTPUT_OPTION, Library.SUBCIRCUIT,
                                       Library.LIBRARY_TID_LEVEL_MODEL, Library.LIBRARY_JFET)
@@ -184,7 +191,7 @@ class Interface(object):
             self.result_text.set(message)
 
             X_label, Y_label, X, Y = self.load_and_finalize_output(part, TID_level)
-            self.plotfigure(X_label, Y_label, X, Y, part, TID_level)
+            self.plotfigure(X_label, Y_label, X, Y, part, simulation, TID_level)
         # except Exception as error:
         #     print(error)
         #     self.result_text.set('Error! Do you have ' + str(error) + ' data in excel?')
@@ -197,6 +204,7 @@ class Interface(object):
         self.lb_parts.selection_clear(0, len(self.parts_options_tuple))
         self.simulation_options_tuple = (Library.SIMULATION)
         self.simulation_options.set(self.simulation_options_tuple)
+        self.lb_simulation.select_clear(0, len(self.simulation_options_tuple))
         self.TID_options_tuple = ()
         self.TID_options.set(self.TID_options_tuple)
         self.output_options_tuple_x = ()
@@ -218,9 +226,8 @@ class Interface(object):
         return True
 
     def TID_option_update(self):
-        cur_part = self.lb_parts.get(self.lb_parts.curselection())
         cur_sim = self.lb_simulation.get(self.lb_simulation.curselection())
-        self.TID_options_tuple = Library.TID_LIST[cur_part][cur_sim]
+        self.TID_options_tuple = Library.TID_LIST[cur_sim]
         self.TID_options.set(self.TID_options_tuple)
 
     def part_onselect(self, evt):
@@ -237,7 +244,6 @@ class Interface(object):
             # elif value == Library.PART_AD590:
             #     self.label_output.grid_remove()
             #     self.lb_output.grid_remove()
-            self.TID_option_update()
         except:
             pass
         return
@@ -323,12 +329,12 @@ class Interface(object):
                 Y.append(XnY[i])
         return X_label, Y_label, X, Y
 
-    def plotfigure(self, X_label, Y_label, X, Y, part, TID_level):
+    def plotfigure(self, X_label, Y_label, X, Y, part, simulation, TID_level):
         # figure_num = {Library.PART_LT1175: 1,
         #               Library.PART_AD590: 2}
         # location = {Library.PART_LT1175: 'upper left',
         #               Library.PART_AD590: 'lower right'}
-        plt.figure(part + ' X=' + X_label + ' Y=' + Y_label, figsize=(10,8))
+        plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=(10,8))
         plt.plot(X, Y, next(self.color_gen), label="Part=" + part + "TID level=" + TID_level)
         plt.xlabel(X_label)
         plt.ylabel(Y_label)

@@ -64,37 +64,32 @@ TID_LEVEL = [TPRE_RAD,        # 0
              T200KRAD,        # 8
              T300KRAD         # 9
              ]
-TID_LIST = {PART_AD590: {SIMULATION_MODEL: [
-                                     TPRE_RAD,
-                                     T20KRAD,
-                                     T50KRAD,
-                                     T100KRAD,
-                                     T200KRAD,
-                                     T300KRAD],
-                         SIMULATION_SOURCE: [
-                                     T20KRAD,
-                                     T50KRAD,
-                                     T100KRAD,
-                                     T200KRAD,
-                                     T300KRAD]},
-            PART_LT1175: {SIMULATION_MODEL: [
-                                     TPRE_RAD,
-                                     T20KRAD,
-                                     T50KRAD,
-                                     T100KRAD,
-                                     T200KRAD,
-                                     T300KRAD],
-                         SIMULATION_SOURCE: [
-                                     T2_5KRAD,
-                                     T5KRAD,
-                                     T10KRAD,
-                                     T20KRAD,
-                                     T30KRAD]}
+TID_LIST = {SIMULATION_MODEL: [
+                                TPRE_RAD,
+                                T2_5KRAD,
+                                T5KRAD,
+                                T10KRAD,
+                                T20KRAD,
+                                T30KRAD,
+                                T50KRAD,
+                                T100KRAD,
+                                T200KRAD,
+                                T300KRAD],
+            SIMULATION_SOURCE: [
+                                T2_5KRAD,
+                                T5KRAD,
+                                T10KRAD,
+                                T20KRAD,
+                                T30KRAD,
+                                T50KRAD,
+                                T100KRAD,
+                                T200KRAD,
+                                T300KRAD],
             }
 
 # Excel file path
 EXCEL_FILE_PATH = {PART_AD590: 'FitCurve/NPN_PNP_Data_Yidi.xlsx',
-                   PART_LT1175: 'FitCurve/PNP_Data_Yidi_LT1175.xlsx'}
+                   PART_LT1175: 'FitCurve/PNP_FITTING.xlsx'}
 
 # Excel sheet name & column name
 COL_NAME = {'VE':       'Ve_PRE_RAD',
@@ -111,7 +106,7 @@ COL_NAME = {'VE':       'Ve_PRE_RAD',
 
 SHEET_NAME = {'NPN': 'NPN_Compact_Xyce',
               'PNP': 'PNP_Compact_Xyce',
-              'LDR': 'LDR',
+              'LDR': 'LDR_1_FIT_0.4V',
               'HDR': 'HDR'}
 NUM_OF_PARAMETER = {PART_AD590: 4,
                     PART_LT1175: 2}

@@ -43,7 +43,7 @@ def excel_table_byname(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
     for row in range(2, nrows):
         ve = table.cell(row,col_dict[Library.COL_NAME['VE']]).value
         ib = table.cell(row, col_dict[Library.COL_NAME[TID_level]]).value
-        if 0.3 <= ve <= 0.7 and ib > 0:
+        if 0.3 <= ve <= 0.8 and ib > 0:
             Ve.append(ve)
             Ib.append(ib)
     return Ve, Ib
