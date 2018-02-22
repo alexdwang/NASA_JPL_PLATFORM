@@ -3,7 +3,7 @@ import subprocess
 
 class Execute:
     def mkdirs(self):
-        command = 'mkdir Netlist Output FitCurve Library'
+        command = 'mkdir -p Netlist Output FitCurve Library'
         os.system(command)
         command = 'touch Library/library.json Library/name.json'
         return

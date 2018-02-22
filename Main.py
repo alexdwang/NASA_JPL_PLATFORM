@@ -13,7 +13,7 @@ class Interface(object):
     def __init__(self):
         self.window = Tk()
         self.window.title('Platform')
-        self.window.geometry('1200x500')
+        self.window.geometry('900x500')
 
         self.label_topline = Label(self.window, text=Library.TITLE, font=('Arial', 20), width=30, height=2)
 
@@ -56,6 +56,7 @@ class Interface(object):
         self.netlist_filepath = relative_path('Netlist/test.cir')
         self.output_filepath = ''
         self.color_gen = cycle('bgrcmykw')
+
         return
 
     def import_hit(self):
@@ -199,11 +200,11 @@ class Interface(object):
         return
 
     def input_check(self):
-        if self.cb_TID.get() == () or \
-                self.cb_parts.get() == () or \
-                self.cb_simulation.get() == () or \
-                self.cb_output_x.get() == () or \
-                self.cb_output_y.get() == ():
+        if self.cb_TID.get() == '' or \
+                self.cb_parts.get() == '' or \
+                self.cb_simulation.get() == '' or \
+                self.cb_output_x.get() == '' or \
+                self.cb_output_y.get() == '':
             self.result_text.set('please check your input')
             return False
         self.result_text.set('in process, please wait...')
@@ -339,4 +340,5 @@ if __name__ == "__main__":
     interface = Interface()
     execute = execute.Execute()
     netListGenerator = NetListGenerator.NetListGenerator()
+    execute.mkdirs()
     interface.start()
