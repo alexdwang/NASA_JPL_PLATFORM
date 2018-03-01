@@ -208,16 +208,16 @@ class Interface(object):
         count = 0;
         if my_simulation == "source":
             for line in my_parameters:
-                if line.replace(" ","") != "":
+                if line.replace(" ", "") != "":
                     count += 1;
             num_of_para = int(count / 3)
             Library.NUM_OF_PARAMETER[my_part] = num_of_para
+            Library.SCALE[my_part] = my_scales
+            Library.FUNCTIONS[my_part] = my_functions
         Library.save_name_to_json(Library.TITLE, Library.PARTS, Library.SIMULATION, Library.TID_LEVEL, Library.TID_LIST,
                           Library.EXCEL_FILE_PATH, Library.COL_NAME, Library.SHEET_NAME, Library.NUM_OF_PARAMETER)
         Library.INPUT_VOLTAGE_SOURCE[my_part] = my_voltage_source
         Library.CIRCUIT_CORE[my_part] = my_circuit_core
-        Library.SCALE[my_part] = my_scales
-        Library.FUNCTIONS[my_part] = my_functions
         Library.INPUT[my_part] = my_input
         Library.OUTPUT_OPTION[my_part] = my_output
         # temp = dict()
@@ -251,6 +251,7 @@ class Interface(object):
     def execute_hit(self):
         # try:
         if self.input_check():
+            execute.rm_all()
             part = self.cb_parts.get()
             simulation = self.cb_simulation.get()
             TID_level_lower = self.cb_TID_lower_bound.get()
@@ -260,8 +261,8 @@ class Interface(object):
             num_TID_lower = self.get_num_TID(TID_level_lower)
             num_TID_upper = self.get_num_TID(TID_level_upper)
 
-            spec_min = float(self.entry_spec_min.get())
-            spec_max = float(self.entry_spec_max.get())
+            spec_min = float(self.entry_spec_min.get()) if self.entry_spec_min.get() != '' else None
+            spec_max = float(self.entry_spec_max.get()) if self.entry_spec_max.get() != '' else None
 
             X_list = list()
             Y_list = list()
@@ -276,7 +277,7 @@ class Interface(object):
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, TID_level)
                     self.plotfigure(X_label, Y_label, X, Y, part, simulation, TID_level)
                     X_list.append(num_TID)
-                    Y_list.append(Y[5])
+                    Y_list.append(Y[3])
             self.plotfigure(X_label='TID level', Y_label=Y_label, X=X_list, Y=Y_list, part=part, simulation=simulation,
                             TID_level=TID_level_lower, TID_level2=TID_level_upper, spec_min=spec_min, spec_max=spec_max)
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
@@ -308,10 +309,10 @@ class Interface(object):
                 self.cb_TID_upper_bound.get() == '' or \
                 self.cb_parts.get() == '' or \
                 self.cb_simulation.get() == '' or \
-                self.entry_spec_min.get() == '' or \
-                self.entry_spec_max.get() == '' or \
                 self.cb_output_x.get() == '' or \
                 self.cb_output_y.get() == '':
+                # self.entry_spec_min.get() == '' or \
+                # self.entry_spec_max.get() == '' or \
             self.result_text.set('please check your input')
             return False
         self.result_text.set('in process, please wait...')
@@ -443,10 +444,17 @@ class Interface(object):
         plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=(10,8))
         if TID_level2:
             plt.clf()
-            plt.axhline(y=spec_max, color='r', linestyle='-')
-            plt.axhline(y=spec_min, color='r', linestyle='-')
+            y_min = min(Y)
+            y_max = max(Y)
+            if spec_max is not None:
+                plt.axhline(y=spec_max, color='r', linestyle='-')
+                y_max = max(y_max, spec_max)
+            if spec_min is not None:
+                plt.axhline(y=spec_min, color='r', linestyle='-')
+                y_min = min(y_min, spec_min)
             plt.plot(X, Y, next(self.color_gen), label="Part=" + part + "TID level=" + TID_level + '~' + TID_level2)
-            plt.ylim(min(min(Y), spec_min) - 0.3, max(max(Y), spec_max) + 0.3)
+            gap = y_max - y_min
+            plt.ylim(y_min - 0.1 * gap, y_max + 0.1 * gap)
         else:
             plt.plot(X, Y, next(self.color_gen), label="Part=" + part + "TID level=" + TID_level)
         plt.xlabel(X_label)

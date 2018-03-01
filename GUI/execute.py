@@ -6,6 +6,12 @@ class Execute:
         command = 'mkdir -p Netlist Output FitCurve Library'
         os.system(command)
         command = 'touch Library/library.json Library/name.json'
+        os.system(command)
+        return
+    
+    def rm_all(self):
+        command = 'rm -f ./Output/*'
+        os.system(command)
         return
 
     def execute_module3(self, path):
