@@ -16,6 +16,11 @@ Title: source / {Your Part Name} / {Your TID Level} / {Your Temperature}
 {Your Parameters}
 *End Parameters
 
+*Scales
+***********
+{Your Scales}
+*End Scales
+
 *Function
 *********
 {Your Function}
