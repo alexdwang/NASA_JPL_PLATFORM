@@ -11,11 +11,13 @@ def fit(sheet, TID_level, file_path):
     Ve, Ib_Pre_Rad = excel_table_byname(sheet, TID_level, file_path)
     xdata = np.array(Ve)
     ydata = np.array(np.log(Ib_Pre_Rad))
-    popt, pcov = curve_fit(func, xdata, ydata)
+    y2 = np.array(Ib_Pre_Rad)
+    poptlog, pcovlog = curve_fit(func, xdata, ydata)
+    popt, pcov = curve_fit(func, xdata, y2)
+
     # plot_data(xdata, ydata, popt)
-    # y2 = np.array(Ib_Pre_Rad)
     # plot_log_scale(xdata, y2, popt)
-    return popt
+    return poptlog
 
 def relative_path(path):
     dirname = os.path.dirname(os.path.realpath('__file__'))

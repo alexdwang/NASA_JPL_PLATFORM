@@ -1,5 +1,5 @@
 * Replace content surrounded by {}, including '{}' signs, with your circuit file content. Do not modify or delete anything else including comments
-Title: source / {Your Part Name} / {Your TID Level} / {Your Temperature}
+Title: source / {Your Part Name} / {Your Parameter} / {Your Temperature}
 
 *Input Voltage Source
 *********************

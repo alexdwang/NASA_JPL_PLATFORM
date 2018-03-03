@@ -18,13 +18,14 @@ def save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, EXCEL_FILE_
     return
 
 
-def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION,
+def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION, OUTPUT,
                          SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET):
     output_object = {'INPUT_VOLTAGE_SOURCE': INPUT_VOLTAGE_SOURCE,
                      'CIRCUIT_CORE': CIRCUIT_CORE,
                      'SCALE': SCALE,
                      'FUNCTIONS': FUNCTIONS,
                      'INPUT': INPUT,
+                     'OUTPUT': OUTPUT,
                      'OUTPUT_OPTION': OUTPUT_OPTION,
                      'SUBCIRCUIT': SUBCIRCUIT,
                      'LIBRARY_TID_LEVEL_MODEL': LIBRARY_TID_LEVEL_MODEL,
@@ -202,10 +203,10 @@ OUTPUT_OPTION = {PART_LT1175: ['+ V(4)',
                                '+ V(1)'],
                  PART_AD590: ['+ V(2)',
                               '+ I(VOUT)']}
-# OUTPUT = {PART_LT1175: {OUTPUT_OPTION[PART_LT1175][0]: ['+ V(4)',
-#                                                '+ V(1)']},
-#           PART_AD590: {OUTPUT_OPTION[PART_AD590][0]: ['+ V(2)',
-#                                               '+ I(VOUT)']}}
+OUTPUT = {PART_LT1175: {'Line Regualtion': ['+ V(4)',
+                                               '+ V(1)']},
+          PART_AD590: {'Default': ['+ V(2)',
+                                              '+ I(VOUT)']}}
 SUBCIRCUIT = {PART_LT1175: {SIMULATION_MODEL: [
                                 '.subckt BG_sc VCC VEE VREF',
                                 '*Resistance: R<name> <+ node> <- node> [model name] <value>',
@@ -546,7 +547,7 @@ LIBRARY_JFET = {PART_LT1175: [],
                             '+ RD = 0.01      RS = 1e-4',
                             '+ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)',
                             '']}
-save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION,
+save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION, OUTPUT,
                          SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET)
 
 # with open(CONSTANT.LIBRARY_FILE_PATH,'r') as f:
