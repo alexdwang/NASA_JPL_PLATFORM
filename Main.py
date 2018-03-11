@@ -25,9 +25,9 @@ class Interface(object):
         self.window.geometry('1150x700')
 
         self.label_topline = Label(self.window, text=Library.TITLE, font=('Arial', 20), width=30, height=element_height)
-        self.label_input_header = Label(self.window, text="Input: ", font=('Arial', 20), width=element_half_width, height=element_height)
-        self.label_output_header = Label(self.window, text="Output: ", font=('Arial', 20), width=element_half_width, height=element_height)
-        self.label_spec_header = Label(self.window, text="Specification: ", font=('Arial', 20), width=element_half_width, height=element_height)
+        self.label_input_header = Label(self.window, text="Input: ", font=('Arial', 15), width=element_half_width, height=element_height)
+        self.label_output_header = Label(self.window, text="Output: ", font=('Arial', 15), width=element_half_width, height=element_height)
+        self.label_spec_header = Label(self.window, text="Specification: ", font=('Arial', 15), width=element_half_width, height=element_height)
 
         self.empty = Label(self.window, text="", font=('Arial', 20), width=element_width, height=element_height)
 
@@ -443,7 +443,7 @@ class Interface(object):
         # self.label_output_x.grid(row=row, column=0, pady=(20, 0))
         # self.label_output_y.grid(row=row, column=1, pady=(20, 0))
         # self.empty.grid(row=row, column=2)
-        self.canvas_plot.grid(row=row, column=2, rowspan=6, columnspan=6, padx=(20,0))
+        self.canvas_plot.grid(row=row, column=2, rowspan=10, columnspan=4, padx=(20,0))
         # row 5
         row = 5
         self.cb_output.grid(row=row, column=1)
@@ -473,7 +473,7 @@ class Interface(object):
 
         # row 11
         row = 11
-        self.label_result_text.grid(row=row, column=1, columnspan=2)
+        self.label_result_text.grid(row=row, column=1)
 
         # bind onselect function with widget
         self.cb_parts.bind('<<ComboboxSelected>>', self.part_onselect)
@@ -576,7 +576,7 @@ class Interface(object):
         subplot.legend(loc='upper left')
         self.canvas_plot = FigureCanvasTkAgg(f, self.window)
         self.canvas_plot.show()
-        self.canvas_plot.get_tk_widget().grid(row=4, column=2, rowspan=6, columnspan=4, padx=(20,0))
+        self.canvas_plot.get_tk_widget().grid(row=4, column=2, rowspan=10, columnspan=4, padx=(20,0))
         return
 
 
