@@ -18,12 +18,18 @@ class Interface(object):
     def __init__(self):
         element_width = 18
         element_height = 2
+        element_half_width = int(element_width/2 + 2)
 
         self.window = Tk()
         self.window.title('Platform')
-        self.window.geometry('1100x700')
+        self.window.geometry('1150x700')
 
         self.label_topline = Label(self.window, text=Library.TITLE, font=('Arial', 20), width=30, height=element_height)
+        self.label_input_header = Label(self.window, text="Input: ", font=('Arial', 20), width=element_half_width, height=element_height)
+        self.label_output_header = Label(self.window, text="Output: ", font=('Arial', 20), width=element_half_width, height=element_height)
+        self.label_spec_header = Label(self.window, text="Specification: ", font=('Arial', 20), width=element_half_width, height=element_height)
+
+        self.empty = Label(self.window, text="", font=('Arial', 20), width=element_width, height=element_height)
 
         self.label_parts = Label(self.window, text='parts:', font=('Arial', 0), width=element_width, height=element_height)
         self.parts_options = StringVar()
@@ -78,7 +84,7 @@ class Interface(object):
         self.button_import = Button(self.window, text='Import', width=15, height=2, command=self.import_hit)
         self.button_execute = Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
 
-        self.canvas_plot = Canvas(self.window, width=600, height=400)
+        self.canvas_plot = Canvas(self.window, width=400, height=400)
 
         self.result_text = StringVar()
         self.label_result_text = Label(self.window, textvariable=self.result_text, font=('Arial', 12), width=2 * element_width, height=5)
@@ -99,8 +105,12 @@ class Interface(object):
         while line[0:5] != 'Title':
             line = next(f, None)
             if line is None:
-                print('Missing title')
+                print('Missing Title')
+                return
         title = line.split(':')[1].replace(' ', '').split('/')
+        if len(title) < 3:
+            print('Missing simulation type, part name or parameter in Title')
+            return
         my_simulation = title[0]
         my_part = title[1]
         my_parameter = title[2]
@@ -288,34 +298,46 @@ class Interface(object):
             # output_option_y = self.cb_output_y.get()
             num_TID_lower = self.get_num_TID(TID_level_lower)
             num_TID_upper = self.get_num_TID(TID_level_upper)
+            if num_TID_lower > num_TID_upper:
+                num_TID_lower = num_TID_lower + num_TID_upper
+                num_TID_upper = num_TID_lower - num_TID_upper
+                num_TID_lower = num_TID_lower - num_TID_upper
 
             spec_min = float(self.entry_spec_min.get()) if self.entry_spec_min.get() != '' else None
             spec_max = float(self.entry_spec_max.get()) if self.entry_spec_max.get() != '' else None
 
             X_list = list()
             Y_list = list()
-            for TID_level in Library.TID_LEVEL:
-                num_TID = self.get_num_TID(TID_level)
-                if num_TID_lower <= num_TID <= num_TID_upper:
-                    self.output_filepath = relative_path('Output/' + part + '_' + TID_level + '_test.txt')
-                    result = netListGenerator.generate(part, simulation, TID_level, output_option,
+            oneMore = True
+            Tid_Levels_dict = {self.get_num_TID(tid): tid for tid in Library.TID_LEVEL}
+            Tid_Levels = [(k, Tid_Levels_dict[k]) for k in sorted(Tid_Levels_dict.keys())]
+            for i in range(len(Tid_Levels)):
+                num_TID = Tid_Levels[i][0]
+                str_TID = Tid_Levels[i][1]
+                if (num_TID < num_TID_lower and i + 1 < len(Tid_Levels) and Tid_Levels[i + 1][0] > num_TID_lower) or \
+                        (num_TID_lower <= num_TID and (num_TID < num_TID_upper or oneMore)):
+                    self.output_filepath = relative_path('Output/' + part + '_' + str(num_TID) + '_test.txt')
+                    result = netListGenerator.generate(part, simulation, str_TID, output_option,
                                               self.output_filepath, self.netlist_filepath)
                     if result == False:
                         continue
+                    if num_TID >= num_TID_upper:
+                        oneMore = False
                     my_result = execute.execute_module3(self.netlist_filepath)
                     # print(my_result)
-                    X_label, Y_label, X, Y = self.load_and_finalize_output(part, TID_level)
+                    X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
                     # self.plotfigure(X_label, Y_label, X, Y, part, simulation, TID_level)
                     X_list.append(num_TID)
                     lengthX = len(X)
                     for i in range(len(X)):
                         if X[i] == X[int(lengthX / 2)]:
                             Y_list.append(Y[i])
+                            break
                     # print(X[20])
-            self.plotfigureTK(X_label='TID level', Y_label=Y_label, X=X_list, Y=Y_list, part=part, simulation=simulation,
-                            TID_level=TID_level_lower, TID_level2=TID_level_upper, spec_min=spec_min, spec_max=spec_max)
-            # self.canvas_plot.create_line(200, 50, fig_x + fig_w / 2, fig_y + fig_h / 2)
-            # self.canvas_plot.create_text(200, 50, text="Zero-crossing", anchor="s")
+
+            self.plotfigureTK(X_label='TID level', Y_label=Y_label, X=X_list, Y=Y_list, X_min = num_TID_lower,
+                              X_max=num_TID_upper, part=part, simulation=simulation, TID_level=TID_level_lower,
+                              TID_level2=TID_level_upper, spec_min=spec_min, spec_max=spec_max)
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
             self.result_text.set(message)
@@ -396,53 +418,62 @@ class Interface(object):
 
         # row 1
         row = 1
-        self.label_parts.grid(row=row)
-        self.label_simulation.grid(row=row, column=1)
-        self.label_TID_level_lower_bound.grid(row=row, column=2)
-        self.label_TID_level_upper_bound.grid(row=row, column=3)
+        self.label_input_header.grid(row=row, rowspan=3)
+        self.label_parts.grid(row=row, column=1)
+        self.label_simulation.grid(row=row, column=2)
+        self.label_TID_level_lower_bound.grid(row=row, column=3)
+        self.label_TID_level_upper_bound.grid(row=row, column=4)
 
         # row 2
         row = 2
-        self.cb_parts.grid(row=row)
-        self.cb_simulation.grid(row=row, column=1)
-        self.entry_TID_lower_bound.grid(row=row, column=2)
-        self.entry_TID_upper_bound.grid(row=row, column=3)
+        self.cb_parts.grid(row=row, column=1)
+        self.cb_simulation.grid(row=row, column=2)
+        self.entry_TID_lower_bound.grid(row=row, column=3)
+        self.entry_TID_upper_bound.grid(row=row, column=4)
         # self.cb_TID_lower_bound.grid(row=row, column=2)
         # self.cb_TID_upper_bound.grid(row=row, column=3)
 
         # row 3
         row = 3
-        self.button_import.grid(row=row, column=0)
+        self.button_import.grid(row=row, column=1, pady=10)
         # row 4
         row = 4
-        self.label_output.grid(row=row, column=0, pady=(20, 0))
+        self.label_output_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
+        self.label_output.grid(row=row, column=1, pady=(20, 0))
         # self.label_output_x.grid(row=row, column=0, pady=(20, 0))
         # self.label_output_y.grid(row=row, column=1, pady=(20, 0))
-
+        # self.empty.grid(row=row, column=2)
         self.canvas_plot.grid(row=row, column=2, rowspan=6, columnspan=6, padx=(20,0))
         # row 5
         row = 5
-        self.cb_output.grid(row=row, column=0)
+        self.cb_output.grid(row=row, column=1)
         # self.cb_output_x.grid(row=row, column=0)
         # self.cb_output_y.grid(row=row, column=1)
 
         # row 6
         row = 6
-        self.label_spec_min.grid(row=row, column=0, pady=(20,0))
-        self.label_spec_max.grid(row=row, column=1, pady=(20,0))
+        self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20,0))
+        self.label_spec_max.grid(row=row, column=1, pady=(20, 0))
 
         # row 7
         row = 7
-        self.entry_spec_min.grid(row=row, column=0)
         self.entry_spec_max.grid(row=row, column=1)
+
         # row 8
         row = 8
-        self.button_execute.grid(row=row, pady=10)
+        self.label_spec_min.grid(row=row, column=1)
 
         # row 9
         row = 9
-        self.label_result_text.grid(row=row, column=0, columnspan=2)
+        self.entry_spec_min.grid(row=row, column=1)
 
+        # row 10
+        row = 10
+        self.button_execute.grid(row=row, column=1, pady=10)
+
+        # row 11
+        row = 11
+        self.label_result_text.grid(row=row, column=1, columnspan=2)
 
         # bind onselect function with widget
         self.cb_parts.bind('<<ComboboxSelected>>', self.part_onselect)
@@ -520,7 +551,7 @@ class Interface(object):
         plt.show(block=False)
         return
 
-    def plotfigureTK(self, X_label, Y_label, X, Y, part, simulation, TID_level, TID_level2=None, spec_min=None, spec_max=None):
+    def plotfigureTK(self, X_label, Y_label, X, Y, X_min, X_max, part, simulation, TID_level, TID_level2=None, spec_min=None, spec_max=None):
         f = plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=(8, 6))
         f.clf()
         subplot = f.add_subplot(111)
@@ -536,7 +567,10 @@ class Interface(object):
         subplot.plot(X, Y, next(self.color_gen), label="Part=" + part + " TID level=" + TID_level + '~' + TID_level2)
         subplot.plot(X, Y, 'r*')
         gap = y_max - y_min
-        subplot.set_ylim([y_min - 0.1 * gap, y_max + 0.1 * gap])
+        if gap != 0:
+            subplot.set_ylim([y_min - 0.1 * gap, y_max + 0.15 * gap])
+        if X_min != X_max:
+            subplot.set_xlim([X_min, X_max])
         subplot.set_xlabel(X_label)
         subplot.set_ylabel(Y_label)
         subplot.legend(loc='upper left')

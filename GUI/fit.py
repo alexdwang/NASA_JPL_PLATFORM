@@ -13,9 +13,9 @@ def fit(sheet, TID_level, file_path):
     ydata = np.array(np.log(Ib_Pre_Rad))
     y2 = np.array(Ib_Pre_Rad)
     poptlog, pcovlog = curve_fit(func, xdata, ydata)
-    popt, pcov = curve_fit(func, xdata, y2)
+    # popt, pcov = curve_fit(func, xdata, y2)
 
-    # plot_data(xdata, ydata, popt)
+    # plot_data(xdata, ydata, poptlog)
     # plot_log_scale(xdata, y2, popt)
     return poptlog
 
@@ -55,8 +55,8 @@ def plot_data(xdata, ydata, popt):
     plt.figure(1)
     plt.plot(xdata, ydata, 'b*', label='data')
     plt.plot(xdata, func(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
-    plt.legend()
-    plt.show()
+    # plt.legend()
+    plt.show(block=False)
     return
 
 
