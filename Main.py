@@ -316,7 +316,7 @@ class Interface(object):
                 str_TID = Tid_Levels[i][1]
                 if (num_TID < num_TID_lower and i + 1 < len(Tid_Levels) and Tid_Levels[i + 1][0] > num_TID_lower) or \
                         (num_TID_lower <= num_TID and (num_TID < num_TID_upper or oneMore)):
-                    self.output_filepath = relative_path('Output/' + part + '_' + str(num_TID) + '_test.txt')
+                    self.output_filepath = relative_path('Output/' + part + '_' + str_TID + '_test.txt')
                     result = netListGenerator.generate(part, simulation, str_TID, output_option,
                                               self.output_filepath, self.netlist_filepath)
                     if result == False:
@@ -335,7 +335,8 @@ class Interface(object):
                             break
                     # print(X[20])
 
-            self.plotfigureTK(X_label='TID level', Y_label=Y_label, X=X_list, Y=Y_list, X_min = num_TID_lower,
+            Y_label = output_option
+            self.plotfigureTK(X_label='TID level (rad)', Y_label=Y_label, X=X_list, Y=Y_list, X_min = num_TID_lower,
                               X_max=num_TID_upper, part=part, simulation=simulation, TID_level=TID_level_lower,
                               TID_level2=TID_level_upper, spec_min=spec_min, spec_max=spec_max)
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
@@ -536,9 +537,11 @@ class Interface(object):
             if spec_max is not None:
                 plt.axhline(y=spec_max, color='r', linestyle='--')
                 y_max = max(y_max, spec_max)
+                y_min = min(y_min, spec_max)
             if spec_min is not None:
                 plt.axhline(y=spec_min, color='r', linestyle='--')
                 y_min = min(y_min, spec_min)
+                y_max = min(y_max, spec_min)
             plt.plot(X, Y, next(self.color_gen), label="Part=" + part + "TID level=" + TID_level + '~' + TID_level2)
             plt.plot(X, Y, 'r*')
             gap = y_max - y_min

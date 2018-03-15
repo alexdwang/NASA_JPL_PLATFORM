@@ -1,5 +1,5 @@
 * Replace content surrounded by {}, including '{}' signs, with your circuit file content. Do not modify or delete anything else including comments
-Title: model / TL431 / Pre Rad / T= 300.15K = 27C
+Title: model / TL431 / Vka / T= 300.15K = 27C
 
 *Input Voltage Source
 *********************
@@ -28,13 +28,9 @@ Viref 4 2 0
 
 *Output
 *******
-.print dc format=noindex file=TL431_Prerad_Test_Yidi.txt
+.print dc format=noindex file=TL431_Vka_Test_Yidi.txt
 + V(1)
-+ V(2)
 + V(3)
-+ I(Vika)
-+ I(Viref)
-+ V(X1:REF)
 *End Output
 
 *Subcircuit
