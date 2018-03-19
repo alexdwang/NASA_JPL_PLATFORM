@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib as mpl
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
+import matplotlib.backends.tkagg as tkagg
 import matplotlib
-# matplotlib.use("TkAgg")
+matplotlib.use("TkAgg")
 
 import tkinter.filedialog as filedialog
 from tkinter import *
@@ -88,7 +90,7 @@ class Interface(object):
         self.button_save = Button(self.window, text='Save', width=15, height=2, command=self.save)
         self.button_change_scale = Button(self.window, text='Change Scale', width=15, height=2, command=self.change_scale)
 
-        self.canvas_plot = Canvas(self.window, width=400, height=400)
+        self.canvas_plot = Canvas(self.window, width=600, height=500)
 
         self.result_text = StringVar()
         self.label_result_text = Label(self.window, textvariable=self.result_text, font=('Arial', 12), width=2 * element_width, height=5)
@@ -96,6 +98,7 @@ class Interface(object):
         self.X_list = list()
         self.Y_list = list()
         self.figure_input = list()
+        self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
         self.netlist_filepath = relative_path('Netlist/test.cir')
         self.output_filepath = ''
         self.color_gen = cycle('bgcmyk')
@@ -515,6 +518,13 @@ class Interface(object):
         self.window.bind('<Return>', self.callback)
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        testmode = True
+        if testmode is True:
+            self.cb_parts.set('LT1175')
+            self.cb_simulation.set('compact model')
+            self.cb_output.set('Line Regulation')
+            self.entry_TID_lower_bound.insert(0, "0")
+            self.entry_TID_upper_bound.insert(0, "300k")
         self.window.mainloop()
         return
 
@@ -562,6 +572,9 @@ class Interface(object):
                 Y.append(XnY[i])
         return X_label, Y_label, X, Y
 
+    '''
+    ' plot figure in a pop up window
+    '''
     def plotfigure(self, X_label, Y_label, X, Y, part, simulation, TID_level, TID_level2=None, spec_min=None, spec_max=None):
         plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=(10,8))
         if TID_level2:
@@ -588,7 +601,56 @@ class Interface(object):
         plt.show(block=False)
         return
 
+    ''' 
+    ' plot figure in the main window
+    '''
     def plotfigureTK(self, X_label, Y_label, X, Y, X_min, X_max, part, simulation, TID_level, TID_level2=None,
+                     spec_min=None, spec_max=None, logscale=False):
+        figure = mpl.figure.Figure(figsize=(8, 6))
+        figure.clf()
+        subplot = figure.add_subplot(111)
+        if logscale is True:
+            subplot.set_xscale('symlog')
+        else:
+            subplot.set_xscale('linear')
+            # subplot.set_yscale('log')
+        # subplot.plot([1,2,3,4],[5,6,7,8])
+        y_min = min(Y)
+        y_max = max(Y)
+        if spec_max is not None:
+            subplot.axhline(y=spec_max, color='r', linestyle='--')
+            y_max = max(y_max, spec_max)
+        if spec_min is not None:
+            subplot.axhline(y=spec_min, color='r', linestyle='--')
+            y_min = min(y_min, spec_min)
+        subplot.plot(X, Y, next(self.color_gen), label="Part=" + part + " TID level=" + TID_level + '~' + TID_level2)
+        subplot.plot(X, Y, 'r*')
+        y_gap = y_max - y_min
+        if y_gap != 0:
+            subplot.set_ylim([y_min - 0.1 * y_gap, y_max + 0.15 * y_gap])
+        x_gap = X_max - X_min
+        if x_gap != 0:
+            subplot.set_xlim([X_min, X_max])
+        subplot.set_xlabel(X_label)
+        subplot.set_ylabel(Y_label)
+        # subplot.set_xticks(list(X))
+        # subplot.get_xaxis().get_major_formatter().labelOnlyBase = False
+        subplot.legend(loc='upper left')
+
+        figure_canvas_agg = FigureCanvasAgg(figure)
+        figure_canvas_agg.draw()
+        figure_x, figure_y, figure_w, figure_h = figure.bbox.bounds
+        figure_w, figure_h = int(figure_w), int(figure_h)
+        photo = PhotoImage(master=self.canvas_plot, width=figure_w, height=figure_h)
+        self.canvas_plot.create_image(figure_w / 2, figure_h / 2, image=photo)
+        self.image = photo  # make a reference to our plot. If not, the image will disappear because Python's garbage collection is like shit
+        tkagg.blit(photo, figure_canvas_agg.get_renderer()._renderer, colormode=2)
+        # self.canvas_plot = FigureCanvasTkAgg(figure, self.window)
+        # self.canvas_plot.show()
+        # self.canvas_plot.get_tk_widget().grid(row=4, column=2, rowspan=10, columnspan=4, padx=(20,0))
+        return
+
+    def plotfigureTK1(self, X_label, Y_label, X, Y, X_min, X_max, part, simulation, TID_level, TID_level2=None,
                      spec_min=None, spec_max=None, logscale=False):
         f = plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=(8, 6))
         f.clf()

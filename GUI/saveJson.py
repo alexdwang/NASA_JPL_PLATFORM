@@ -203,7 +203,7 @@ OUTPUT_OPTION = {PART_LT1175: ['+ V(4)',
                                '+ V(1)'],
                  PART_AD590: ['+ V(2)',
                               '+ I(VOUT)']}
-OUTPUT = {PART_LT1175: {'Line Regualtion': ['+ V(4)',
+OUTPUT = {PART_LT1175: {'Line Regulation': ['+ V(4)',
                                                '+ V(1)']},
           PART_AD590: {'Default': ['+ V(2)',
                                               '+ I(VOUT)']}}
