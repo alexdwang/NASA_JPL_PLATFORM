@@ -8,10 +8,12 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from itertools import cycle
+from time import sleep
 import importlib
+import xlsxwriter
 import os
 
-from GUI import execute, NetListGenerator, Library
+from GUI import execute, NetListGenerator, Library, FILEPATHS
 
 
 class Interface(object):
@@ -37,7 +39,7 @@ class Interface(object):
         self.cb_parts = ttk.Combobox(self.window, textvariable=self.parts_options, exportselection=False, state='readonly')
         self.cb_parts['values'] = self.parts_options_tuple
 
-        self.label_simulation = Label(self.window, text='simulation:', font=('Arial', 0), width=element_width, height=element_height)
+        self.label_simulation = Label(self.window, text='simulation mode:', font=('Arial', 0), width=element_width, height=element_height)
         self.simulation_options = StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
         self.cb_simulation = ttk.Combobox(self.window, textvariable=self.simulation_options, exportselection=False, state='readonly')
@@ -83,12 +85,17 @@ class Interface(object):
 
         self.button_import = Button(self.window, text='Import', width=15, height=2, command=self.import_hit)
         self.button_execute = Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
+        self.button_save = Button(self.window, text='Save', width=15, height=2, command=self.save)
+        self.button_change_scale = Button(self.window, text='Change Scale', width=15, height=2, command=self.change_scale)
 
         self.canvas_plot = Canvas(self.window, width=400, height=400)
 
         self.result_text = StringVar()
         self.label_result_text = Label(self.window, textvariable=self.result_text, font=('Arial', 12), width=2 * element_width, height=5)
 
+        self.X_list = list()
+        self.Y_list = list()
+        self.figure_input = list()
         self.netlist_filepath = relative_path('Netlist/test.cir')
         self.output_filepath = ''
         self.color_gen = cycle('bgcmyk')
@@ -112,6 +119,10 @@ class Interface(object):
             print('Missing simulation type, part name or parameter in Title')
             return
         my_simulation = title[0]
+        if my_simulation == 'source':
+            my_simulation = Library.SIMULATION_SOURCE
+        elif my_simulation == 'model':
+            my_simulation = Library.SIMULATION_MODEL
         my_part = title[1]
         my_parameter = title[2]
         my_voltage_source = list()
@@ -228,13 +239,13 @@ class Interface(object):
             print('ERROR!!! Missing \'*Subcircuit\', abort import')
             return
 
-        if my_simulation == 'source' and (len(my_parameters) == 0 or len(my_functions) == 0 or len(my_scales) == 0):
+        if my_simulation == Library.SIMULATION_SOURCE and (len(my_parameters) == 0 or len(my_functions) == 0 or len(my_scales) == 0):
             print('ERROR!!! Missing \'*Parameters\' , \'*Scales\' or \'*Functions\' for Current Source simulation, abort import')
             return
         Library.PARTS.append(my_part)
         Library.PARTS = list(set(Library.PARTS))
         count = 0;
-        if my_simulation == "source":
+        if my_simulation == Library.SIMULATION_SOURCE:
             for line in my_parameters:
                 if line.replace(" ", "") != "":
                     count += 1;
@@ -306,8 +317,8 @@ class Interface(object):
             spec_min = float(self.entry_spec_min.get()) if self.entry_spec_min.get() != '' else None
             spec_max = float(self.entry_spec_max.get()) if self.entry_spec_max.get() != '' else None
 
-            X_list = list()
-            Y_list = list()
+            self.X_list.clear()
+            self.Y_list.clear()
             oneMore = True
             Tid_Levels_dict = {self.get_num_TID(tid): tid for tid in Library.TID_LEVEL}
             Tid_Levels = [(k, Tid_Levels_dict[k]) for k in sorted(Tid_Levels_dict.keys())]
@@ -316,7 +327,7 @@ class Interface(object):
                 str_TID = Tid_Levels[i][1]
                 if (num_TID < num_TID_lower and i + 1 < len(Tid_Levels) and Tid_Levels[i + 1][0] > num_TID_lower) or \
                         (num_TID_lower <= num_TID and (num_TID < num_TID_upper or oneMore)):
-                    self.output_filepath = relative_path('Output/' + part + '_' + str_TID + '_test.txt')
+                    self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + str_TID + '_test.txt')
                     result = netListGenerator.generate(part, simulation, str_TID, output_option,
                                               self.output_filepath, self.netlist_filepath)
                     if result == False:
@@ -327,18 +338,26 @@ class Interface(object):
                     # print(my_result)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
                     # self.plotfigure(X_label, Y_label, X, Y, part, simulation, TID_level)
-                    X_list.append(num_TID)
+                    self.X_list.append(num_TID)
                     lengthX = len(X)
                     for i in range(len(X)):
                         if X[i] == X[int(lengthX / 2)]:
-                            Y_list.append(Y[i])
+                            self.Y_list.append(Y[i])
                             break
                     # print(X[20])
 
             Y_label = output_option
-            self.plotfigureTK(X_label='TID level (rad)', Y_label=Y_label, X=X_list, Y=Y_list, X_min = num_TID_lower,
-                              X_max=num_TID_upper, part=part, simulation=simulation, TID_level=TID_level_lower,
-                              TID_level2=TID_level_upper, spec_min=spec_min, spec_max=spec_max)
+            if len(self.X_list) == 0 or len(self.Y_list) == 0:
+                message = "No result to show"
+                self.result_text.set(message)
+                return
+            self.figure_input.clear()
+            self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, num_TID_lower, num_TID_upper,
+                                      part, simulation, TID_level_lower, TID_level_upper, spec_min, spec_max, False])
+            self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
+                              self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
+                              self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
+                              self.figure_input[12])
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
             self.result_text.set(message)
@@ -412,6 +431,10 @@ class Interface(object):
             pass
         return
 
+    def callback(self, event):
+        self.execute_hit()
+        return
+
     def start(self):
         # row 0
         row = 0
@@ -439,7 +462,8 @@ class Interface(object):
         self.button_import.grid(row=row, column=1, pady=10)
         # row 4
         row = 4
-        self.label_output_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
+        # self.label_output_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
+        self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20,0))
         self.label_output.grid(row=row, column=1, pady=(20, 0))
         # self.label_output_x.grid(row=row, column=0, pady=(20, 0))
         # self.label_output_y.grid(row=row, column=1, pady=(20, 0))
@@ -453,7 +477,7 @@ class Interface(object):
 
         # row 6
         row = 6
-        self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20,0))
+        # self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20,0))
         self.label_spec_max.grid(row=row, column=1, pady=(20, 0))
 
         # row 7
@@ -474,11 +498,21 @@ class Interface(object):
 
         # row 11
         row = 11
+        self.button_save.grid(row=row, column=1)
+
+        # row 12
+        row = 12
+        self.button_change_scale.grid(row=row, column=1)
+
+        # row 13
+        row = 13
         self.label_result_text.grid(row=row, column=1)
 
+        self.button_execute.focus_set()
         # bind onselect function with widget
         self.cb_parts.bind('<<ComboboxSelected>>', self.part_onselect)
         self.cb_simulation.bind('<<ComboboxSelected>>', self.simulation_onselect)
+        self.window.bind('<Return>', self.callback)
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.window.mainloop()
@@ -554,10 +588,14 @@ class Interface(object):
         plt.show(block=False)
         return
 
-    def plotfigureTK(self, X_label, Y_label, X, Y, X_min, X_max, part, simulation, TID_level, TID_level2=None, spec_min=None, spec_max=None):
+    def plotfigureTK(self, X_label, Y_label, X, Y, X_min, X_max, part, simulation, TID_level, TID_level2=None,
+                     spec_min=None, spec_max=None, logscale=False):
         f = plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=(8, 6))
         f.clf()
         subplot = f.add_subplot(111)
+        if logscale is True:
+            subplot.set_xscale('symlog')
+            # subplot.set_yscale('log')
         # subplot.plot([1,2,3,4],[5,6,7,8])
         y_min = min(Y)
         y_max = max(Y)
@@ -580,6 +618,65 @@ class Interface(object):
         self.canvas_plot = FigureCanvasTkAgg(f, self.window)
         self.canvas_plot.show()
         self.canvas_plot.get_tk_widget().grid(row=4, column=2, rowspan=10, columnspan=4, padx=(20,0))
+        return
+
+    def change_scale(self):
+        if len(self.figure_input) == 13:
+            self.figure_input[12] = not self.figure_input[12]
+            self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
+                              self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
+                              self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
+                              self.figure_input[12])
+        return
+
+    def save(self):
+        path = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
+        files = os.listdir(path)
+        result_path = relative_path(FILEPATHS.OUTPUT_DIR_PATH + 'Result.xlsx')
+        workbook = xlsxwriter.Workbook(result_path)
+        worksheet = workbook.add_worksheet()
+        row = 0
+        col = -3
+        for file in files:
+            if '.txt' not in file:
+                continue
+            f = open(path + '/' + file)
+            isX = True
+            X_label = ''
+            Y_label = ''
+            X = []
+            Y = []
+            row = 0
+            col += 3
+            for line in f:
+                line = line.strip('\n')
+                my_line = line.split(' ')
+                cnt = 0
+                for word in my_line:
+                    if cnt < 2 and word != '':
+                        if X_label == '':
+                            X_label = word
+                        elif Y_label == '':
+                            Y_label = word
+                        else:
+                            try:
+                                if isX is True:
+                                    X.append(float(word))
+                                    cnt += 1
+                                    isX = False
+                                else:
+                                    Y.append(float(word))
+                                    isX = True
+                            except:
+                                cnt = cnt
+            f.close()
+            for index in range(len(X)):
+                worksheet.write(row, col, X[index])
+                worksheet.write(row, col + 1, Y[index])
+                row += 1
+        workbook.close()
+        message = 'File saved at ./' + FILEPATHS.OUTPUT_DIR_PATH + 'Result.xlsx'
+        self.result_text.set(message)
         return
 
 

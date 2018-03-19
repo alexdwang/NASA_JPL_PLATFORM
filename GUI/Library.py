@@ -6,8 +6,8 @@ import GUI.FILEPATHS as FILEPATHS
 ' Contents in this file should not be modified by program unless you are updating the library
 """
 
-SIMULATION_MODEL = 'model'
-SIMULATION_SOURCE = 'source'
+SIMULATION_MODEL = 'compact model'
+SIMULATION_SOURCE = 'external current source'
 TPRE_RAD = 'pre_rad'
 
 with open("Library/name.json", 'r') as f:

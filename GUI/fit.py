@@ -8,16 +8,32 @@ import GUI.Library as Library
 
 
 def fit(sheet, TID_level, file_path):
-    Ve, Ib_Pre_Rad = excel_table_byname(sheet, TID_level, file_path)
-    xdata = np.array(Ve)
-    ydata = np.array(np.log(Ib_Pre_Rad))
-    y2 = np.array(Ib_Pre_Rad)
-    poptlog, pcovlog = curve_fit(func, xdata, ydata)
-    # popt, pcov = curve_fit(func, xdata, y2)
+    choice = 1
+    if choice == 1:
+        Ve, Ib_Pre_Rad = excel_table_byname(sheet, TID_level, file_path)
+        xdata = np.array(Ve)
+        ydata = np.array(np.log(Ib_Pre_Rad))
+        popt, pcov = curve_fit(func, xdata, ydata)
 
-    # plot_data(xdata, ydata, poptlog)
-    # plot_log_scale(xdata, y2, popt)
-    return poptlog
+        # plot_data(xdata, ydata, popt)
+        return popt
+    elif choice == 2:
+        Ve, Ib_Pre_Rad = excel_table_byname(sheet, TID_level, file_path)
+        xdata = np.array(Ve)
+        y2 = np.array(Ib_Pre_Rad)
+        popt, pcov = curve_fit(f, xdata, y2)
+
+        # plot_log_scale(xdata, y2, popt, f)
+        return popt
+    elif choice == 3:
+        Ve, Ib_Pre_Rad = excel_table_byname(sheet, TID_level, file_path)
+        xdata = np.array(Ve)
+        ydata = np.array(np.log(Ib_Pre_Rad))
+        popt, pcov = curve_fit(f2, xdata, ydata)
+
+        plot_data(xdata, ydata, popt)
+        # plot_log_scale(xdata, y2, popt, f2)
+        return popt
 
 def relative_path(path):
     dirname = os.path.dirname(os.path.realpath('__file__'))
@@ -54,21 +70,27 @@ def excel_table_byname(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
 def plot_data(xdata, ydata, popt):
     plt.figure(1)
     plt.plot(xdata, ydata, 'b*', label='data')
-    plt.plot(xdata, func(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+    if len(popt) == 3:
+        plt.plot(xdata, func(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+    else:
+        plt.plot(xdata, func(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f' % tuple(popt))
     # plt.legend()
     plt.show(block=False)
     return
 
 
-def plot_log_scale(xdata, y2, popt):
+def plot_log_scale(xdata, y2, popt, function):
     plt.subplot()
     plt.plot(xdata, y2, 'b*', label='data')
-    plt.plot(xdata, f(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+    if len(popt) == 3:
+        plt.plot(xdata, function(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+    else:
+        plt.plot(xdata, function(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f' % tuple(popt))
     # plt.plot(xdata, f(xdata, -41.935,47.6314,-11.045), 'y-', label='fit:a=-41.935, b=47.6314, c=-11.045')
 
     plt.yscale('log')
     plt.legend(loc='upper left')
-    plt.show()
+    plt.show(block=False)
     return
 
 
@@ -78,3 +100,6 @@ def func(x, a, b, c):
 
 def f(x, a, b, c):
     return np.exp(a + b * x + c * x**2)
+
+def f2(x, a, b):
+    return b * x + np.log(a)
