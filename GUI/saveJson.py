@@ -40,6 +40,7 @@ def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, I
 TITLE = 'NASA JPL Platform'
 PART_LT1175 = 'LT1175'
 PART_AD590 = 'AD590'
+PART_TL431 = 'TL431'
 PARTS = [PART_LT1175, PART_AD590]
 SIMULATION_MODEL = 'compact model'
 SIMULATION_SOURCE = 'external current source'
@@ -205,7 +206,7 @@ OUTPUT_OPTION = {PART_LT1175: ['+ V(4)',
                               '+ I(VOUT)']}
 OUTPUT = {PART_LT1175: {'Line Regulation': ['+ V(4)',
                                                '+ V(1)']},
-          PART_AD590: {'Default': ['+ V(2)',
+          PART_AD590: {'Output Current': ['+ V(2)',
                                               '+ I(VOUT)']}}
 SUBCIRCUIT = {PART_LT1175: {SIMULATION_MODEL: [
                                 '.subckt BG_sc VCC VEE VREF',
@@ -549,6 +550,7 @@ LIBRARY_JFET = {PART_LT1175: [],
                             '']}
 save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION, OUTPUT,
                          SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET)
+
 
 # with open(CONSTANT.LIBRARY_FILE_PATH,'r') as f:
 #     jsonObject = f.readline()

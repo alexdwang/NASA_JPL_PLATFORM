@@ -10,15 +10,21 @@ SIMULATION_MODEL = 'compact model'
 SIMULATION_SOURCE = 'external current source'
 TPRE_RAD = 'pre_rad'
 
-with open("Library/name.json", 'r') as f:
+with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
     name_jsonObject = f.readline()
 f.close()
 name_json_dict = json.loads(name_jsonObject)
 
-with open("Library/library.json", 'r') as f:
+with open(FILEPATHS.LIBRARY_FILE_PATH, 'r') as f:
     library_jsonObject = f.readline()
 f.close()
 library_json_dict = json.loads(library_jsonObject)
+
+with open(FILEPATHS.SPECIFICATION_FILE_PATH, 'r') as f:
+    specification_jsonObject = f.readline()
+f.close()
+specification_json_dict = json.loads(specification_jsonObject)
+SPECIFICATION = specification_json_dict
 
 TITLE = name_json_dict['TITLE']
 PARTS = name_json_dict['PARTS']

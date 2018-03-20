@@ -11,6 +11,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from itertools import cycle
 from time import sleep
+import numpy as np
 import importlib
 import xlsxwriter
 import os
@@ -20,80 +21,71 @@ from GUI import execute, NetListGenerator, Library, FILEPATHS
 
 class Interface(object):
     def __init__(self):
-        element_width = 18
+        element_width = 22
         element_height = 2
         element_half_width = int(element_width/2 + 2)
+        background_color = '#87CEFA'
+        my_font = ('Arial', 18)
 
         self.window = Tk()
         self.window.title('Platform')
-        self.window.geometry('1150x700')
+        self.window.configure(background=background_color)
+        # self.window.geometry('1150x700')
 
-        self.label_topline = Label(self.window, text=Library.TITLE, font=('Arial', 20), width=30, height=element_height)
-        self.label_input_header = Label(self.window, text="Input: ", font=('Arial', 15), width=element_half_width, height=element_height)
-        self.label_output_header = Label(self.window, text="Output: ", font=('Arial', 15), width=element_half_width, height=element_height)
-        self.label_spec_header = Label(self.window, text="Specification: ", font=('Arial', 15), width=element_half_width, height=element_height)
+        self.label_topline = Label(self.window, text=Library.TITLE, font=my_font, width=30, height=element_height, bg=background_color)
+        self.label_input_header = Label(self.window, text="Input: ", font=my_font, width=element_half_width, height=element_height, bg=background_color)
+        self.label_output_header = Label(self.window, text="Output: ", font=my_font, width=element_half_width, height=element_height, bg=background_color)
+        self.label_spec_header = Label(self.window, text="Specification: ", font=my_font, width=element_half_width, height=element_height, bg=background_color)
 
-        self.empty = Label(self.window, text="", font=('Arial', 20), width=element_width, height=element_height)
+        self.empty = Label(self.window, text="", font=my_font, width=element_width, height=element_height, bg=background_color)
 
-        self.label_parts = Label(self.window, text='parts:', font=('Arial', 0), width=element_width, height=element_height)
+        self.label_parts = Label(self.window, text='parts:', font=my_font, width=element_width, height=element_height, bg=background_color)
         self.parts_options = StringVar()
         self.parts_options_tuple = (Library.PARTS)
         self.cb_parts = ttk.Combobox(self.window, textvariable=self.parts_options, exportselection=False, state='readonly')
         self.cb_parts['values'] = self.parts_options_tuple
 
-        self.label_simulation = Label(self.window, text='simulation mode:', font=('Arial', 0), width=element_width, height=element_height)
+        self.label_simulation = Label(self.window, text='simulation mode:', font=my_font, width=element_width, height=element_height, bg=background_color)
         self.simulation_options = StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
         self.cb_simulation = ttk.Combobox(self.window, textvariable=self.simulation_options, exportselection=False, state='readonly')
         self.cb_simulation['values'] = self.simulation_options_tuple
 
-        self.label_TID_level_lower_bound = Label(self.window, text='TID level lower bound:', font=('Arial', 0), width=element_width, height=element_height)
+        self.label_TID_level_lower_bound = Label(self.window, text='TID level lower bound(rad):', font=my_font, width=element_width, height=element_height, bg=background_color)
         # self.TID_options_lower = StringVar()
         # self.TID_options_tuple = ()
         # self.cb_TID_lower_bound = ttk.Combobox(self.window, textvariable=self.TID_options_lower, exportselection=False, state='readonly')
         # self.cb_TID_lower_bound['values'] = self.TID_options_tuple
         self.entry_TID_lower_bound = TIDEntry(self.window, width=element_width)
 
-        self.label_TID_level_upper_bound = Label(self.window, text='TID level upper bound:', font=('Arial', 0), width=element_width, height=element_height)
+        self.label_TID_level_upper_bound = Label(self.window, text='TID level upper bound(rad):', font=my_font, width=element_width, height=element_height, bg=background_color)
         # self.TID_options_upper = StringVar()
         # self.cb_TID_upper_bound = ttk.Combobox(self.window, textvariable=self.TID_options_upper, exportselection=False, state='readonly')
         # self.cb_TID_upper_bound['values'] = self.TID_options_tuple
         self.entry_TID_upper_bound = TIDEntry(self.window, width=element_width)
 
-        # self.label_output_x = Label(self.window, text='X Label:', font=('Arial', 0), width=element_width, height=element_height)
-        # self.output_options_x = StringVar()
-        # self.output_options_tuple_x = ()
-        # self.cb_output_x = ttk.Combobox(self.window, textvariable=self.output_options_x, exportselection=False, state='readonly')
-        # self.cb_output_x['values'] = self.output_options_tuple_x
-        #
-        # self.label_output_y = Label(self.window, text='Y Label:', font=('Arial', 0), width=element_width, height=element_height)
-        # self.output_options_y = StringVar()
-        # self.output_options_tuple_y = ()
-        # self.cb_output_y = ttk.Combobox(self.window, textvariable=self.output_options_y, exportselection=False, state='readonly')
-        # self.cb_output_y['values'] = self.output_options_tuple_y
-
-        self.label_output = Label(self.window, text='Output:', font=('Arial', 0), width=element_width, height=element_height)
+        self.label_output = Label(self.window, text='Output:', font=my_font, width=element_width, height=element_height, bg=background_color)
         self.output_options = StringVar()
         self.output_options_tuple = ()
         self.cb_output = ttk.Combobox(self.window, textvariable=self.output_options, exportselection=False, state='readonly')
         self.cb_output['values'] = self.output_options_tuple
 
-        self.label_spec_min = Label(self.window, text='min Y:', font=('Arial', 0), width=element_width, height=element_height)
+        self.label_spec_min = Label(self.window, text='min Y:', font=my_font, width=element_width, height=element_height, bg=background_color)
         self.entry_spec_min = FloatEntry(self.window, width=element_width)
 
-        self.label_spec_max = Label(self.window, text='max Y:', font=('Arial', 0), width=element_width, height=element_height)
+        self.label_spec_max = Label(self.window, text='max Y:', font=my_font, width=element_width, height=element_height, bg=background_color)
         self.entry_spec_max = FloatEntry(self.window, width=element_width)
 
 
-        self.button_import = Button(self.window, text='Import', width=15, height=2, command=self.import_hit)
-        self.button_execute = Button(self.window, text='Execute', width=15, height=2, command=self.execute_hit)
-        self.button_save = Button(self.window, text='Save', width=15, height=2, command=self.save)
-        self.button_change_scale = Button(self.window, text='Change Scale', width=15, height=2, command=self.change_scale)
+        self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2, command=self.import_hit)
+        self.button_execute = Button(self.window, text='Execute', font=my_font, width=15, height=2, command=self.execute_hit)
+        self.button_save = Button(self.window, text='Save', font=my_font, width=15, height=2, command=self.save)
+        self.button_change_scale = Button(self.window, text='Change Scale', font=my_font, width=15, height=2, command=self.change_scale)
 
-        self.canvas_plot = Canvas(self.window, width=600, height=500)
+        self.canvas_plot = Canvas(self.window, width=600, height=500, bg=background_color, highlightbackground=background_color)
 
         self.result_text = StringVar()
-        self.label_result_text = Label(self.window, textvariable=self.result_text, font=('Arial', 12), width=2 * element_width, height=5)
+        self.label_result_text = Label(self.window, textvariable=self.result_text, font=my_font, width=2 * element_width, height=5, bg=background_color)
 
         self.X_list = list()
         self.Y_list = list()
@@ -303,13 +295,9 @@ class Interface(object):
             execute.rm_all()
             part = self.cb_parts.get()
             simulation = self.cb_simulation.get()
-            # TID_level_lower = self.cb_TID_lower_bound.get()
-            # TID_level_upper = self.cb_TID_upper_bound.get()
             TID_level_lower = self.entry_TID_lower_bound.get()
             TID_level_upper = self.entry_TID_upper_bound.get()
             output_option = self.cb_output.get()
-            # output_option_x = self.cb_output_x.get()
-            # output_option_y = self.cb_output_y.get()
             num_TID_lower = self.get_num_TID(TID_level_lower)
             num_TID_upper = self.get_num_TID(TID_level_upper)
             if num_TID_lower > num_TID_upper:
@@ -348,19 +336,24 @@ class Interface(object):
                             self.Y_list.append(Y[i])
                             break
                     # print(X[20])
-
-            Y_label = output_option
+            unit = ''
+            if Y_label[0] == 'V':
+                unit = ' (V)'
+            elif Y_label[0] == 'I':
+                unit = ' (A)'
+            Y_label = output_option + unit
             if len(self.X_list) == 0 or len(self.Y_list) == 0:
                 message = "No result to show"
                 self.result_text.set(message)
                 return
             self.figure_input.clear()
-            self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, num_TID_lower, num_TID_upper,
-                                      part, simulation, TID_level_lower, TID_level_upper, spec_min, spec_max, False])
+            self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, part, simulation,
+                                      num_TID_lower, num_TID_upper, TID_level_lower, TID_level_upper, None, None,
+                                      spec_min, spec_max, False, False])
             self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
                               self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
-                              self.figure_input[12])
+                              self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15])
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
             self.result_text.set(message)
@@ -392,12 +385,6 @@ class Interface(object):
                 self.cb_parts.get() == '' or \
                 self.cb_simulation.get() == '' or \
                 self.cb_output.get() == '':
-                # self.cb_output_x.get() == '' or \
-                # self.cb_output_y.get() == ''
-                # self.cb_TID_lower_bound.get() == '' or \
-                # self.cb_TID_upper_bound.get() == '' or \
-                # self.entry_spec_min.get() == '' or \
-                # self.entry_spec_max.get() == '' or \
             self.result_text.set('please check your input')
             return False
         self.result_text.set('in process, please wait...')
@@ -417,12 +404,6 @@ class Interface(object):
             self.output_options_tuple = (list(Library.OUTPUT[part].keys()))
             self.cb_output['values'] = self.output_options_tuple
             self.output_options.set('')
-            # self.output_options_tuple_x = (Library.OUTPUT_OPTION[part])
-            # self.cb_output_x['values'] = self.output_options_tuple_x
-            # self.output_options_x.set('')
-            # self.output_options_tuple_y = (Library.OUTPUT_OPTION[part])
-            # self.cb_output_y['values'] = self.output_options_tuple_y
-            # self.output_options_y.set('')
         except:
             pass
         return
@@ -432,6 +413,17 @@ class Interface(object):
             self.TID_option_update()
         except:
             pass
+        return
+
+    def output_onselect(self, evt):
+        part = self.cb_parts.get()
+        output = self.cb_output.get()
+        spec_lib = Library.SPECIFICATION.get(part)
+        if spec_lib is not None:
+            spec = spec_lib.get(output)
+            if spec is not None and len(spec) == 2:
+                self.entry_spec_min.insert(0, spec[0])
+                self.entry_spec_max.insert(0, spec[1])
         return
 
     def callback(self, event):
@@ -463,24 +455,19 @@ class Interface(object):
         # row 3
         row = 3
         self.button_import.grid(row=row, column=1, pady=10)
+
         # row 4
         row = 4
-        # self.label_output_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
-        self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20,0))
+        self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
         self.label_output.grid(row=row, column=1, pady=(20, 0))
-        # self.label_output_x.grid(row=row, column=0, pady=(20, 0))
-        # self.label_output_y.grid(row=row, column=1, pady=(20, 0))
-        # self.empty.grid(row=row, column=2)
-        self.canvas_plot.grid(row=row, column=2, rowspan=10, columnspan=4, padx=(20,0))
+        self.canvas_plot.grid(row=row, column=2, rowspan=10, columnspan=4, padx=(20, 0))
+
         # row 5
         row = 5
         self.cb_output.grid(row=row, column=1)
-        # self.cb_output_x.grid(row=row, column=0)
-        # self.cb_output_y.grid(row=row, column=1)
 
         # row 6
         row = 6
-        # self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20,0))
         self.label_spec_max.grid(row=row, column=1, pady=(20, 0))
 
         # row 7
@@ -515,6 +502,7 @@ class Interface(object):
         # bind onselect function with widget
         self.cb_parts.bind('<<ComboboxSelected>>', self.part_onselect)
         self.cb_simulation.bind('<<ComboboxSelected>>', self.simulation_onselect)
+        self.cb_output.bind('<<ComboboxSelected>>', self.output_onselect)
         self.window.bind('<Return>', self.callback)
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -525,6 +513,8 @@ class Interface(object):
             self.cb_output.set('Line Regulation')
             self.entry_TID_lower_bound.insert(0, "0")
             self.entry_TID_upper_bound.insert(0, "300k")
+        else:
+            self.button_import.grid_remove()
         self.window.mainloop()
         return
 
@@ -603,17 +593,34 @@ class Interface(object):
 
     ''' 
     ' plot figure in the main window
+    ' X_label: 
     '''
-    def plotfigureTK(self, X_label, Y_label, X, Y, X_min, X_max, part, simulation, TID_level, TID_level2=None,
-                     spec_min=None, spec_max=None, logscale=False):
+    def plotfigureTK(self, X_label, Y_label, X, Y, part, simulation, X_min, X_max, TID_level, TID_level2=None,
+                     Y_min=None, Y_max=None, spec_min=None, spec_max=None, x_logscale=False, y_logscale=False):
+        # preprocessing input
+        if X_min > X_max:
+            tmp = X_min
+            X_min = X_max
+            X_max = tmp
+        if Y_min is not None and Y_max is not None:
+            if Y_min > Y_max:
+                tmp = Y_min
+                Y_min = Y_max
+                Y_max = tmp
+
         figure = mpl.figure.Figure(figsize=(8, 6))
         figure.clf()
         subplot = figure.add_subplot(111)
-        if logscale is True:
+        if x_logscale is True:
             subplot.set_xscale('symlog')
         else:
             subplot.set_xscale('linear')
             # subplot.set_yscale('log')
+        if y_logscale is True:
+            subplot.set_yscale('log', nonposy='clip')
+            # Y = np.log(Y)
+        else:
+            subplot.set_yscale('linear')
         # subplot.plot([1,2,3,4],[5,6,7,8])
         y_min = min(Y)
         y_max = max(Y)
@@ -626,8 +633,10 @@ class Interface(object):
         subplot.plot(X, Y, next(self.color_gen), label="Part=" + part + " TID level=" + TID_level + '~' + TID_level2)
         subplot.plot(X, Y, 'r*')
         y_gap = y_max - y_min
-        if y_gap != 0:
-            subplot.set_ylim([y_min - 0.1 * y_gap, y_max + 0.15 * y_gap])
+        y_lower_bound = float(Y_min) if Y_min is not None else y_min - 0.1 * y_gap
+        y_upper_bound = float(Y_max) if Y_max is not None else y_max + 0.15 * y_gap
+        if y_lower_bound != y_upper_bound:
+            subplot.set_ylim([y_lower_bound, y_upper_bound])
         x_gap = X_max - X_min
         if x_gap != 0:
             subplot.set_xlim([X_min, X_max])
@@ -650,45 +659,41 @@ class Interface(object):
         # self.canvas_plot.get_tk_widget().grid(row=4, column=2, rowspan=10, columnspan=4, padx=(20,0))
         return
 
-    def plotfigureTK1(self, X_label, Y_label, X, Y, X_min, X_max, part, simulation, TID_level, TID_level2=None,
-                     spec_min=None, spec_max=None, logscale=False):
-        f = plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=(8, 6))
-        f.clf()
-        subplot = f.add_subplot(111)
-        if logscale is True:
-            subplot.set_xscale('symlog')
-            # subplot.set_yscale('log')
-        # subplot.plot([1,2,3,4],[5,6,7,8])
-        y_min = min(Y)
-        y_max = max(Y)
-        if spec_max is not None:
-            subplot.axhline(y=spec_max, color='r', linestyle='--')
-            y_max = max(y_max, spec_max)
-        if spec_min is not None:
-            subplot.axhline(y=spec_min, color='r', linestyle='--')
-            y_min = min(y_min, spec_min)
-        subplot.plot(X, Y, next(self.color_gen), label="Part=" + part + " TID level=" + TID_level + '~' + TID_level2)
-        subplot.plot(X, Y, 'r*')
-        gap = y_max - y_min
-        if gap != 0:
-            subplot.set_ylim([y_min - 0.1 * gap, y_max + 0.15 * gap])
-        if X_min != X_max:
-            subplot.set_xlim([X_min, X_max])
-        subplot.set_xlabel(X_label)
-        subplot.set_ylabel(Y_label)
-        subplot.legend(loc='upper left')
-        self.canvas_plot = FigureCanvasTkAgg(f, self.window)
-        self.canvas_plot.show()
-        self.canvas_plot.get_tk_widget().grid(row=4, column=2, rowspan=10, columnspan=4, padx=(20,0))
-        return
-
     def change_scale(self):
-        if len(self.figure_input) == 13:
-            self.figure_input[12] = not self.figure_input[12]
+        if len(self.figure_input) != 0:
+            changeScaleDialog = ChangeScaleWindow()
+            self.window.wait_window(changeScaleDialog)
+            try:
+                scaleinfo = changeScaleDialog.scaleinfo
+                if scaleinfo is None:
+                    return
+            except:
+                return
+            x_upper, x_lower, x_log, y_upper, y_lower, y_log = scaleinfo
+            # x upper bound
+            if x_upper != '':
+                self.figure_input[7] = self.get_num_TID(x_upper)
+            # x lower bound
+            if x_lower != '':
+                self.figure_input[6] = self.get_num_TID(x_lower)
+            # x log scale
+            if min(self.figure_input[3]) <= 0 and y_log is True:
+                self.result_text.set("can not use log scale on y axis \n negative value detected")
+            else:
+                self.figure_input[15] = y_log
+            # y upper bound
+            if scaleinfo[3] != '':
+                self.figure_input[11] = y_upper
+            # y lower bound
+            if scaleinfo[4] != '':
+                self.figure_input[10] = y_lower
+            # y log scale
+            self.figure_input[14] = x_log
+
             self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
                               self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
-                              self.figure_input[12])
+                              self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15])
         return
 
     def save(self):
@@ -740,6 +745,72 @@ class Interface(object):
         message = 'File saved at ./' + FILEPATHS.OUTPUT_DIR_PATH + 'Result.xlsx'
         self.result_text.set(message)
         return
+
+
+class ChangeScaleWindow(Toplevel):
+    def __init__(self):
+        super().__init__()
+        self.title('change scale')
+        self.attributes('-topmost', 'true')
+        element_width = 16
+        my_font = ('Arial', 15)
+        self.label_x_upper = Label(self, text='x upper bound(rad)', font=my_font, width=element_width)
+        self.entry_x_upper = TIDEntry(self, width=element_width)
+        self.label_x_lower = Label(self, text='x lower bound(rad)', font=my_font, width=element_width)
+        self.entry_x_lower = TIDEntry(self, width=element_width)
+        self.xlog = IntVar()
+        self.checkbutton_x = Checkbutton(self, text="log scale x", font=my_font, variable=self.xlog)
+
+        self.label_y_upper = Label(self, text='y upper bound', font=my_font, width=element_width)
+        self.entry_y_upper = FloatEntry(self, width=element_width)
+        self.label_y_lower = Label(self, text='y lower bound', font=my_font, width=element_width)
+        self.entry_y_lower = FloatEntry(self, width=element_width)
+        self.ylog = IntVar()
+        self.checkbutton_y = Checkbutton(self, text="log scale y", font=my_font, variable=self.ylog)
+
+        self.button_ok = Button(self, text='OK', font=my_font, width=5, height=2, command=self.ok)
+        self.button_cancel = Button(self, text='Cancel', font=my_font, width=5, height=2, command=self.cancel)
+        self.start()
+
+    def start(self):
+        # row 0
+        row = 0
+        self.label_x_upper.grid(row=row, column=0)
+        self.entry_x_upper.grid(row=row, column=1)
+        self.label_y_upper.grid(row=row, column=2)
+        self.entry_y_upper.grid(row=row, column=3)
+
+        # row 1
+        row = 1
+        self.label_x_lower.grid(row=row, column=0)
+        self.entry_x_lower.grid(row=row, column=1)
+        self.label_y_lower.grid(row=row, column=2)
+        self.entry_y_lower.grid(row=row, column=3)
+
+        # row 2
+        row = 2
+        self.checkbutton_x.grid(row=row, column=0, sticky=W)
+        self.checkbutton_y.grid(row=row, column=2, sticky=W)
+        # row 5
+        row = 5
+        self.button_cancel.grid(row=row, column=2)
+        self.button_ok.grid(row=row, column=3)
+
+
+    def ok(self):
+        x_upper = self.entry_x_upper.get()
+        x_lower = self.entry_x_lower.get()
+        x_log = (self.xlog.get() == 1)
+        y_upper = self.entry_y_upper.get()
+        y_lower = self.entry_y_lower.get()
+        y_log = (self.ylog.get() == 1)
+
+        self.scaleinfo = [x_upper, x_lower, x_log, y_upper, y_lower, y_log]
+        self.destroy()
+
+    def cancel(self):
+        self.scaleinfo = None
+        self.destroy()
 
 
 class ValidatingEntry(Entry):
