@@ -91,7 +91,7 @@ class Interface(object):
         self.Y_list = list()
         self.figure_input = list()
         self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
-        self.netlist_filepath = relative_path('Netlist/test.cir')
+        self.netlist_filepath = relative_path('Library/temp/myNetlist.cir')
         self.output_filepath = ''
         self.color_gen = cycle('bgcmyk')
 
@@ -700,21 +700,61 @@ class Interface(object):
         path = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
         files = os.listdir(path)
         result_path = relative_path(FILEPATHS.OUTPUT_DIR_PATH + 'Result.xlsx')
+        part_name = ''
+        TIDs = []
+        try:
+            for file in files:
+                if '.txt' in file:
+                    part_name = file.split('_')[0]
+                    TIDs.append(file.split('_')[1])
+        except:
+            return
+        assign_col = 0
+        col_dict = {}
+        if TIDs.count('pre') != 0:
+            col_dict['pre'] = assign_col
+            assign_col += 3
+        if TIDs.count('2.5k') != 0:
+            col_dict['2.5k'] = assign_col
+            assign_col += 3
+        if TIDs.count('5k') != 0:
+            col_dict['5k'] = assign_col
+            assign_col += 3
+        if TIDs.count('10k') != 0:
+            col_dict['10k'] = assign_col
+            assign_col += 3
+        if TIDs.count('20k') != 0:
+            col_dict['20k'] = assign_col
+            assign_col += 3
+        if TIDs.count('30k') != 0:
+            col_dict['30k'] = assign_col
+            assign_col += 3
+        if TIDs.count('50k') != 0:
+            col_dict['50k'] = assign_col
+            assign_col += 3
+        if TIDs.count('100k') != 0:
+            col_dict['100k'] = assign_col
+            assign_col += 3
+        if TIDs.count('200k') != 0:
+            col_dict['200k'] = assign_col
+            assign_col += 3
+        if TIDs.count('300k') != 0:
+            col_dict['300k'] = assign_col
+            assign_col += 3
+
         workbook = xlsxwriter.Workbook(result_path)
-        worksheet = workbook.add_worksheet()
-        row = 0
-        col = -3
+        worksheet = workbook.add_worksheet(part_name)
         for file in files:
             if '.txt' not in file:
                 continue
+            TID_level = file.split('_')[1]
+
             f = open(path + '/' + file)
             isX = True
             X_label = ''
             Y_label = ''
             X = []
             Y = []
-            row = 0
-            col += 3
             for line in f:
                 line = line.strip('\n')
                 my_line = line.split(' ')
@@ -737,6 +777,14 @@ class Interface(object):
                             except:
                                 cnt = cnt
             f.close()
+            row = 0
+            col = col_dict.get(TID_level)
+            worksheet.write(row, col, 'TID level:')
+            worksheet.write(row, col + 1, TID_level)
+            row += 1
+            worksheet.write(row, col, X_label)
+            worksheet.write(row, col + 1, Y_label)
+            row += 1
             for index in range(len(X)):
                 worksheet.write(row, col, X[index])
                 worksheet.write(row, col + 1, Y[index])
