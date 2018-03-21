@@ -16,7 +16,7 @@ import importlib
 import xlsxwriter
 import os
 
-from GUI import execute, NetListGenerator, Library, FILEPATHS
+from GUI import execute, NetListGenerator, Library, FILEPATHS, fit
 
 
 class Interface(object):
@@ -91,7 +91,7 @@ class Interface(object):
         self.Y_list = list()
         self.figure_input = list()
         self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
-        self.netlist_filepath = relative_path('Library/temp/myNetlist.cir')
+        self.netlist_filepath = relative_path(FILEPATHS.TEMP_DIR_PATH + 'myNetlist.cir')
         self.output_filepath = ''
         self.color_gen = cycle('bgcmyk')
 
@@ -326,6 +326,62 @@ class Interface(object):
                     if num_TID >= num_TID_upper:
                         oneMore = False
                     my_result = execute.execute_module3(self.netlist_filepath)
+
+                    # for current source only
+                    if simulation == Library.SIMULATION_SOURCE and str_TID != Library.TPRE_RAD:
+                        V0_deltaIbs = []
+                        # fit curve
+                        excel_file_path = Library.EXCEL_FILE_PATH[part]
+                        f = open(FILEPATHS.XDATA_FILE_PATH, 'r')
+                        labels = []
+                        xdata = []
+                        isLabel = True
+                        for line in f:
+                            line = line.strip('\n')
+                            my_line = line.split(' ')
+                            cnt = 0
+                            linedata = []
+                            for word in my_line:
+                                if word != '':
+                                    if isLabel is True:
+                                        labels.append(word)
+                                        isLabel = False
+                                    else:
+                                        try:
+                                            linedata.append(float(word))
+                                        except:
+                                            cnt = cnt
+                            if len(linedata) != 0:
+                                xdata.append(linedata)
+                        f.close()
+                        tmp_dict = Library.SCALELIB.get(part)
+                        scales = tmp_dict.get('scale')
+                        types = tmp_dict.get('type')
+                        try:
+                            a1, b1, c1 = fit.fit('NPN', Library.TPRE_RAD, excel_file_path)
+                            a2, b2, c2 = fit.fit('NPN', str_TID, excel_file_path)
+
+                            a3, b3, c3 = fit.fit('PNP', Library.TPRE_RAD, excel_file_path)
+                            a4, b4, c4 = fit.fit('PNP', str_TID, excel_file_path)
+                            for xs in xdata:
+                                V0_deltaIb = [xs[0]]
+                                for index in range(-1, -len(scales) - 1, -1):
+                                    scale = scales[index]
+                                    type = types[index]
+                                    x = xs[index]
+                                    if type == 'NPN':
+                                        deltaIb = scale * fit.f(x, a2, b2, c2) - fit.f(x, a1, b1, c1)
+                                    else:
+                                        deltaIb = scale * fit.f(x, a4, b4, c4) - fit.f(x, a3, b3, c3)
+                                    V0_deltaIb.append(deltaIb)
+                                V0_deltaIbs.append(V0_deltaIb)
+                        except:
+                            continue
+                    for V0_deltaIb in V0_deltaIbs:
+                        if netListGenerator.generate_for_current_source_2(part, simulation, str_TID, output_option,
+                                              self.output_filepath, self.netlist_filepath) is True:
+                            execute.execute_module3(self.netlist_filepath)
+
                     # print(my_result)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
                     # self.plotfigure(X_label, Y_label, X, Y, part, simulation, TID_level)

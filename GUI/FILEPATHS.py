@@ -1,4 +1,7 @@
 NAME_FILE_PATH = "Library/name.json"
 LIBRARY_FILE_PATH = "Library/library.json"
 SPECIFICATION_FILE_PATH = "Library/specification.json"
+SCALE_FILE_PATH = "Library/scale.json"
 OUTPUT_DIR_PATH = "Output/"
+TEMP_DIR_PATH = "Library/temp/"
+XDATA_FILE_PATH = TEMP_DIR_PATH + "myXdata.txt"

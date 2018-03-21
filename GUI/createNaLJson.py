@@ -91,7 +91,8 @@ TID_LIST = {SIMULATION_MODEL: [
 
 # Excel file path
 EXCEL_FILE_PATH = {PART_AD590: 'FitCurve/NPN_PNP_Data_Yidi.xlsx',
-                   PART_LT1175: 'FitCurve/PNP_FITTING.xlsx'}
+                   PART_LT1175: 'FitCurve/PNP_FITTING.xlsx',
+                   PART_TL431: 'FitCurve/NPN_PNP_Data_Yidi.xlsx'}
 
 # Excel sheet name & column name
 COL_NAME = {'VE':       'Ve_PRE_RAD',

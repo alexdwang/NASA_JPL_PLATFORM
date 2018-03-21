@@ -1,1 +1,1 @@
-{"AD590": {"Output Current": []}, "TL431": {"Vka": [], "Vref": [2.44, 2.55], "Ika": [], "Iref": []}, "LT1175": {"Line Regulation": []}}
+{"AD590": {"Output Current": []}, "TL431": {"Iref": [], "Ika": [], "Vref": [2.44, 2.55], "Vka": []}, "LT1175": {"Line Regulation": []}}

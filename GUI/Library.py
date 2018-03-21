@@ -24,7 +24,14 @@ with open(FILEPATHS.SPECIFICATION_FILE_PATH, 'r') as f:
     specification_jsonObject = f.readline()
 f.close()
 specification_json_dict = json.loads(specification_jsonObject)
+
+with open(FILEPATHS.SCALE_FILE_PATH, 'r') as f:
+    scale_jsonObject = f.readline()
+f.close()
+scale_json_dict = json.loads(scale_jsonObject)
+
 SPECIFICATION = specification_json_dict
+SCALELIB = scale_json_dict
 
 TITLE = name_json_dict['TITLE']
 PARTS = name_json_dict['PARTS']
