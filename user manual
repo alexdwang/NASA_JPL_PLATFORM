@@ -1,0 +1,8 @@
+1. select parts, simulation mode.
+2. input upper and lower bound of TID
+3. select specification
+4. if applicable, change max Y and min Y
+5. hit Execute button
+
+6. if you want to save the result in an Excel, click Save button
+7. if you want to change the scale of the plot, click Change Scale button. Only enter / select those that you need to change in the poped up window and leave others blank. Click OK.

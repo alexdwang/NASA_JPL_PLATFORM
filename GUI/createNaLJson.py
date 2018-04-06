@@ -39,12 +39,70 @@ def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, I
 # names
 TITLE = 'NASA JPL Platform'
 PART_LT1175 = 'LT1175'
+PART_LT1006 = 'LT1006'
 PART_AD590 = 'AD590'
 PART_TL431 = 'TL431'
-PARTS = [PART_LT1175, PART_AD590]
+PART_LM193 = 'LM193'
+PART_LP2953 = 'LP2953'
+PART_LM3940 = 'LM3940'
+PART_LM111 = 'LM111'
+PARTS = [PART_LT1175, PART_AD590, PART_TL431, PART_LM193]
 SIMULATION_MODEL = 'compact model'
 SIMULATION_SOURCE = 'external current source'
 SIMULATION = [SIMULATION_MODEL, SIMULATION_SOURCE]
+
+Nonlinearity = 'Nonlinearity'
+Temperature = 'Temperature'
+Temperature_Error = 'Temperature Error'
+Line_Regulation = 'Line Regulation'
+Output_Voltage = 'Output Voltage'
+Dropoff_Voltage = 'Dropoff Voltage'
+Load_Regulation = 'Load Regulation'
+Positive_Supply_Current = 'Positive Supply Current'
+Negative_Supply_Current = 'Negative Supply Current'
+Input_Offset_Voltage = 'Input Offset Voltage'
+Input_Offset_Current = 'Input Offset Current'
+Positive_Input_Bias_Current = 'Positive Input Bias Current'
+Negative_Input_Bias_Current = 'Negative Input Bias Current'
+Reference_Voltage = 'Vref'
+Reference_Input_Current = 'Iref'
+Cathode_Current_Ika = 'Ika'
+Cathode_Voltage_Vka = 'Vka'
+Supply_Current = 'Supply Current'
+
+OUTPUT_NAME = {PART_AD590: [Temperature,
+                            Temperature_Error],
+               PART_LT1175: [Line_Regulation,
+                             Output_Voltage,
+                             Dropoff_Voltage,
+                             Load_Regulation],
+               PART_LT1006: [Positive_Supply_Current,
+                             Negative_Supply_Current,
+                             Input_Offset_Voltage,
+                             Input_Offset_Current,
+                             Positive_Input_Bias_Current,
+                             Negative_Input_Bias_Current],
+               PART_LM193: [Supply_Current,
+                            Input_Offset_Voltage,
+                            Positive_Input_Bias_Current,
+                            Negative_Input_Bias_Current,
+                            Input_Offset_Current],
+               PART_LM3940: [Supply_Current,
+                             Output_Voltage],
+               PART_LM111: [Positive_Supply_Current,
+                            Negative_Supply_Current,
+                            Input_Offset_Voltage,
+                            Input_Offset_Current,
+                            Positive_Input_Bias_Current,
+                            Negative_Input_Bias_Current],
+               PART_LP2953: [Output_Voltage,
+                             Reference_Voltage],
+               PART_TL431: [Reference_Voltage,
+                            Reference_Input_Current,
+                            Cathode_Current_Ika,
+                            Cathode_Voltage_Vka],
+               }
+
 TPRE_RAD = 'pre_rad'
 T2_5KRAD = '2.5k'
 T5KRAD = '5k'
@@ -121,7 +179,8 @@ INPUT_VOLTAGE_SOURCE = {PART_LT1175: ['V2 4 0 DC 0V'],
 
                         # AD590:
                         PART_AD590: ['VIN 2 0 DC 0V',
-                                     'VOUT 20 0 0']
+                                     'VOUT 20 0 0'],
+                        PART_TL431: ['V1 1 0 DC 0V'],
                         }
 
 CIRCUIT_CORE = {PART_LT1175: ['*Subcircuit',
@@ -139,10 +198,20 @@ CIRCUIT_CORE = {PART_LT1175: ['*Subcircuit',
                            '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
                            'Q1 1 2 3 QNMOD 1000',
                            'Q2 0 7 2 QNMOD 10'],
-                PART_AD590: [
-                             'XZ 2 20 AD590',
-                             'R0 20 0 1m'
-                ]
+                PART_AD590: ['XZ 2 20 AD590',
+                             'R0 20 0 1m'],
+                PART_TL431: ['*Subcircuit',
+                             '*X1 20 21 22',
+                             'X1 2 3 0 TL431_sc',
+                             '',
+                             '*Resistance: R<name> <+ node> <- node> [model name] <value>',
+                             'r21 4 0 6800',
+                             'r22 5 4 10000',
+                             'r23 5 1 180',
+                             '',
+                             'Vika 5 3 0',
+                             'Viref 4 2 0',
+                             ''],
                 }
 
 SCALE = {PART_LT1175: ['*SCALE',
@@ -199,16 +268,27 @@ FUNCTIONS = {PART_LT1175: ['*DeltaIb = 1*(exp(a2+(b2*Veb)+(c2*(Veb*Veb))) - exp(
                          '.func deltaIb11(x) {scale11*((exp(a4+(b4*x)+(c4*(x*x)))) - (exp(a3+(b3*x)+(c3*(x*x)))))}']}
 
 INPUT = {PART_LT1175: ['.dc V2 0 -20 -0.1'],
-         PART_AD590: ['.dc VIN 0 30 0.01']
+         PART_AD590: ['.dc VIN 0 30 0.01'],
+         PART_TL431: ['.dc V1 0 25 1'],
          }
 OUTPUT_OPTION = {PART_LT1175: ['+ V(4)',
                                '+ V(1)'],
                  PART_AD590: ['+ V(2)',
-                              '+ I(VOUT)']}
-OUTPUT = {PART_LT1175: {'Line Regulation': ['+ V(4)',
-                                               '+ V(1)']},
-          PART_AD590: {'Output Current': ['+ V(2)',
-                                              '+ I(VOUT)']}}
+                              '+ I(VOUT)'],}
+OUTPUT = {PART_LT1175: {Line_Regulation: ['+ V(4)',
+                                          '+ V(1)']},
+          PART_AD590: {Temperature: ['+ V(2)',
+                                     '+ I(VOUT)']},
+          PART_TL431: {Reference_Voltage: ['+ V(1)',      # Vref
+                                           '+ V(2)'],
+                       Reference_Input_Current: ['+ V(1)',      # Iref
+                                                 '+ I(Viref)'],
+                       Cathode_Voltage_Vka: ['+ V(1)',      # Vka
+                                             '+ V(3)'],
+                       Cathode_Current_Ika: ['+ V(1)',      # Ika
+                                             '+ I(Vika)']},
+          PART_LM193: {Supply_Current: ['+ V(5)',
+                                        '+ I(VVCC)']}}
 SUBCIRCUIT = {PART_LT1175: {SIMULATION_MODEL: [
                                 '.subckt BG_sc VCC VEE VREF',
                                 '*Resistance: R<name> <+ node> <- node> [model name] <value>',
@@ -412,7 +492,90 @@ SUBCIRCUIT = {PART_LT1175: {SIMULATION_MODEL: [
                                            'J1 8 16 11 NJF_TYP',
                                            '',
                                            '*end of the subcircuit',
-                                           '.ends']}
+                                           '.ends']},
+              PART_TL431: {SIMULATION_MODEL:['.subckt TL431_sc REF K A',
+                                             '*Capacitance: C<name> <+ node> <- node> [model name] <value> + [IC=<initial value>]',
+                                             'C1 5 3 20p',
+                                             'C2 16 K 20p',
+                                             '',
+                                             '*Resistance: R<name> <+ node> <- node> [model name] <value>',
+                                             'R1 K 13 180',
+                                             'R20 K 12 180',
+                                             'R2 6 5 1100',
+                                             'R5 4 3 2400',
+                                             'R4 4 1 2400',
+                                             'R3 7 4 2500',
+                                             'R8 19 A 4800',
+                                             'R9 19 18 33',
+                                             'R7 8 1 270',
+                                             'R6 9 A 373',
+                                             '',
+                                             '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
+                                             'Q2 K REF 7 QNMOD 2',
+                                             'Q3 16 16 REF QNMOD 3',
+                                             'Q4 11 11 12 QLPMOD 2',
+                                             'Q5 16 11 13 QLPMOD 1',
+                                             'Q6 11 7 6 QNMOD 1',
+                                             'Q7 3 1 9 QNMOD 7.2',
+                                             'Q8 1 1 A QNMOD 0.9',
+                                             'Q9 5 3 A QNMOD 1',
+                                             'Q10 16 8 A QNMOD 1',
+                                             'Q11 K 16 18 QNMOD 2.5',
+                                             'Q12 K 19 A QNMOD 50',
+                                             '',
+                                             '*ends of the TL431_sc subcircuit',
+                                             '.ends'],
+                          SIMULATION_SOURCE: ['.subckt TL431_sc 20 21 22',
+                                              '',
+                                              '*Diode: D<name> <anode node (+)> <cathode node (-)> <model name> [area value]',
+                                              '**********************************',
+                                              '*PNP',
+                                              'd4 12 11 DMODPNP 2',
+                                              'd5 13 11 DMODPNP 1',
+                                              '',
+                                              '*NPN',
+                                              'd2 20 7 DMODNPN 2',
+                                              'd3 16 20 DMODNPN 3',
+                                              'd6 7 6 DMODNPN 1',
+                                              'd7 1 9 DMODNPN 7.2',
+                                              'd8 1 22 DMODNPN 0.9',
+                                              'd9 3 22 DMODNPN 0.1',
+                                              'd10 8 22 DMODNPN 1',
+                                              'd11 16 18 DMODNPN 2.5',
+                                              'd12 19 22 DMODNPN 50',
+                                              '',
+                                              '*Capacitance: C<name> <+ node> <- node> [model name] <value> + [IC=<initial value>]',
+                                              'C1 3 5 20p',
+                                              'C2 21 16 20p',
+                                              '',
+                                              '*Resistance: R<name> <+ node> <- node> [model name] <value>',
+                                              'R1 21 13 180',
+                                              'R20 21 12 180',
+                                              'R2 6 5 1100',
+                                              'R5 4 3 2400',
+                                              'R4 4 1 2400',
+                                              'R3 7 4 2500',
+                                              'R8 19 22 4800',
+                                              'R9 19 18 33',
+                                              'R7 8 1 270',
+                                              'R6 9 22 373',
+                                              '',
+                                              '*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]',
+                                              'Q2 21 20 7 QNMOD 2',
+                                              'Q3 16 16 20 QNMOD 3',
+                                              'Q6 11 7 6 QNMOD 1',
+                                              'Q7 3 1 9 QNMOD 7.2',
+                                              'Q8 1 1 22 QNMOD 0.9',
+                                              'Q9 5 3 22 QNMOD 1',
+                                              'Q10 16 8 22 QNMOD 1',
+                                              'Q11 21 16 18 QNMOD 2.5',
+                                              'Q12 21 19 22 QNMOD 50',
+                                              '',
+                                              'Q4 11 11 12 QLPMOD 2',
+                                              'Q5 16 11 13 QLPMOD 1',
+                                              '',
+                                              '*ends of the TL431_sc subcircuit',
+                                              '.ends']},
               }
 
 LIBRARY_TID_LEVEL_MODEL = {TPRE_RAD: ['* npn prerad off ctp 3b',
@@ -541,8 +704,8 @@ LIBRARY_TID_LEVEL_MODEL = {TPRE_RAD: ['* npn prerad off ctp 3b',
                                      '+ RBM    = 57.544          RE     = 7.093           RC     = 1               )'
                                       ]
                            }
-LIBRARY_JFET = {PART_LT1175: [],
-        PART_AD590: ['',
+
+LIBRARY_JFET = {PART_AD590: ['',
                             '*JFET',
                             '.model NJF_TYP NJF (',
                             '+ VTO = -1.0	BETA = 6.2E-4	LAMBDA = 0.003',

@@ -7,10 +7,11 @@ import GUI.fit as fit
 # generate a Netlist based on the input parameters and save it to ProjectHome/Netlist
 class NetListGenerator:
     def generate(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath): # generate Netlist
-        if simulation == Library.SIMULATION_MODEL or TID_level == Library.TPRE_RAD:
-            return self.generate_for_compact_model(part, simulation, TID_level, output_option, output_filepath, netlist_filepath)
-        else:
-            return self.generate_for_current_source_1(part, simulation, TID_level, output_option, output_filepath, netlist_filepath)
+        # if simulation == Library.SIMULATION_MODEL or TID_level == Library.TPRE_RAD:
+        #     return self.generate_for_compact_model(part, simulation, TID_level, output_option, output_filepath, netlist_filepath)
+        # else:
+        #     return self.generate_for_current_source_1(part, simulation, TID_level, output_option, output_filepath, netlist_filepath)
+        return self.generater(part, simulation, TID_level, output_option, output_filepath, netlist_filepath)
 
     def generate_for_current_source_1(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath):
         content = []
@@ -137,7 +138,7 @@ class NetListGenerator:
         except:
             return False
 
-    def generate_for_current_source_2(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath):
+    def generate_for_current_source_2(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath, V0_deltaIb):
         content = []
         content.extend(['Title: TL431 / 20k / T= 300.15K = 27C',
         '*****************************************',
@@ -161,7 +162,7 @@ class NetListGenerator:
         'Viref 4 2 0',
         '',
         '*Input',
-        '.dc V1 0 25 1',
+        '.dc V1 '+ V0_deltaIb[0] + ' ' + V0_deltaIb[0] + ' 1',
         '',
         '*Output',
         '.print dc format=noindex file=' + output_filepath,
@@ -173,17 +174,17 @@ class NetListGenerator:
         '.subckt TL431_sc REF K A',
         '*Voltage Controlled Current Source',
         '**********************************',
-        'B2 REF 7 I=3.32e-6',
-        'B3 16 REF I=8.75e-27',
-        'B4 12 11 I=1.14e-5',
-        'B5 13 11 I=7.1e-6',
-        'B6 7 6 I=1.51e-6',
-        'B7 1 9 I=2.96e-6',
-        'B8 1 A I=8.35e-7',
-        'B9 3 A I=1.53e-6',
-        'B10 8 A I=1.07e-6',
-        'B11 16 18 I=1.55e-5',
-        'B12 19 A I=1.41e-3',
+        'B2 REF 7 I=' + V0_deltaIb[1],
+        'B3 16 REF I=' + V0_deltaIb[2],
+        'B4 12 11 I='+ V0_deltaIb[3],
+        'B5 13 11 I='+ V0_deltaIb[4],
+        'B6 7 6 I='+ V0_deltaIb[5],
+        'B7 1 9 I='+ V0_deltaIb[6],
+        'B8 1 A I='+ V0_deltaIb[7],
+        'B9 3 A I='+ V0_deltaIb[8],
+        'B10 8 A I='+ V0_deltaIb[9],
+        'B11 16 18 I='+ V0_deltaIb[10],
+        'B12 19 A I='+ V0_deltaIb[11],
         '',
         '*Capacitance: C<name> <+ node> <- node> [model name] <value> + [IC=<initial value>]',
         'C1 3 5 20p',
@@ -253,8 +254,10 @@ class NetListGenerator:
         except:
             return False
 
-    def generate_for_compact_model(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath):
+    def generater(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath):
         content = []
+        if TID_level == Library.TPRE_RAD:
+            simulation = Library.SIMULATION_MODEL
         try:
             # Section 1: Title
             content.extend(['Title: ' + part + ' / ' + TID_level + ' / ' + 'T= 300.15K = 27C',
@@ -272,63 +275,65 @@ class NetListGenerator:
             content.extend(['*End Circuit Core',
                             ''])
 
-            # 2 additional sections for current source simulation
-            if simulation == Library.SIMULATION_SOURCE:
-                # Section Parameters (only if use current source):
-                content.extend(['*Parameters',
-                                '***********'])
-                excel_file_path = Library.EXCEL_FILE_PATH[part]
-                # a,b,c
-                if Library.NUM_OF_PARAMETER[part] == 4:
-                    a1, b1, c1 = fit.fit('PNP', Library.TPRE_RAD, excel_file_path)
-                    a2, b2, c2 = fit.fit('PNP', TID_level, excel_file_path)
-                    a3, b3, c3 = fit.fit('NPN', Library.TPRE_RAD, excel_file_path)
-                    a4, b4, c4 = fit.fit('NPN', TID_level, excel_file_path)
-                    paras = ['*PRE_RAD_PNP',
-                             '.PARAM a1=' + str(a1)[0:8],
-                             '.PARAM b1=' + str(b1)[0:8],
-                             '.PARAM c1=' + str(c1)[0:8],
-                             '',
-                             '*' + TID_level + 'rad_PNP',
-                             '.PARAM a2=' + str(a2)[0:8],
-                             '.PARAM b2=' + str(b2)[0:8],
-                             '.PARAM c2=' + str(c2)[0:8],
-                             '',
-                             '*PRE_RAD_NPN',
-                             '.PARAM a3=' + str(a3)[0:8],
-                             '.PARAM b3=' + str(b3)[0:8],
-                             '.PARAM c3=' + str(c3)[0:8],
-                             '',
-                             '*' + TID_level + 'rad_NPN',
-                             '.PARAM a4=' + str(a4)[0:8],
-                             '.PARAM b4=' + str(b4)[0:8],
-                             '.PARAM c4=' + str(c4)[0:8]]
-                    content.extend(paras)
-                elif Library.NUM_OF_PARAMETER[part] == 2:
-                    a1, b1, c1 = fit.fit('LDR', Library.TPRE_RAD, excel_file_path)
-                    a2, b2, c2 = fit.fit('LDR', TID_level, excel_file_path)
-                    paras = ['*PRE_RAD',
-                             '.PARAM a1=' + str(a1)[0:8],
-                             '.PARAM b1=' + str(b1)[0:8],
-                             '.PARAM c1=' + str(c1)[0:8],
-                             '',
-                             '*' + TID_level + 'rad',
-                             '.PARAM a2=' + str(a2)[0:8],
-                             '.PARAM b2=' + str(b2)[0:8],
-                             '.PARAM c2=' + str(c2)[0:8],
-                             ]
-                    content.extend(paras)
-                # scale
-                content.append('')
-                content.extend(Library.SCALE[part])
-                content.extend(['*End Parameters',
-                                ''])
-                # Section Function (only if use current source):
-                content.extend(['*Function',
-                                '*********'])
-                content.extend(Library.FUNCTIONS[part])
-                content.extend(['*End Function',
-                                ''])
+            # # 2 additional sections for current source simulation
+            # if simulation == Library.SIMULATION_SOURCE:
+            #     # Section Parameters (only if use current source):
+            #     content.extend(['*Parameters',
+            #                     '***********'])
+            #     excel_file_path = Library.EXCEL_FILE_PATH[part]
+            #     # a,b,c
+            #     if Library.NUM_OF_PARAMETER[part] == 4:
+            #         a1, b1, c1 = fit.fit('PNP', Library.TPRE_RAD, excel_file_path)
+            #         a2, b2, c2 = fit.fit('PNP', TID_level, excel_file_path)
+            #         a3, b3, c3 = fit.fit('NPN', Library.TPRE_RAD, excel_file_path)
+            #         a4, b4, c4 = fit.fit('NPN', TID_level, excel_file_path)
+            #         paras = ['*PRE_RAD_PNP',
+            #                  '.PARAM a1=' + str(a1)[0:8],
+            #                  '.PARAM b1=' + str(b1)[0:8],
+            #                  '.PARAM c1=' + str(c1)[0:8],
+            #                  '',
+            #                  '*' + TID_level + 'rad_PNP',
+            #                  '.PARAM a2=' + str(a2)[0:8],
+            #                  '.PARAM b2=' + str(b2)[0:8],
+            #                  '.PARAM c2=' + str(c2)[0:8],
+            #                  '',
+            #                  '*PRE_RAD_NPN',
+            #                  '.PARAM a3=' + str(a3)[0:8],
+            #                  '.PARAM b3=' + str(b3)[0:8],
+            #                  '.PARAM c3=' + str(c3)[0:8],
+            #                  '',
+            #                  '*' + TID_level + 'rad_NPN',
+            #                  '.PARAM a4=' + str(a4)[0:8],
+            #                  '.PARAM b4=' + str(b4)[0:8],
+            #                  '.PARAM c4=' + str(c4)[0:8]]
+            #         content.extend(paras)
+            #     elif Library.NUM_OF_PARAMETER[part] == 2:
+            #         fit.fit('LDR', Library.TPRE_RAD, excel_file_path)
+            #         fit.fit('LDR', TID_level, excel_file_path)
+            #         a1, b1, c1 = fit.fit('LDR', Library.TPRE_RAD, excel_file_path)
+            #         a2, b2, c2 = fit.fit('LDR', TID_level, excel_file_path)
+            #         paras = ['*PRE_RAD',
+            #                  '.PARAM a1=' + str(a1)[0:8],
+            #                  '.PARAM b1=' + str(b1)[0:8],
+            #                  '.PARAM c1=' + str(c1)[0:8],
+            #                  '',
+            #                  '*' + TID_level + 'rad',
+            #                  '.PARAM a2=' + str(a2)[0:8],
+            #                  '.PARAM b2=' + str(b2)[0:8],
+            #                  '.PARAM c2=' + str(c2)[0:8],
+            #                  ]
+            #         content.extend(paras)
+            #     # scale
+            #     content.append('')
+            #     content.extend(Library.SCALE[part])
+            #     content.extend(['*End Parameters',
+            #                     ''])
+            #     # Section Function (only if use current source):
+            #     content.extend(['*Function',
+            #                     '*********'])
+            #     content.extend(Library.FUNCTIONS[part])
+            #     content.extend(['*End Function',
+            #                     ''])
             # Section 4: Input
             content.extend(['*Input',
                             '******',])
@@ -359,11 +364,23 @@ class NetListGenerator:
             else:
                 content.extend(Library.LIBRARY_TID_LEVEL_MODEL[Library.TPRE_RAD])
             # JFET
-            content.extend(Library.LIBRARY_JFET[part]),
-            content.extend(['*End Library',
-                            '',
-                            '*end of the netlist',
-                            '.end'])
+            if Library.LIBRARY_JFET.get(part) is not None:
+                content.extend(Library.LIBRARY_JFET[part]),
+
+            if simulation == Library.SIMULATION_SOURCE:
+                # DMOD
+                excel_file_path = Library.EXCEL_FILE_PATH[part]
+                a1, b1 = fit.fit('PNP', TID_level, excel_file_path)
+                a2, b2 = fit.fit('NPN', TID_level, excel_file_path)
+                content.extend(['.model DMODPNP D (IS = ' + str(a1),
+                               '+ N = ' + str(1 / (b1 * 0.029)) + ' )',
+                               '',
+                               '.model DMODNPN D (IS = ' + str(a2),
+                               '+ N = ' + str(1 / (b2 * 0.029)) + ')'])
+                content.extend(['*End Library',
+                                '',
+                                '*end of the netlist',
+                                '.end'])
 
             # print content to netlist file
             file = open(netlist_filepath, 'wb')
@@ -372,5 +389,6 @@ class NetListGenerator:
                 file.write(text)
             file.close()
             return True
-        except:
+        except Exception as e:
+            # print(e)
             return False

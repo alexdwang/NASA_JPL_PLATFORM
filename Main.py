@@ -328,59 +328,64 @@ class Interface(object):
                     my_result = execute.execute_module3(self.netlist_filepath)
 
                     # for current source only
-                    if simulation == Library.SIMULATION_SOURCE and str_TID != Library.TPRE_RAD:
-                        V0_deltaIbs = []
-                        # fit curve
-                        excel_file_path = Library.EXCEL_FILE_PATH[part]
-                        f = open(FILEPATHS.XDATA_FILE_PATH, 'r')
-                        labels = []
-                        xdata = []
-                        isLabel = True
-                        for line in f:
-                            line = line.strip('\n')
-                            my_line = line.split(' ')
-                            cnt = 0
-                            linedata = []
-                            for word in my_line:
-                                if word != '':
-                                    if isLabel is True:
-                                        labels.append(word)
-                                        isLabel = False
-                                    else:
-                                        try:
-                                            linedata.append(float(word))
-                                        except:
-                                            cnt = cnt
-                            if len(linedata) != 0:
-                                xdata.append(linedata)
-                        f.close()
-                        tmp_dict = Library.SCALELIB.get(part)
-                        scales = tmp_dict.get('scale')
-                        types = tmp_dict.get('type')
-                        try:
-                            a1, b1, c1 = fit.fit('NPN', Library.TPRE_RAD, excel_file_path)
-                            a2, b2, c2 = fit.fit('NPN', str_TID, excel_file_path)
-
-                            a3, b3, c3 = fit.fit('PNP', Library.TPRE_RAD, excel_file_path)
-                            a4, b4, c4 = fit.fit('PNP', str_TID, excel_file_path)
-                            for xs in xdata:
-                                V0_deltaIb = [xs[0]]
-                                for index in range(-1, -len(scales) - 1, -1):
-                                    scale = scales[index]
-                                    type = types[index]
-                                    x = xs[index]
-                                    if type == 'NPN':
-                                        deltaIb = scale * fit.f(x, a2, b2, c2) - fit.f(x, a1, b1, c1)
-                                    else:
-                                        deltaIb = scale * fit.f(x, a4, b4, c4) - fit.f(x, a3, b3, c3)
-                                    V0_deltaIb.append(deltaIb)
-                                V0_deltaIbs.append(V0_deltaIb)
-                        except:
-                            continue
-                    for V0_deltaIb in V0_deltaIbs:
-                        if netListGenerator.generate_for_current_source_2(part, simulation, str_TID, output_option,
-                                              self.output_filepath, self.netlist_filepath) is True:
-                            execute.execute_module3(self.netlist_filepath)
+                    # if simulation == Library.SIMULATION_SOURCE and str_TID != Library.TPRE_RAD:
+                    #     V0_deltaIbs = []
+                    #     # fit curve
+                    #     excel_file_path = Library.EXCEL_FILE_PATH[part]
+                    #     f = open(FILEPATHS.XDATA_FILE_PATH, 'r')
+                    #     labels = []
+                    #     xdata = []
+                    #     isLabel = True
+                    #     for line in f:
+                    #         line = line.strip('\n')
+                    #         my_line = line.split(' ')
+                    #         cnt = 0
+                    #         linedata = []
+                    #         for word in my_line:
+                    #             if word != '':
+                    #                 if isLabel is True:
+                    #                     labels.append(word)
+                    #                     isLabel = False
+                    #                 else:
+                    #                     try:
+                    #                         linedata.append(float(word))
+                    #                     except:
+                    #                         cnt = cnt
+                    #         if len(linedata) != 0:
+                    #             xdata.append(linedata)
+                    #     f.close()
+                    #     tmp_dict = Library.SCALELIB.get(part)
+                    #     scales = tmp_dict.get('scale')
+                    #     types = tmp_dict.get('type')
+                    #     try:
+                    #         a1, b1, c1 = fit.fit('NPN', Library.TPRE_RAD, excel_file_path)
+                    #         a2, b2, c2 = fit.fit('NPN', str_TID, excel_file_path)
+                    #
+                    #         a3, b3, c3 = fit.fit('PNP', Library.TPRE_RAD, excel_file_path)
+                    #         a4, b4, c4 = fit.fit('PNP', str_TID, excel_file_path)
+                    #         for xs in xdata:
+                    #             V0_deltaIb = [xs[0]]
+                    #             for index in range(-1, -len(scales) - 1, -1):
+                    #                 scale = scales[index]
+                    #                 type = types[index]
+                    #                 x = xs[index]
+                    #                 if type == 'NPN':
+                    #                     deltaIb = scale * fit.f(x, a2, b2, c2) - fit.f(x, a1, b1, c1)
+                    #                 else:
+                    #                     deltaIb = scale * fit.f(x, a4, b4, c4) - fit.f(x, a3, b3, c3)
+                    #                 V0_deltaIb.append(deltaIb)
+                    #             V0_deltaIbs.append(V0_deltaIb)
+                    #     except:
+                    #         continue
+                    # if simulation == Library.SIMULATION_SOURCE and str_TID != Library.TPRE_RAD:
+                    #     for V0_deltaIb in V0_deltaIbs:
+                    #         V0_deltaIb = [str(V0_deltaIb_element) for V0_deltaIb_element in V0_deltaIb]
+                    #         self.output_filepath = relative_path(
+                    #             FILEPATHS.OUTPUT_DIR_PATH + part + '_' + str_TID + '_' + V0_deltaIb[0] + '.txt')
+                    #         netlist_filepath = relative_path(FILEPATHS.TEMP_DIR_PATH + part + '_' + str_TID + '_' + V0_deltaIb[0] + '.cir')
+                    #         if netListGenerator.generate_for_current_source_2(part, simulation, str_TID, output_option,
+                    #                               self.output_filepath, netlist_filepath, V0_deltaIb) is True:
+                    #             execute.execute_module3(netlist_filepath)
 
                     # print(my_result)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
@@ -428,6 +433,7 @@ class Interface(object):
         self.simulation_options.set('')
         self.cb_simulation['values'] = self.simulation_options_tuple
         self.output_options.set('')
+        self.clear_specs()
         # self.TID_options_lower.set('')
         # self.TID_options_upper.set('')
         # self.output_options_x.set('')
@@ -460,6 +466,7 @@ class Interface(object):
             self.output_options_tuple = (list(Library.OUTPUT[part].keys()))
             self.cb_output['values'] = self.output_options_tuple
             self.output_options.set('')
+            self.clear_specs()
         except:
             pass
         return
@@ -475,12 +482,19 @@ class Interface(object):
         part = self.cb_parts.get()
         output = self.cb_output.get()
         spec_lib = Library.SPECIFICATION.get(part)
+        self.clear_specs()
         if spec_lib is not None:
             spec = spec_lib.get(output)
-            if spec is not None and len(spec) == 2:
-                self.entry_spec_min.insert(0, spec[0])
-                self.entry_spec_max.insert(0, spec[1])
+            if spec is not None:
+                if spec[0] is not None:
+                    self.entry_spec_min.insert(0, spec[0])
+                if spec[1] is not None:
+                    self.entry_spec_max.insert(0, spec[1])
         return
+
+    def clear_specs(self):
+        self.entry_spec_min.delete(0, 'end')
+        self.entry_spec_max.delete(0, 'end')
 
     def callback(self, event):
         self.execute_hit()
@@ -949,6 +963,13 @@ class FloatEntry(ValidatingEntry):
     def validate(self, value):
         try:
             if len(value) == 1 and value == '-':
+                return value
+            elif len(value) > 1 and value[-1] == 'e':
+                if (value[-2] == 'e' or value[-2] == '-'):
+                    return None
+                else:
+                    return value
+            elif len(value) > 2 and value[-1] == '-' and value[-2] == 'e':
                 return value
             elif value:
                 v = float(value)

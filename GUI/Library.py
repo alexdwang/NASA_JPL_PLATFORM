@@ -1,6 +1,6 @@
 import json
 import GUI.FILEPATHS as FILEPATHS
-
+import os
 """
 ' Library.py is used to load constant values from json files
 ' Contents in this file should not be modified by program unless you are updating the library
@@ -10,6 +10,7 @@ SIMULATION_MODEL = 'compact model'
 SIMULATION_SOURCE = 'external current source'
 TPRE_RAD = 'pre_rad'
 
+os.chdir("/home/dwang/NASA_JPL/NASA_JPL_PLATFORM")
 with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
     name_jsonObject = f.readline()
 f.close()

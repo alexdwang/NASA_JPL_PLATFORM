@@ -8,32 +8,51 @@ import GUI.Library as Library
 
 
 def fit(sheet, TID_level, file_path):
-    choice = 1
-    if choice == 1:
-        Ve, Ib_Pre_Rad = excel_table_byname(sheet, TID_level, file_path)
+    choice = 5
+    if choice == 1: # fit curve with 3-paras function without log-scaled
+        Ve, Ib = excel_table_byname(sheet, TID_level, file_path)
         xdata = np.array(Ve)
-        ydata = np.array(np.log(Ib_Pre_Rad))
-        popt, pcov = curve_fit(func, xdata, ydata)
+        ydata = np.array(Ib)
+        popt, pcov = curve_fit(func_eabxcx2, xdata, ydata)
 
-        # plot_data(xdata, ydata, popt)
+        # plot_log_scale(xdata, ydata, popt, func_eabxcx2)
         return popt
-    elif choice == 2:
-        Ve, Ib_Pre_Rad = excel_table_byname(sheet, TID_level, file_path)
+    elif choice == 2:   # fit curve with 3-paras function with log-scaled
+        Ve, Ib = excel_table_byname(sheet, TID_level, file_path)
         xdata = np.array(Ve)
-        y2 = np.array(Ib_Pre_Rad)
-        popt, pcov = curve_fit(f, xdata, y2)
+        logged_ydata = np.array(np.log(Ib))
+        popt, pcov = curve_fit(func_loged_abxcx2, xdata, logged_ydata)
 
-        # plot_log_scale(xdata, y2, popt, f)
+        # plot_data(xdata, logged_ydata, popt, func_loged_abxcx2)
         return popt
-    elif choice == 3:
-        Ve, Ib_Pre_Rad = excel_table_byname(sheet, TID_level, file_path)
+    elif choice == 3:   # fit curve with 2-paras function without log-scaled
+        Ve, Ib = excel_table_byname(sheet, TID_level, file_path)
+        scale = 1e10
         xdata = np.array(Ve)
-        ydata = np.array(np.log(Ib_Pre_Rad))
-        popt, pcov = curve_fit(f2, xdata, ydata)
+        ydata = np.array(Ib) * scale
+        popt, pcov = curve_fit(func_aebx, xdata, ydata)
 
-        plot_data(xdata, ydata, popt)
-        # plot_log_scale(xdata, y2, popt, f2)
+        # plot_data(xdata, ydata, popt, func_aebx)
+        # plot_log_scale(xdata, ydata, popt, func_aebx)
+        popt[0] = popt[0]/scale
         return popt
+    elif choice == 4:   # fit curve with 2-paras function with log-scaled
+        Ve, Ib = excel_table_byname(sheet, TID_level, file_path)
+        xdata = np.array(Ve)
+        logged_ydata = np.array(np.log(Ib))
+        popt, pcov = curve_fit(func_loged_logabx, xdata, logged_ydata)
+        # if TID_level != Library.TPRE_RAD:
+        #     plot_data(xdata, logged_ydata, popt, func_loged_logabx)
+        return popt
+    elif choice == 5:
+        Ve, Delta_Ib = excel_table_byname2delta(sheet, TID_level, file_path)
+        xdata = np.array(Ve)
+        logged_ydata = np.array(np.log(Delta_Ib))
+        popt, pcov = curve_fit(func_loged_logabx, xdata, logged_ydata)
+        # if TID_level != Library.TPRE_RAD:
+        #     plot_data(xdata, logged_ydata, popt, func_loged_logabx)
+        return popt
+
 
 def relative_path(path):
     dirname = os.path.dirname(os.path.realpath('__file__'))
@@ -48,7 +67,6 @@ def get_titles(table):
             col_dict[title] = i
     return col_dict
 
-
 def excel_table_byname(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
     file = relative_path(file_path)
     data = xlrd.open_workbook(file)
@@ -58,24 +76,50 @@ def excel_table_byname(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
     Ib = []
     nrows = table.nrows
     col_dict = get_titles(table)
+    lower_bound = 0.3 if sheet == "NPN" else 0.1
+    upper_bound = 0.8 if sheet == "NPN" else 0.7
     for row in range(2, nrows):
         ve = table.cell(row,col_dict[Library.COL_NAME['VE']]).value
         ib = table.cell(row, col_dict[Library.COL_NAME[TID_level]]).value
-        if 0.3 <= ve <= 0.8 and ib > 0:
+        # print(ve)
+        if lower_bound <= ve <= upper_bound and ib > 0:
             Ve.append(ve)
             Ib.append(ib)
     return Ve, Ib
 
+def excel_table_byname2delta(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
+    file = relative_path(file_path)
+    data = xlrd.open_workbook(file)
+    table = data.sheet_by_name(Library.SHEET_NAME[sheet])
 
-def plot_data(xdata, ydata, popt):
+    Ve = []
+    Delta_Ib = []
+    nrows = table.nrows
+    col_dict = get_titles(table)
+    lower_bound = 0.3 if sheet == "NPN" else 0.1
+    upper_bound = 0.8 if sheet == "NPN" else 0.7
+    for row in range(2, nrows):
+        ve = table.cell(row,col_dict[Library.COL_NAME['VE']]).value
+        ib = table.cell(row, col_dict[Library.COL_NAME[TID_level]]).value
+        ib_pre = table.cell(row, col_dict[Library.COL_NAME[Library.TPRE_RAD]]).value
+        delta_ib = ib - ib_pre
+        # print(ve)
+        if lower_bound <= ve <= upper_bound and delta_ib > 0:
+            Ve.append(ve)
+            Delta_Ib.append(delta_ib)
+    return Ve, Delta_Ib
+
+
+def plot_data(xdata, ydata, popt, function):
     plt.figure(1)
     plt.plot(xdata, ydata, 'b*', label='data')
     if len(popt) == 3:
-        plt.plot(xdata, func(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
+        plt.plot(xdata, function(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
     else:
-        plt.plot(xdata, func(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f' % tuple(popt))
-    # plt.legend()
-    plt.show(block=False)
+        plt.plot(xdata, function(xdata, *popt), 'r-', label='fit:a=%e, b=%5.3f' % tuple(popt))
+    plt.legend()
+    # plt.show(block=False)
+    plt.show()
     return
 
 
@@ -85,7 +129,7 @@ def plot_log_scale(xdata, y2, popt, function):
     if len(popt) == 3:
         plt.plot(xdata, function(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
     else:
-        plt.plot(xdata, function(xdata, *popt), 'r-', label='fit:a=%5.3f, b=%5.3f' % tuple(popt))
+        plt.plot(xdata, function(xdata, *popt), 'r-', label='fit:a=%5.18f, b=%5.3f' % tuple(popt))
     # plt.plot(xdata, f(xdata, -41.935,47.6314,-11.045), 'y-', label='fit:a=-41.935, b=47.6314, c=-11.045')
 
     plt.yscale('log')
@@ -94,12 +138,21 @@ def plot_log_scale(xdata, y2, popt, function):
     return
 
 
-def func(x, a, b, c):
+def func_loged_abxcx2(x, a, b, c):
     return a + b * x + c * x**2
 
 
-def f(x, a, b, c):
+def func_eabxcx2(x, a, b, c):
     return np.exp(a + b * x + c * x**2)
 
-def f2(x, a, b):
-    return b * x + np.log(a)
+def func_aebx(x, a, b):
+    return a * np.exp(b * x)
+
+def func_loged_logabx(x, a, b):
+    return np.log(a) + b * x
+
+# sheet = 'PNP'
+# TID_level = Library.TID_LEVEL[6]
+# file_path = Library.EXCEL_FILE_PATH['TL431']
+#
+# fit(sheet, TID_level, file_path)
