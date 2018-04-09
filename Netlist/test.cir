@@ -1,0 +1,125 @@
+Title: LT1175 / 20k / T= 300.15K = 27C
+
+*Input Voltage Source
+*********************
+V2 4 0 DC 0V
+*End Input Voltage Source
+
+*Circuit Core
+*************
+*Subcircuit
+*X1 VCC VEE VREF
+X1 0 4 5 BG_sc
+
+*X4 V+ V- VCC VEE VO
+X4 6 5 0 4 7 OPAMP_sc
+
+*Resistance: R<name> <+ node> <- node> [model name] <value>
+r1 0 6 350k
+r2 6 1 100k
+rLIM 3 4 0.001
+
+*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]
+Q1 1 2 3 QNMOD 1000
+Q2 0 7 2 QNMOD 10
+*End Circuit Core
+
+*Input
+******
+.dc V2 0 -20 -0.1
+*End Input
+
+*Output
+*******
+.print dc format=noindex file=F:\2018S\NASAJPL\NASA_JPL_PLATFORM\Output\LT1175_20k_test.txt
++ V(5)
++ V(1)
+*End Output
+
+*Subcircuit
+************
+*Schematic name: BG_sc
+.subckt BG_sc VCC VEE VREF
+*Resistance: R<name> <+ node> <- node> [model name] <value>
+r1 VCC 1 10k
+r2 1 8 2.93e6
+r3 8 9 109k
+r4 4 VEE 600
+r5 6 VEE 600
+
+*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]
+Q1 2 2 VCC QLPMOD 1
+Q2 3 2 1 QLPMOD 1
+Q3 12 5 9 QLPMOD 1
+Q4 11 5 8 QLPMOD 0.1
+Q5 12 12 7 QNMOD 1
+Q6 11 12 7 QNMOD 1
+Q7 VCC 5 7 QNMOD 1
+Q8 3 3 4 QNMOD 1
+Q9 7 3 6 QNMOD 1
+
+*Voltage Controlled Voltage Source: E<name> <+ node> <-node> <+ controlling node> <- controlling node> <gain>
+E1 VCC VREF VCC 5 1
+
+*Independent Current Source: I<name> <+ node> <-node> [[DC] <value>]
+I1 2 0 DC 3.23uA
+
+*end of the BG_sc subcircuit
+.ends BG_sc
+
+
+*Schematic name: OPAMP_sc
+.subckt OPAMP_sc V10 V11 VCC VEE VO
+*Resistance: R<name> <+ node> <- node> [model name] <value>
+r1 7 VEE 4.7k
+r2 3 VEE 4.7k
+r3 VO VEE 60k
+r4 11 VEE 60k
+
+*Capacitance: C<name> <+ node> <- node> [model name] <value> + [IC=<initial value>]
+C1 1 9 0.0056p
+
+*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]
+Q1 1 11 VEE QNMOD 10
+Q2 VCC 1 VO QNMOD 1
+Q3 VCC 9 11 QNMOD 1
+Q4 9 4 7 QNMOD 1
+Q5 4 4 3 QNMOD 1
+Q6 9 V10 5 QLPMOD 20
+Q7 4 V11 5 QLPMOD 20
+Q8 6 6 VCC QLPMOD 1
+Q9 5 6 VCC QLPMOD 10
+Q10 1 6 VCC QLPMOD 10
+
+*Independent Current Source: I<name> <+ node> <-node> [[DC] <value>]
+I1 6 0 DC 1.4u
+
+*end of the OPAMP_sc subcircuit
+.ends OPAMP_sc
+*End Subcircuit
+
+*Library
+*******
+* npn 2e4 off ctp 3b
+.model QNMOD NPN  (                      
++ IS     = 1.68208E-16
++ BF     = 45.95           NF     = 0.986787        VAF    = 345.2016293
++ IKF    = 0.0229087       NK     = 0.47574         ISE    = 1.122018E-14
++ NE     = 1.65            BR     = 0.697           NR     = 2
++ VAR    = 100             IKR    = 0.1             ISC    = 1E-17
++ NC     = 2               RB     = 140.86          IRB    = 1E-3
++ RBM    = 50              RE     = 2               RC     = 250.75)
+
+* lpnp 2e4 off ctp 3b
+.model QLPMOD PNP (
++ IS     = 8.70964E-16
++ BF     = 264.9           NF     = 0.99            VAF    = 35.8970174
++ IKF    = 9.549926E-5     NK     = 0.52            ISE    = 5.495409E-14
++ NE     = 1.42            BR     = 0.697           NR     = 2
++ VAR    = 100             IKR    = 0.1             ISC    = 1E-17
++ NC     = 2               RB     = 1E3             IRB    = 3.6E-5
++ RBM    = 100             RE     = 4.096           RC     = 1)
+*End Library
+
+*end of the netlist
+.end

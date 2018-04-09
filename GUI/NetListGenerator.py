@@ -369,7 +369,24 @@ class NetListGenerator:
 
             if simulation == Library.SIMULATION_SOURCE:
                 # DMOD
-                excel_file_path = Library.EXCEL_FILE_PATH[part]
+                content.extend(['.model DMOD D (IS = 4E-10',
+                                '+ RS = .105',
+                                '+ N = 1.48',
+                                '+ TT = 8E-7',
+                                '+ CJO = 1.95E-11',
+                                '+ VJ = .4',
+                                '+ M = .38',
+                                '+ EG = 1.36',
+                                '+ XTI = -8',
+                                '+ KF = 0',
+                                '+ AF = 1',
+                                '+ FC = .9',
+                                '+ BV = 600',
+                                '+ IBV = 1E-4)'])
+                if Library.EXCEL_FILE_PATH.get(part) is not None:
+                    excel_file_path = Library.EXCEL_FILE_PATH[part]
+                else:
+                    excel_file_path = Library.EXCEL_FILE_PATH['Default']
                 a1, b1 = fit.fit('PNP', TID_level, excel_file_path)
                 a2, b2 = fit.fit('NPN', TID_level, excel_file_path)
                 content.extend(['.model DMODPNP D (IS = ' + str(a1),

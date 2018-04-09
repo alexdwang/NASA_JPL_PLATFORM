@@ -1,0 +1,17 @@
+Template for LT1175_ABM:
+
+section 1	title
+section 2	voltage source
+section 3	one Subcircuit
+section 4	parameters and functions
+section 5	Input and Output
+section 6	two Subcircuits
+section 7	Library
+
+Template for AD590_ABM:
+section 1	title
+section 2	voltage source
+section 3	parameters and functions
+section 4	Input and Output
+section 5	one Subcircuit
+section 7	Library

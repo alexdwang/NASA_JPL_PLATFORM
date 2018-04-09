@@ -1,0 +1,83 @@
+Title: AD590 / 20k / Compact model / T= 300.15K = 27C
+*************************************
+
+*Input voltage source
+***************
+VIN 2 0 DC 0V
+
+*Circuit Core
+*************
+XZ 2 20 AD590
+R0 20 0 1m
+
+*Input
+******
+.dc VIN 0 30 0.01
+
+*Output
+*******
+.print dc format=noindex file=AD590_27C_20k_CompactModel.txt
++ V(2)
++ I(R0)
+
+*Subcircuit
+************
+.subckt AD590 2 20
+
+*Capacitance: C<name> <+ node> <- node> [model name] <value> + [IC=<initial value>]
+c1 1 8 26p
+
+*Resistance: R<name> <+ node> <- node> [model name] <value>
+r1 2 4 260
+r2 2 3 1040
+r3 5 16 5000
+r4 11 5 11000
+r5 12 20 146
+r6 15 20 820
+
+*BJT: Q<name> <collector> <base> <emitter> [substrate] <model name> [area value]
+Q11 1 5 12 QNMOD 35 temp=27
+Q10 5 5 12 QNMOD 35 temp=27
+Q9 6 5 15 QNMOD 280 temp=27
+Q6 7 7 2 QLPMOD 10 temp=27
+Q4 1 8 4 QLPMOD 10 temp=27
+Q3 1 8 4 QLPMOD 10 temp=27
+Q5 8 8 3 QLPMOD 10 temp=27
+Q2 6 8 4 QLPMOD 10 temp=27
+Q1 6 8 4 QLPMOD 10 temp=27
+Q7 7 6 11 QNMOD 10 temp=27
+Q8 8 1 11 QNMOD 10 temp=27
+
+*JFET: J<name> <drain> <gate> <source> <model name> [area value]
+J1 8 16 11 NJF_TYP
+
+*end of the subcircuit 
+.ends
+
+*Library
+*npn 2e4 off ctp 3b
+.model QNMOD NPN  (                      IS     = 1.68208E-16        
++ BF     = 45.95           NF     = 0.986787        VAF    = 345.2016293        
++ IKF    = 0.0229087       NK     = 0.47574         ISE    = 1.122018E-14       
++ NE     = 1.65            BR     = 0.697           NR     = 2                  
++ VAR    = 100             IKR    = 0.1             ISC    = 1E-17              
++ NC     = 2               RB     = 140.86          IRB    = 1E-3               
++ RBM    = 50              RE     = 2               RC     = 250.75      )
+
+*lpnp 2e4 off ctp 3b
+.model QLPMOD PNP (                      IS     = 8.70964E-16        
++ BF     = 264.9           NF     = 0.99            VAF    = 35.8970174         
++ IKF    = 9.549926E-5     NK     = 0.52            ISE    = 5.495409E-14       
++ NE     = 1.42            BR     = 0.697           NR     = 2                  
++ VAR    = 100             IKR    = 0.1             ISC    = 1E-17              
++ NC     = 2               RB     = 1E3             IRB    = 3.6E-5             
++ RBM    = 100             RE     = 4.096           RC     = 1               )
+
+*JFET
+.model NJF_TYP NJF (
++ VTO = -1.0	BETA = 6.2E-4	LAMBDA = 0.003 
++ RD = 0.01      RS = 1e-4 
++ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)
+
+*end of the netlist
+.end

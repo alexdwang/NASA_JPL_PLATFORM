@@ -1,0 +1,27 @@
+I want to use this template to create circuit files for LT1175 and AD590 based on input. I separate circuit files to 6 different sections:
+
+section 1	title
+section 2	voltage source
+section 3	one Subcircuit
+section 4	output
+section 5	one or two Subcircuits
+section 6	Library
+
+
+for LT1175_Prerad_LineRegulation_V12.cir:
+input parameters here: part_name=LT1175, output=LineRegulation, TID_level=Prerad, temperature=27c
+section 1	line 1: 		title, 			depends on parameter part_name, output, TID_level and temperature
+section 2	line 2-5:		voltage source,	depends on part_name
+section 3	line 6-26: 		Subcircuit, 	depends on part_name
+section 4	line 27-32: 	Output, 		depends on part_name + output
+section 5	line 33-93: 	two Subcircuits,depends on part_name
+section 6	line 34-117: 	Library, 		depends on TID_level
+
+for AD590_Prerad_27C_V1.cir:
+input parameter here: part_name=AD590, TID_level=Prerad, temperature=27c, output is a constant as "+ V(1)  + I(ROUT)"
+section 1	line 1:			title, 			depends on parameter part_name, TID_level and temperature
+section 2	line 2-6:		voltage source	depends on part_name
+section 3	line 7-13		Subcircuit,		depends on part_name
+section 4	line 14-18:		Output,			depends on part_name
+section 5	line 19-51:		one Subcircuit,	depends on part_name
+section 6	line 52-81:		Library,		depends on TID_level
