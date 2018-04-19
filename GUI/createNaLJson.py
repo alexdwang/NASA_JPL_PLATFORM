@@ -170,7 +170,6 @@ SHEET_NAME = {'NPN': 'NPN_Compact_Xyce',
               'HDR': 'HDR'}
 NUM_OF_PARAMETER = {PART_AD590: 4,
                     PART_LT1175: 2}
-save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, EXCEL_FILE_PATH, COL_NAME, SHEET_NAME, NUM_OF_PARAMETER)
 
 # circuit code library
 
@@ -295,7 +294,7 @@ OUTPUT = {PART_AD590: {Temperature: ['+ V(2)',
                        Negative_Input_Bias_Current: ['+ V(5)',
                                                      '+ I(VIN-)'],
                        Input_Offset_Current: ['+ V(5)',
-                                              '+ {{+ I(VIN+)} - {+ I(VIN-)}}'],
+                                              '+ {(I(VIN+)-I(VIN-))/2}'],
                        },
 
           PART_LT1175: {Line_Regulation: ['+ V(4)',
@@ -803,7 +802,11 @@ LIBRARY_JFET = {PART_AD590: ['',
                             '+ RD = 0.01      RS = 1e-4',
                             '+ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)',
                             '']}
-save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION, OUTPUT,
+
+if __name__=='__main--':
+    save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, EXCEL_FILE_PATH, COL_NAME, SHEET_NAME,
+                      NUM_OF_PARAMETER)
+    save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION, OUTPUT,
                          SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET)
 
 

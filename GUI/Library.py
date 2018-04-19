@@ -1,16 +1,21 @@
 import json
 import GUI.FILEPATHS as FILEPATHS
+import GUI.createNaLJson as NaLJson
 import os
 """
 ' Library.py is used to load constant values from json files
 ' Contents in this file should not be modified by program unless you are updating the library
 """
 
-SIMULATION_MODEL = 'compact model'
-SIMULATION_SOURCE = 'external current source'
-TPRE_RAD = 'pre_rad'
+SIMULATION_MODEL = NaLJson.SIMULATION_MODEL
+SIMULATION_SOURCE = NaLJson.SIMULATION_SOURCE
+TPRE_RAD = NaLJson.TPRE_RAD
+Input_Offset_Voltage = NaLJson.Input_Offset_Voltage
+Input_Offset_Current = NaLJson.Input_Offset_Current
+Positive_Input_Bias_Current = NaLJson.Positive_Input_Bias_Current
+Negative_Input_Bias_Current = NaLJson.Negative_Input_Bias_Current
 
-os.chdir("/home/dwang/NASA_JPL/NASA_JPL_PLATFORM")
+# os.chdir("/home/dwang/NASA_JPL/NASA_JPL_PLATFORM")
 with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
     name_jsonObject = f.readline()
 f.close()

@@ -389,11 +389,14 @@ class NetListGenerator:
                     excel_file_path = Library.EXCEL_FILE_PATH['Default']
                 a1, b1 = fit.fit('PNP', TID_level, excel_file_path)
                 a2, b2 = fit.fit('NPN', TID_level, excel_file_path)
+                # print(TID_level + " a1=" + str(a1) + " a2=" + str(a2))
+                # print(TID_level + " b1=" + str(b1) + " b2=" + str(b2))
+                # print(TID_level + " N_PNP=" + str(1 / (b1 * 0.02585)) + " N_NPN=" + str(1 / (b2 * 0.02585)))
                 content.extend(['.model DMODPNP D (IS = ' + str(a1),
-                               '+ N = ' + str(1 / (b1 * 0.029)) + ' )',
+                               '+ N = ' + str(1 / (b1 * 0.02585)) + ' )',
                                '',
                                '.model DMODNPN D (IS = ' + str(a2),
-                               '+ N = ' + str(1 / (b2 * 0.029)) + ')'])
+                               '+ N = ' + str(1 / (b2 * 0.02585)) + ')'])
                 content.extend(['*End Library',
                                 '',
                                 '*end of the netlist',

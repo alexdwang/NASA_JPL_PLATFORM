@@ -24,57 +24,74 @@ class Interface(object):
         element_width = 22
         element_height = 2
         element_half_width = int(element_width/2 + 2)
-        background_color = '#87CEFA'
+        self.backgroundcolor = '#87CEFA'
         my_font = ('Arial', 18)
 
         self.window = Tk()
         self.window.title('Platform')
-        self.window.configure(background=background_color)
+        self.window.configure(background=self.backgroundcolor)
+        self.window.option_add("*Font", my_font)
         # self.window.geometry('1150x700')
 
-        self.label_topline = Label(self.window, text=Library.TITLE, font=my_font, width=30, height=element_height, bg=background_color)
-        self.label_input_header = Label(self.window, text="Input: ", font=my_font, width=element_half_width, height=element_height, bg=background_color)
-        self.label_output_header = Label(self.window, text="Output: ", font=my_font, width=element_half_width, height=element_height, bg=background_color)
-        self.label_spec_header = Label(self.window, text="Specification: ", font=my_font, width=element_half_width, height=element_height, bg=background_color)
+        self.label_topline = Label(self.window, text=Library.TITLE, font=my_font, width=30, height=element_height, bg=self.backgroundcolor)
+        self.label_input_header = Label(self.window, text="Input: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
+        self.label_output_header = Label(self.window, text="Output: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
+        self.label_spec_header = Label(self.window, text="Specification: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
 
-        self.empty = Label(self.window, text="", font=my_font, width=element_width, height=element_height, bg=background_color)
+        self.empty = Label(self.window, text="", font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
 
-        self.label_parts = Label(self.window, text='parts:', font=my_font, width=element_width, height=element_height, bg=background_color)
+        self.label_parts = Label(self.window, text='Parts:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.parts_options = StringVar()
         self.parts_options_tuple = (Library.PARTS)
         self.cb_parts = ttk.Combobox(self.window, textvariable=self.parts_options, exportselection=False, state='readonly')
         self.cb_parts['values'] = self.parts_options_tuple
 
-        self.label_simulation = Label(self.window, text='simulation mode:', font=my_font, width=element_width, height=element_height, bg=background_color)
+        self.label_dose = Label(self.window, text='Dose Rate(rad/s):', font=my_font, width=element_width, height=element_height,
+                                 bg=self.backgroundcolor)
+        self.dose_options = StringVar()
+        self.dose_options_tuple = ("100","20","1","0.2","0.01","0.005")
+        self.cb_dose = ttk.Combobox(self.window, textvariable=self.dose_options, exportselection=False,
+                                     state='readonly')
+        self.cb_dose['values'] = self.dose_options_tuple
+
+        self.label_hydrogen = Label(self.window, text='Hydrogen Content(%):', font=my_font, width=element_width, height=element_height,
+                                 bg=self.backgroundcolor)
+        self.hydrogen_options = StringVar()
+        self.hydrogen_options_tuple = ("air","1","10","100")
+        self.cb_hydrogen = ttk.Combobox(self.window, textvariable=self.hydrogen_options, exportselection=False,
+                                     state='readonly')
+        self.cb_hydrogen['values'] = self.hydrogen_options_tuple
+
+        self.label_simulation = Label(self.window, text='Simulation Mode:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.simulation_options = StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
         self.cb_simulation = ttk.Combobox(self.window, textvariable=self.simulation_options, exportselection=False, state='readonly')
         self.cb_simulation['values'] = self.simulation_options_tuple
 
-        self.label_TID_level_lower_bound = Label(self.window, text='TID level lower bound(rad):', font=my_font, width=element_width, height=element_height, bg=background_color)
+        self.label_TID_level_lower_bound = Label(self.window, text='TID min(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         # self.TID_options_lower = StringVar()
         # self.TID_options_tuple = ()
         # self.cb_TID_lower_bound = ttk.Combobox(self.window, textvariable=self.TID_options_lower, exportselection=False, state='readonly')
         # self.cb_TID_lower_bound['values'] = self.TID_options_tuple
         self.entry_TID_lower_bound = TIDEntry(self.window, width=element_width)
 
-        self.label_TID_level_upper_bound = Label(self.window, text='TID level upper bound(rad):', font=my_font, width=element_width, height=element_height, bg=background_color)
+        self.label_TID_level_upper_bound = Label(self.window, text='TID max(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         # self.TID_options_upper = StringVar()
         # self.cb_TID_upper_bound = ttk.Combobox(self.window, textvariable=self.TID_options_upper, exportselection=False, state='readonly')
         # self.cb_TID_upper_bound['values'] = self.TID_options_tuple
         self.entry_TID_upper_bound = TIDEntry(self.window, width=element_width)
 
-        self.label_output = Label(self.window, text='Output:', font=my_font, width=element_width, height=element_height, bg=background_color)
+        self.label_output = Label(self.window, text='Output:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.output_options = StringVar()
         self.output_options_tuple = ()
         self.cb_output = ttk.Combobox(self.window, textvariable=self.output_options, exportselection=False, state='readonly')
         self.cb_output['values'] = self.output_options_tuple
 
-        self.label_spec_min = Label(self.window, text='min Y:', font=my_font, width=element_width, height=element_height, bg=background_color)
-        self.entry_spec_min = FloatEntry(self.window, width=element_width)
+        self.label_spec_min = Label(self.window, text='min Y:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.entry_spec_min = FloatEntry(self.window, width=element_width, state='readonly')
 
-        self.label_spec_max = Label(self.window, text='max Y:', font=my_font, width=element_width, height=element_height, bg=background_color)
-        self.entry_spec_max = FloatEntry(self.window, width=element_width)
+        self.label_spec_max = Label(self.window, text='max Y:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.entry_spec_max = FloatEntry(self.window, width=element_width, state='readonly')
 
 
         self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2, command=self.import_hit)
@@ -82,10 +99,11 @@ class Interface(object):
         self.button_save = Button(self.window, text='Save', font=my_font, width=15, height=2, command=self.save)
         self.button_change_scale = Button(self.window, text='Change Scale', font=my_font, width=15, height=2, command=self.change_scale)
 
-        self.canvas_plot = Canvas(self.window, width=600, height=500, bg=background_color, highlightbackground=background_color)
+        self.canvas_plot = Canvas(self.window, width=1000, height=600, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
 
         self.result_text = StringVar()
-        self.label_result_text = Label(self.window, textvariable=self.result_text, font=my_font, width=2 * element_width, height=5, bg=background_color)
+        self.label_result_text = Label(self.window, textvariable=self.result_text, font=my_font, width=element_width * 2,
+                                       height=5, bg=self.backgroundcolor, justify='center')
 
         self.X_list = list()
         self.Y_list = list()
@@ -289,12 +307,20 @@ class Interface(object):
             num_TID = num_TID * 1000
         return num_TID
 
+    def get_X_and_Y_labels_and_lists(self):
+
+        return
+
     def execute_hit(self):
-        # try:
+        # do input check first and then execute:
         if self.input_check():
+            # remove every file in Output folder
             execute.rm_all()
+
+            # get part name, TID level range, output option and specifications
             part = self.cb_parts.get()
-            simulation = self.cb_simulation.get()
+            # simulation = self.cb_simulation.get()
+            simulation = Library.SIMULATION_SOURCE
             TID_level_lower = self.entry_TID_lower_bound.get()
             TID_level_upper = self.entry_TID_upper_bound.get()
             output_option = self.cb_output.get()
@@ -307,6 +333,7 @@ class Interface(object):
 
             spec_min = float(self.entry_spec_min.get()) if self.entry_spec_min.get() != '' else None
             spec_max = float(self.entry_spec_max.get()) if self.entry_spec_max.get() != '' else None
+            plotted_X = Library.SPECIFICATION.get(part).get("Dataset")[0]
 
             self.X_list.clear()
             self.Y_list.clear()
@@ -393,10 +420,30 @@ class Interface(object):
                     self.X_list.append(num_TID)
                     lengthX = len(X)
                     for i in range(len(X)):
-                        if X[i] == X[int(lengthX / 2)]:
+                        if X[i] == plotted_X:
                             self.Y_list.append(Y[i])
                             break
-                    # print(X[20])
+
+            # post-processing for input bias
+            if output_option == Library.Positive_Input_Bias_Current or output_option == Library.Negative_Input_Bias_Current:
+                default_Y = 0
+                if Library.TPRE_RAD in self.X_list:
+                    default_Y = self.Y_list[0]
+                else:
+                    self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + Library.TPRE_RAD + '_test.txt')
+                    result = netListGenerator.generate(part, simulation, str_TID, output_option,
+                                                       self.output_filepath, self.netlist_filepath)
+                    my_result = execute.execute_module3(self.netlist_filepath)
+                    X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
+                    lengthX = len(X)
+                    for i in range(len(X)):
+                        if X[i] == plotted_X:
+                            default_Y = Y[i]
+                            break
+                tmp_list = [y - default_Y for y in self.Y_list]
+                self.Y_list = tmp_list
+
+            # prepare data for plotting
             unit = ''
             if Y_label[0] == 'V':
                 unit = ' (V)'
@@ -472,10 +519,10 @@ class Interface(object):
         return
 
     def simulation_onselect(self, evt):
-        try:
-            self.TID_option_update()
-        except:
-            pass
+        # try:
+        #     self.TID_option_update()
+        # except:
+        #     pass
         return
 
     def output_onselect(self, evt):
@@ -484,17 +531,25 @@ class Interface(object):
         spec_lib = Library.SPECIFICATION.get(part)
         self.clear_specs()
         if spec_lib is not None:
+            self.entry_spec_min.configure(state='normal')
+            self.entry_spec_max.configure(state='normal')
             spec = spec_lib.get(output)
             if spec is not None:
                 if spec[0] is not None:
                     self.entry_spec_min.insert(0, spec[0])
                 if spec[1] is not None:
                     self.entry_spec_max.insert(0, spec[1])
+            self.entry_spec_min.configure(state='readonly')
+            self.entry_spec_max.configure(state='readonly')
         return
 
     def clear_specs(self):
+        self.entry_spec_min.configure(state='normal')
+        self.entry_spec_max.configure(state='normal')
         self.entry_spec_min.delete(0, 'end')
         self.entry_spec_max.delete(0, 'end')
+        self.entry_spec_min.configure(state='readonly')
+        self.entry_spec_max.configure(state='readonly')
 
     def callback(self, event):
         self.execute_hit()
@@ -507,30 +562,34 @@ class Interface(object):
 
         # row 1
         row = 1
-        self.label_input_header.grid(row=row, rowspan=3)
+        # self.label_input_header.grid(row=row, rowspan=3)
         self.label_parts.grid(row=row, column=1)
-        self.label_simulation.grid(row=row, column=2)
-        self.label_TID_level_lower_bound.grid(row=row, column=3)
-        self.label_TID_level_upper_bound.grid(row=row, column=4)
+        # self.label_simulation.grid(row=row, column=2)
+        self.label_hydrogen.grid(row=row, column=2)
+        self.label_dose.grid(row=row, column=3)
+        self.label_TID_level_lower_bound.grid(row=row, column=4)
+        self.label_TID_level_upper_bound.grid(row=row, column=5)
 
         # row 2
         row = 2
         self.cb_parts.grid(row=row, column=1)
-        self.cb_simulation.grid(row=row, column=2)
-        self.entry_TID_lower_bound.grid(row=row, column=3)
-        self.entry_TID_upper_bound.grid(row=row, column=4)
+        # self.cb_simulation.grid(row=row, column=2)
+        self.cb_hydrogen.grid(row=row, column=2)
+        self.cb_dose.grid(row=row, column=3)
+        self.entry_TID_lower_bound.grid(row=row, column=4)
+        self.entry_TID_upper_bound.grid(row=row, column=5)
         # self.cb_TID_lower_bound.grid(row=row, column=2)
         # self.cb_TID_upper_bound.grid(row=row, column=3)
 
         # row 3
         row = 3
-        self.button_import.grid(row=row, column=1, pady=10)
+        # self.button_import.grid(row=row, column=1, pady=10)
 
         # row 4
         row = 4
-        self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
+        # self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
         self.label_output.grid(row=row, column=1, pady=(20, 0))
-        self.canvas_plot.grid(row=row, column=2, rowspan=10, columnspan=4, padx=(20, 0))
+        self.canvas_plot.grid(row=row, column=2, rowspan=9, columnspan=4)
 
         # row 5
         row = 5
@@ -566,7 +625,7 @@ class Interface(object):
 
         # row 13
         row = 13
-        self.label_result_text.grid(row=row, column=1)
+        self.label_result_text.grid(row=row, column=1, columnspan=2)
 
         self.button_execute.focus_set()
         # bind onselect function with widget
@@ -578,9 +637,15 @@ class Interface(object):
 
         testmode = True
         if testmode is True:
-            self.cb_parts.set('LT1175')
-            self.cb_simulation.set('compact model')
-            self.cb_output.set('Line Regulation')
+            self.cb_parts.set('TL431')
+            self.cb_simulation.set(Library.SIMULATION_SOURCE)
+            self.cb_output.set('Vref')
+            self.entry_spec_max.configure(state='normal')
+            self.entry_spec_min.configure(state='normal')
+            self.entry_spec_max.insert(0, 2.55)
+            self.entry_spec_min.insert(0, 2.44)
+            self.entry_spec_max.configure(state='readonly')
+            self.entry_spec_min.configure(state='readonly')
             self.entry_TID_lower_bound.insert(0, "0")
             self.entry_TID_upper_bound.insert(0, "300k")
         else:
@@ -668,6 +733,8 @@ class Interface(object):
     def plotfigureTK(self, X_label, Y_label, X, Y, part, simulation, X_min, X_max, TID_level, TID_level2=None,
                      Y_min=None, Y_max=None, spec_min=None, spec_max=None, x_logscale=False, y_logscale=False):
         # preprocessing input
+        font = {'size': 22}
+        matplotlib.rc('font', **font)
         if X_min > X_max:
             tmp = X_min
             X_min = X_max
@@ -678,7 +745,7 @@ class Interface(object):
                 Y_min = Y_max
                 Y_max = tmp
 
-        figure = mpl.figure.Figure(figsize=(8, 6))
+        figure = mpl.figure.Figure(figsize=(13, 8), facecolor=self.backgroundcolor, edgecolor='w')
         figure.clf()
         subplot = figure.add_subplot(111)
         if x_logscale is True:
