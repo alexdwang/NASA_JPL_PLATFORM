@@ -6,12 +6,12 @@ import GUI.fit as fit
 
 # generate a Netlist based on the input parameters and save it to ProjectHome/Netlist
 class NetListGenerator:
-    def generate(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath): # generate Netlist
+    def generate(self, part, simulation, DR, H2, TID_level, output_option, output_filepath, netlist_filepath): # generate Netlist
         # if simulation == Library.SIMULATION_MODEL or TID_level == Library.TPRE_RAD:
         #     return self.generate_for_compact_model(part, simulation, TID_level, output_option, output_filepath, netlist_filepath)
         # else:
         #     return self.generate_for_current_source_1(part, simulation, TID_level, output_option, output_filepath, netlist_filepath)
-        return self.generater(part, simulation, TID_level, output_option, output_filepath, netlist_filepath)
+        return self.generater(part, simulation, DR, H2, TID_level, output_option, output_filepath, netlist_filepath)
 
     def generate_for_current_source_1(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath):
         content = []
@@ -254,13 +254,13 @@ class NetListGenerator:
         except:
             return False
 
-    def generater(self, part, simulation, TID_level, output_option, output_filepath, netlist_filepath):
+    def generater(self, part, simulation, DR, H2, TID_level, output_option, output_filepath, netlist_filepath):
         content = []
         if TID_level == Library.TPRE_RAD:
             simulation = Library.SIMULATION_MODEL
         try:
             # Section 1: Title
-            content.extend(['Title: ' + part + ' / ' + TID_level + ' / ' + 'T= 300.15K = 27C',
+            content.extend(['Title: ' + part + ' / ' + TID_level + ' / ' + 'DR= ' + str(DR) + ' / ' + 'H2= ' + str(H2),
                             ''])
             # Section 2: Input Voltage Source
             content.extend(['*Input Voltage Source',
@@ -383,12 +383,9 @@ class NetListGenerator:
                                 '+ FC = .9',
                                 '+ BV = 600',
                                 '+ IBV = 1E-4)'])
-                if Library.EXCEL_FILE_PATH.get(part) is not None:
-                    excel_file_path = Library.EXCEL_FILE_PATH[part]
-                else:
-                    excel_file_path = Library.EXCEL_FILE_PATH['Default']
-                a1, b1 = fit.fit('PNP', TID_level, excel_file_path)
-                a2, b2 = fit.fit('NPN', TID_level, excel_file_path)
+
+                a1, b1 = fit.fit('PNP', TID_level, DR, H2)
+                a2, b2 = fit.fit('NPN', TID_level, DR, H2)
                 # print(TID_level + " a1=" + str(a1) + " a2=" + str(a2))
                 # print(TID_level + " b1=" + str(b1) + " b2=" + str(b2))
                 # print(TID_level + " N_PNP=" + str(1 / (b1 * 0.02585)) + " N_NPN=" + str(1 / (b2 * 0.02585)))

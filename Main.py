@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
 import matplotlib.backends.tkagg as tkagg
+from matplotlib import ticker
 import matplotlib
 matplotlib.use("TkAgg")
 
@@ -49,7 +50,7 @@ class Interface(object):
         self.label_dose = Label(self.window, text='Dose Rate(rad/s):', font=my_font, width=element_width, height=element_height,
                                  bg=self.backgroundcolor)
         self.dose_options = StringVar()
-        self.dose_options_tuple = ("100","20","1","0.2","0.01","0.005")
+        self.dose_options_tuple = ("100","1","0.1","0.02")
         self.cb_dose = ttk.Combobox(self.window, textvariable=self.dose_options, exportselection=False,
                                      state='readonly')
         self.cb_dose['values'] = self.dose_options_tuple
@@ -57,7 +58,7 @@ class Interface(object):
         self.label_hydrogen = Label(self.window, text='Hydrogen Content(%):', font=my_font, width=element_width, height=element_height,
                                  bg=self.backgroundcolor)
         self.hydrogen_options = StringVar()
-        self.hydrogen_options_tuple = ("air","1","10","100")
+        self.hydrogen_options_tuple = ("1.4","1","100")
         self.cb_hydrogen = ttk.Combobox(self.window, textvariable=self.hydrogen_options, exportselection=False,
                                      state='readonly')
         self.cb_hydrogen['values'] = self.hydrogen_options_tuple
@@ -99,10 +100,15 @@ class Interface(object):
         self.button_save = Button(self.window, text='Save', font=my_font, width=15, height=2, command=self.save)
         self.button_change_scale = Button(self.window, text='Change Scale', font=my_font, width=15, height=2, command=self.change_scale)
 
-        self.canvas_plot = Canvas(self.window, width=1000, height=600, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
+        self.canvas_plot = Canvas(self.window, width=1100, height=600, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
 
         self.result_text = StringVar()
-        self.label_result_text = Label(self.window, textvariable=self.result_text, font=my_font, width=element_width * 2,
+        self.label_result_text = Label(self.window, textvariable=self.result_text, font=my_font,
+                                       width=element_width * 2,
+                                       height=5, bg=self.backgroundcolor, justify='center')
+        self.cross_spec_text = StringVar()
+        self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=my_font,
+                                       width=element_width * 2,
                                        height=5, bg=self.backgroundcolor, justify='center')
 
         self.X_list = list()
@@ -324,6 +330,8 @@ class Interface(object):
             TID_level_lower = self.entry_TID_lower_bound.get()
             TID_level_upper = self.entry_TID_upper_bound.get()
             output_option = self.cb_output.get()
+            DR = self.cb_dose.get()
+            H2 = self.cb_hydrogen.get()
             num_TID_lower = self.get_num_TID(TID_level_lower)
             num_TID_upper = self.get_num_TID(TID_level_upper)
             if num_TID_lower > num_TID_upper:
@@ -346,7 +354,7 @@ class Interface(object):
                 if (num_TID < num_TID_lower and i + 1 < len(Tid_Levels) and Tid_Levels[i + 1][0] > num_TID_lower) or \
                         (num_TID_lower <= num_TID and (num_TID < num_TID_upper or oneMore)):
                     self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + str_TID + '_test.txt')
-                    result = netListGenerator.generate(part, simulation, str_TID, output_option,
+                    result = netListGenerator.generate(part, simulation, DR, H2, str_TID, output_option,
                                               self.output_filepath, self.netlist_filepath)
                     if result == False:
                         continue
@@ -426,21 +434,43 @@ class Interface(object):
 
             # post-processing for input bias
             if output_option == Library.Positive_Input_Bias_Current or output_option == Library.Negative_Input_Bias_Current:
-                default_Y = 0
+                pre_rad_y = 0
                 if Library.TPRE_RAD in self.X_list:
-                    default_Y = self.Y_list[0]
+                    pre_rad_y = self.Y_list[0]
                 else:
+                    str_TID = Library.TPRE_RAD
                     self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + Library.TPRE_RAD + '_test.txt')
-                    result = netListGenerator.generate(part, simulation, str_TID, output_option,
+                    result = netListGenerator.generate(part, simulation, DR, H2, str_TID, output_option,
                                                        self.output_filepath, self.netlist_filepath)
                     my_result = execute.execute_module3(self.netlist_filepath)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
-                    lengthX = len(X)
                     for i in range(len(X)):
                         if X[i] == plotted_X:
-                            default_Y = Y[i]
+                            pre_rad_y = Y[i]
                             break
-                tmp_list = [y - default_Y for y in self.Y_list]
+                tmp_list = [y - pre_rad_y for y in self.Y_list]
+                self.Y_list = tmp_list
+            # post-processing for temperature
+            if output_option == Library.TEMPERATURE:
+                pre_rad_y = 0
+                pre_rad_temperature = 1e-6
+                if Library.TPRE_RAD in self.X_list:
+                    pre_rad_y = self.Y_list[0]
+                else:
+                    str_TID = Library.TPRE_RAD
+                    self.output_filepath = relative_path(
+                        FILEPATHS.OUTPUT_DIR_PATH + part + '_' + Library.TPRE_RAD + '_test.txt')
+                    result = netListGenerator.generate(part, simulation, DR, H2, str_TID, output_option,
+                                                       self.output_filepath, self.netlist_filepath)
+                    my_result = execute.execute_module3(self.netlist_filepath)
+                    X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
+                    for i in range(len(X)):
+                        if X[i] == plotted_X:
+                            pre_rad_y = Y[i]
+                            break
+
+                tmp_list = [(y - pre_rad_y) / pre_rad_temperature for y in self.Y_list]
+                # print(tmp_list)
                 self.Y_list = tmp_list
 
             # prepare data for plotting
@@ -458,18 +488,59 @@ class Interface(object):
             self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, part, simulation,
                                       num_TID_lower, num_TID_upper, TID_level_lower, TID_level_upper, None, None,
                                       spec_min, spec_max, False, False])
+            # calculate the point that exceed specification limits
+            cross_max = []
+            cross_min = []
+            if spec_min is not None:
+                if max(self.Y_list) > spec_min and min(self.Y_list) < spec_min:
+                    for index in range(len(self.Y_list) - 1):
+                        y1 = self.Y_list[index]
+                        y2 = self.Y_list[index + 1]
+                        if (y1 < spec_min and y2 >= spec_min) or (y1 > spec_min and y2 <= spec_min):
+                            x1 = self.X_list[index]
+                            x2 = self.X_list[index + 1]
+                            cross = self.get_cross_point(x1, y1, x2, y2, spec_min)
+                            # print(cross)
+                            cross_min.append(str(int(cross)))
+            if spec_max is not None:
+                if max(self.Y_list) > spec_max and min(self.Y_list) < spec_max:
+                    for index in range(len(self.Y_list) - 1):
+                        y1 = self.Y_list[index]
+                        y2 = self.Y_list[index + 1]
+                        if (y1 < spec_max and y2 >= spec_max) or (y1 > spec_max and y2 <= spec_max):
+                            x1 = self.X_list[index]
+                            x2 = self.X_list[index + 1]
+                            cross = self.get_cross_point(x1, y1, x2, y2, spec_max)
+                            cross_max.append(str(int(cross)))
+                            # print(cross)
+            cross_message = ""
+            if len(cross_min) != 0:
+                cross_message += "Cross min specification at " + ",".join(cross_min) + " rad. "
+            if len(cross_max) != 0:
+                cross_message += "Cross max specification at " + ",".join(cross_max) + " rad. "
+            if cross_message == "":
+                cross_message = "Cross specification at > 300k rad"
             self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
                               self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
                               self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15])
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
+            self.cross_spec_text.set(cross_message)
             self.result_text.set(message)
 
         # except Exception as error:
         #     print(error)
         #     self.result_text.set('Error! Do you have ' + str(error) + ' data in excel?')
         return
+
+    def get_cross_point(self, x1, y1, x2, y2, spec_line):
+        y1 -= spec_line
+        y2 -= spec_line
+        a = (y2 - y1) / (x2 - x1)
+        b = y2 - a * (x2)
+        result = - (b / a)
+        return result
 
     def refresh(self):
         importlib.reload(Library)
@@ -514,6 +585,7 @@ class Interface(object):
             self.cb_output['values'] = self.output_options_tuple
             self.output_options.set('')
             self.clear_specs()
+            self.cb_parts.selection_clear()
         except:
             pass
         return
@@ -541,6 +613,7 @@ class Interface(object):
                     self.entry_spec_max.insert(0, spec[1])
             self.entry_spec_min.configure(state='readonly')
             self.entry_spec_max.configure(state='readonly')
+        self.cb_output.selection_clear()
         return
 
     def clear_specs(self):
@@ -626,6 +699,7 @@ class Interface(object):
         # row 13
         row = 13
         self.label_result_text.grid(row=row, column=1, columnspan=2)
+        self.label_cross_spec_text.grid(row=row, column=3, columnspan=3)
 
         self.button_execute.focus_set()
         # bind onselect function with widget
@@ -640,6 +714,8 @@ class Interface(object):
             self.cb_parts.set('TL431')
             self.cb_simulation.set(Library.SIMULATION_SOURCE)
             self.cb_output.set('Vref')
+            self.cb_dose.set('0.02')
+            self.cb_hydrogen.set('1.4')
             self.entry_spec_max.configure(state='normal')
             self.entry_spec_min.configure(state='normal')
             self.entry_spec_max.insert(0, 2.55)
@@ -650,6 +726,14 @@ class Interface(object):
             self.entry_TID_upper_bound.insert(0, "300k")
         else:
             self.button_import.grid_remove()
+
+        # screenwidth = self.window.winfo_screenwidth()
+        # screenheight = self.window.winfo_screenheight()
+        # interfacewidth = self.window.winfo_screenmmwidth()
+        # interfaceheight = self.window.winfo_reqheight()
+        #
+        # size = '%dx%d+%d+%d' % (interfacewidth, interfaceheight, (screenwidth - interfacewidth) / 2, (screenheight - interfaceheight) / 2)
+        # self.window.geometry(size)
         self.window.mainloop()
         return
 
@@ -745,7 +829,7 @@ class Interface(object):
                 Y_min = Y_max
                 Y_max = tmp
 
-        figure = mpl.figure.Figure(figsize=(13, 8), facecolor=self.backgroundcolor, edgecolor='w')
+        figure = mpl.figure.Figure(figsize=(14, 8), facecolor=self.backgroundcolor, edgecolor='w')
         figure.clf()
         subplot = figure.add_subplot(111)
         if x_logscale is True:
@@ -759,6 +843,10 @@ class Interface(object):
         else:
             subplot.set_yscale('linear')
         # subplot.plot([1,2,3,4],[5,6,7,8])
+        formatter = ticker.ScalarFormatter()
+        formatter.set_scientific(True)
+        formatter.set_powerlimits((-1,1))
+        subplot.yaxis.set_major_formatter(formatter)
         y_min = min(Y)
         y_max = max(Y)
         if spec_max is not None:
@@ -815,7 +903,7 @@ class Interface(object):
                 self.figure_input[6] = self.get_num_TID(x_lower)
             # x log scale
             if min(self.figure_input[3]) <= 0 and y_log is True:
-                self.result_text.set("can not use log scale on y axis \n negative value detected")
+                self.result_text.set("can not use log scale on y axis \n non-positive value detected")
             else:
                 self.figure_input[15] = y_log
             # y upper bound

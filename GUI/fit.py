@@ -5,12 +5,13 @@ import xlrd
 import os
 
 import GUI.Library as Library
+import GUI.FILEPATHS as FILEPATHS
 
 
-def fit(sheet, TID_level, file_path):
+def fit(sheet, TID_level, DR, H2):
     choice = 5
     if choice == 1: # fit curve with 3-paras function without log-scaled
-        Ve, Ib = excel_table_byname(sheet, TID_level, file_path)
+        Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         ydata = np.array(Ib)
         popt, pcov = curve_fit(func_eabxcx2, xdata, ydata)
@@ -18,7 +19,7 @@ def fit(sheet, TID_level, file_path):
         # plot_log_scale(xdata, ydata, popt, func_eabxcx2)
         return popt
     elif choice == 2:   # fit curve with 3-paras function with log-scaled
-        Ve, Ib = excel_table_byname(sheet, TID_level, file_path)
+        Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Ib))
         popt, pcov = curve_fit(func_loged_abxcx2, xdata, logged_ydata)
@@ -26,7 +27,7 @@ def fit(sheet, TID_level, file_path):
         # plot_data(xdata, logged_ydata, popt, func_loged_abxcx2)
         return popt
     elif choice == 3:   # fit curve with 2-paras function without log-scaled
-        Ve, Ib = excel_table_byname(sheet, TID_level, file_path)
+        Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         scale = 1e10
         xdata = np.array(Ve)
         ydata = np.array(Ib) * scale
@@ -37,7 +38,7 @@ def fit(sheet, TID_level, file_path):
         popt[0] = popt[0]/scale
         return popt
     elif choice == 4:   # fit curve with 2-paras function with log-scaled
-        Ve, Ib = excel_table_byname(sheet, TID_level, file_path)
+        Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Ib))
         popt, pcov = curve_fit(func_loged_logabx, xdata, logged_ydata)
@@ -45,7 +46,7 @@ def fit(sheet, TID_level, file_path):
         #     plot_data(xdata, logged_ydata, popt, func_loged_logabx)
         return popt
     elif choice == 5:
-        Ve, Delta_Ib = excel_table_byname2delta(sheet, TID_level, file_path)
+        Ve, Delta_Ib = excel_table_byname2delta(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Delta_Ib))
         popt, pcov = curve_fit(func_loged_logabx, xdata, logged_ydata)
@@ -62,15 +63,16 @@ def relative_path(path):
 def get_titles(table):
     col_dict = {}
     for i in range(table.ncols):
-        title = table.cell_value(1,i)
+        title = table.cell_value(0,i)
         if title != '':
             col_dict[title] = i
     return col_dict
 
-def excel_table_byname(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
+def excel_table_byname(sheet, TID_level, DR, H2):
+    file_path = FILEPATHS.NPN_IB_DATABASE_FILE_PATH if sheet == "NPN" else FILEPATHS.PNP_IB_DATABASE_FILE_PATH
     file = relative_path(file_path)
     data = xlrd.open_workbook(file)
-    table = data.sheet_by_name(Library.SHEET_NAME[sheet])
+    table = data.sheet_by_name("DR=" + str(DR) + "_H2=" + str(H2))
 
     Ve = []
     Ib = []
@@ -78,7 +80,7 @@ def excel_table_byname(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
     col_dict = get_titles(table)
     lower_bound = 0.3 if sheet == "NPN" else 0.1
     upper_bound = 0.8 if sheet == "NPN" else 0.7
-    for row in range(2, nrows):
+    for row in range(1, nrows):
         ve = table.cell(row,col_dict[Library.COL_NAME['VE']]).value
         ib = table.cell(row, col_dict[Library.COL_NAME[TID_level]]).value
         # print(ve)
@@ -87,10 +89,11 @@ def excel_table_byname(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
             Ib.append(ib)
     return Ve, Ib
 
-def excel_table_byname2delta(sheet, TID_level, file_path='FitCurve/Fit_Curve.xlsx'):
+def excel_table_byname2delta(sheet, TID_level, DR, H2):
+    file_path = FILEPATHS.NPN_IB_DATABASE_FILE_PATH if sheet == "NPN" else FILEPATHS.PNP_IB_DATABASE_FILE_PATH
     file = relative_path(file_path)
     data = xlrd.open_workbook(file)
-    table = data.sheet_by_name(Library.SHEET_NAME[sheet])
+    table = data.sheet_by_name("DR=" + str(DR) + "_H2=" + str(H2))
 
     Ve = []
     Delta_Ib = []
@@ -98,7 +101,8 @@ def excel_table_byname2delta(sheet, TID_level, file_path='FitCurve/Fit_Curve.xls
     col_dict = get_titles(table)
     lower_bound = 0.3 if sheet == "NPN" else 0.1
     upper_bound = 0.8 if sheet == "NPN" else 0.7
-    for row in range(2, nrows):
+    for row in range(1, nrows):
+        # print(Library.COL_NAME['VE'])
         ve = table.cell(row,col_dict[Library.COL_NAME['VE']]).value
         ib = table.cell(row, col_dict[Library.COL_NAME[TID_level]]).value
         ib_pre = table.cell(row, col_dict[Library.COL_NAME[Library.TPRE_RAD]]).value

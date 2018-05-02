@@ -14,6 +14,7 @@ Input_Offset_Voltage = NaLJson.Input_Offset_Voltage
 Input_Offset_Current = NaLJson.Input_Offset_Current
 Positive_Input_Bias_Current = NaLJson.Positive_Input_Bias_Current
 Negative_Input_Bias_Current = NaLJson.Negative_Input_Bias_Current
+TEMPERATURE = NaLJson.Temperature
 
 # os.chdir("/home/dwang/NASA_JPL/NASA_JPL_PLATFORM")
 with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
@@ -44,10 +45,10 @@ PARTS = name_json_dict['PARTS']
 SIMULATION = name_json_dict['SIMULATION']
 TID_LEVEL = name_json_dict['TID_LEVEL']
 TID_LIST = name_json_dict['TID_LIST']
-EXCEL_FILE_PATH = name_json_dict['EXCEL_FILE_PATH']
+# EXCEL_FILE_PATH = name_json_dict['EXCEL_FILE_PATH']
 COL_NAME = name_json_dict['COL_NAME']
-SHEET_NAME = name_json_dict['SHEET_NAME']
-NUM_OF_PARAMETER = name_json_dict['NUM_OF_PARAMETER']
+# SHEET_NAME = name_json_dict['SHEET_NAME']
+# NUM_OF_PARAMETER = name_json_dict['NUM_OF_PARAMETER']
 
 # circuit code:
 INPUT_VOLTAGE_SOURCE = library_json_dict['INPUT_VOLTAGE_SOURCE']
@@ -56,21 +57,17 @@ SCALE = library_json_dict['SCALE']
 FUNCTIONS = library_json_dict['FUNCTIONS']
 INPUT = library_json_dict['INPUT']
 OUTPUT = library_json_dict['OUTPUT']
-OUTPUT_OPTION = library_json_dict['OUTPUT_OPTION']
 SUBCIRCUIT = library_json_dict['SUBCIRCUIT']
 LIBRARY_TID_LEVEL_MODEL = library_json_dict['LIBRARY_TID_LEVEL_MODEL']
 LIBRARY_JFET = library_json_dict['LIBRARY_JFET']
 
-def save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, EXCEL_FILE_PATH, COL_NAME, SHEET_NAME, NUM_OF_PARAMETER):
+def save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, COL_NAME):
     output_object = {'TITLE': TITLE,
                      'PARTS': PARTS,
                      'SIMULATION': SIMULATION,
                      'TID_LEVEL': TID_LEVEL,
                      'TID_LIST': TID_LIST,
-                     'EXCEL_FILE_PATH': EXCEL_FILE_PATH,
-                     'COL_NAME': COL_NAME,
-                     'SHEET_NAME': SHEET_NAME,
-                     'NUM_OF_PARAMETER': NUM_OF_PARAMETER}
+                     'COL_NAME': COL_NAME}
     with open(FILEPATHS.NAME_FILE_PATH, 'w') as f:
         json.dump(output_object, f)
     f.close()
