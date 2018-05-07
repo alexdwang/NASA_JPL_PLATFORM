@@ -82,16 +82,16 @@ class Interface(object):
         # self.cb_TID_upper_bound['values'] = self.TID_options_tuple
         self.entry_TID_upper_bound = TIDEntry(self.window, width=element_width)
 
-        self.label_output = Label(self.window, text='Output:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.label_output = Label(self.window, text='Specification:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.output_options = StringVar()
         self.output_options_tuple = ()
         self.cb_output = ttk.Combobox(self.window, textvariable=self.output_options, exportselection=False, state='readonly')
         self.cb_output['values'] = self.output_options_tuple
 
-        self.label_spec_min = Label(self.window, text='min Y:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.label_spec_min = Label(self.window, text='min:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.entry_spec_min = FloatEntry(self.window, width=element_width, state='readonly')
 
-        self.label_spec_max = Label(self.window, text='max Y:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.label_spec_max = Label(self.window, text='max:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.entry_spec_max = FloatEntry(self.window, width=element_width, state='readonly')
 
 
@@ -107,7 +107,7 @@ class Interface(object):
                                        width=element_width * 2,
                                        height=5, bg=self.backgroundcolor, justify='center')
         self.cross_spec_text = StringVar()
-        self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=my_font,
+        self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=('Arial', 24),
                                        width=element_width * 2,
                                        height=5, bg=self.backgroundcolor, justify='center')
 
@@ -432,6 +432,7 @@ class Interface(object):
                             self.Y_list.append(Y[i])
                             break
 
+            unit = ''
             # post-processing for input bias
             if output_option == Library.Positive_Input_Bias_Current or output_option == Library.Negative_Input_Bias_Current:
                 pre_rad_y = 0
@@ -452,8 +453,16 @@ class Interface(object):
                 self.Y_list = tmp_list
             # post-processing for temperature
             if output_option == Library.TEMPERATURE:
+                divider = 1e-5
+                tmp_list = [y / divider for y in self.Y_list]
+                # print(tmp_list)
+                unit = '(\'C)'
+                self.Y_list = tmp_list
+
+            # post-processing for temperature_error
+            if output_option == Library.TEMPERATURE_ERROR:
                 pre_rad_y = 0
-                pre_rad_temperature = 1e-6
+                divider = 1e-5
                 if Library.TPRE_RAD in self.X_list:
                     pre_rad_y = self.Y_list[0]
                 else:
@@ -469,16 +478,16 @@ class Interface(object):
                             pre_rad_y = Y[i]
                             break
 
-                tmp_list = [(y - pre_rad_y) / pre_rad_temperature for y in self.Y_list]
+                tmp_list = [(y - pre_rad_y) / divider for y in self.Y_list]
                 # print(tmp_list)
+                unit = '(\'C)'
                 self.Y_list = tmp_list
-
             # prepare data for plotting
-            unit = ''
-            if Y_label[0] == 'V':
-                unit = ' (V)'
-            elif Y_label[0] == 'I':
-                unit = ' (A)'
+            if unit == '':
+                if Y_label[0] == 'V':
+                    unit = ' (V)'
+                elif Y_label[0] == 'I':
+                    unit = ' (A)'
             Y_label = output_option + unit
             if len(self.X_list) == 0 or len(self.Y_list) == 0:
                 message = "No result to show"
@@ -843,10 +852,11 @@ class Interface(object):
         else:
             subplot.set_yscale('linear')
         # subplot.plot([1,2,3,4],[5,6,7,8])
-        formatter = ticker.ScalarFormatter()
-        formatter.set_scientific(True)
-        formatter.set_powerlimits((-1,1))
-        subplot.yaxis.set_major_formatter(formatter)
+        # scientific formatter
+        # formatter = ticker.ScalarFormatter()
+        # formatter.set_scientific(True)
+        # formatter.set_powerlimits((-1,1))
+        # subplot.yaxis.set_major_formatter(formatter)
         y_min = min(Y)
         y_max = max(Y)
         if spec_max is not None:

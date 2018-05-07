@@ -15,6 +15,7 @@ Input_Offset_Current = NaLJson.Input_Offset_Current
 Positive_Input_Bias_Current = NaLJson.Positive_Input_Bias_Current
 Negative_Input_Bias_Current = NaLJson.Negative_Input_Bias_Current
 TEMPERATURE = NaLJson.Temperature
+TEMPERATURE_ERROR = NaLJson.Temperature_Error
 
 # os.chdir("/home/dwang/NASA_JPL/NASA_JPL_PLATFORM")
 with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
