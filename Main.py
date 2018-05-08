@@ -22,11 +22,11 @@ from GUI import execute, NetListGenerator, Library, FILEPATHS, fit
 
 class Interface(object):
     def __init__(self):
-        element_width = 22
+        element_width = 16
         element_height = 2
         element_half_width = int(element_width/2 + 2)
         self.backgroundcolor = '#87CEFA'
-        my_font = ('Arial', 18)
+        my_font = ('Arial', 14)
 
         self.window = Tk()
         self.window.title('Platform')
@@ -100,7 +100,7 @@ class Interface(object):
         self.button_save = Button(self.window, text='Save', font=my_font, width=15, height=2, command=self.save)
         self.button_change_scale = Button(self.window, text='Change Scale', font=my_font, width=15, height=2, command=self.change_scale)
 
-        self.canvas_plot = Canvas(self.window, width=1100, height=600, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
+        self.canvas_plot = Canvas(self.window, width=800, height=400, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
 
         self.result_text = StringVar()
         self.label_result_text = Label(self.window, textvariable=self.result_text, font=my_font,
@@ -453,8 +453,8 @@ class Interface(object):
                 self.Y_list = tmp_list
             # post-processing for temperature
             if output_option == Library.TEMPERATURE:
-                divider = 1e-5
-                tmp_list = [y / divider for y in self.Y_list]
+                divider = 1e-6
+                tmp_list = [y / divider - 272.15 for y in self.Y_list]
                 # print(tmp_list)
                 unit = '(\'C)'
                 self.Y_list = tmp_list
@@ -462,7 +462,7 @@ class Interface(object):
             # post-processing for temperature_error
             if output_option == Library.TEMPERATURE_ERROR:
                 pre_rad_y = 0
-                divider = 1e-5
+                divider = 1e-6
                 if Library.TPRE_RAD in self.X_list:
                     pre_rad_y = self.Y_list[0]
                 else:
@@ -838,7 +838,7 @@ class Interface(object):
                 Y_min = Y_max
                 Y_max = tmp
 
-        figure = mpl.figure.Figure(figsize=(14, 8), facecolor=self.backgroundcolor, edgecolor='w')
+        figure = mpl.figure.Figure(figsize=(10, 6), facecolor=self.backgroundcolor, edgecolor='w')
         figure.clf()
         subplot = figure.add_subplot(111)
         if x_logscale is True:
