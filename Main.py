@@ -26,7 +26,7 @@ class Interface(object):
         element_height = 2
         element_half_width = int(element_width/2 + 2)
         self.backgroundcolor = '#87CEFA'
-        my_font = ('Arial', 14)
+        my_font = ('Arial', 10)
 
         self.window = Tk()
         self.window.title('Platform')
@@ -55,7 +55,7 @@ class Interface(object):
                                      state='readonly')
         self.cb_dose['values'] = self.dose_options_tuple
 
-        self.label_hydrogen = Label(self.window, text='Hydrogen Content(%):', font=my_font, width=element_width, height=element_height,
+        self.label_hydrogen = Label(self.window, text='Hydrogen Content(%):', font=my_font, width=element_width + 1, height=element_height,
                                  bg=self.backgroundcolor)
         self.hydrogen_options = StringVar()
         self.hydrogen_options_tuple = ("1.4","1","100")
@@ -107,7 +107,7 @@ class Interface(object):
                                        width=element_width * 2,
                                        height=5, bg=self.backgroundcolor, justify='center')
         self.cross_spec_text = StringVar()
-        self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=('Arial', 24),
+        self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=my_font,
                                        width=element_width * 2,
                                        height=5, bg=self.backgroundcolor, justify='center')
 
@@ -826,7 +826,7 @@ class Interface(object):
     def plotfigureTK(self, X_label, Y_label, X, Y, part, simulation, X_min, X_max, TID_level, TID_level2=None,
                      Y_min=None, Y_max=None, spec_min=None, spec_max=None, x_logscale=False, y_logscale=False):
         # preprocessing input
-        font = {'size': 22}
+        font = {'size': 10}
         matplotlib.rc('font', **font)
         if X_min > X_max:
             tmp = X_min
@@ -838,7 +838,7 @@ class Interface(object):
                 Y_min = Y_max
                 Y_max = tmp
 
-        figure = mpl.figure.Figure(figsize=(10, 6), facecolor=self.backgroundcolor, edgecolor='w')
+        figure = mpl.figure.Figure(figsize=(6, 4), facecolor=self.backgroundcolor, edgecolor='w')
         figure.clf()
         subplot = figure.add_subplot(111)
         if x_logscale is True:
