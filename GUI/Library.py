@@ -54,8 +54,6 @@ COL_NAME = name_json_dict['COL_NAME']
 # circuit code:
 INPUT_VOLTAGE_SOURCE = library_json_dict['INPUT_VOLTAGE_SOURCE']
 CIRCUIT_CORE = library_json_dict['CIRCUIT_CORE']
-SCALE = library_json_dict['SCALE']
-FUNCTIONS = library_json_dict['FUNCTIONS']
 INPUT = library_json_dict['INPUT']
 OUTPUT = library_json_dict['OUTPUT']
 SUBCIRCUIT = library_json_dict['SUBCIRCUIT']

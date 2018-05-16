@@ -89,10 +89,12 @@ class Interface(object):
         self.cb_output['values'] = self.output_options_tuple
 
         self.label_spec_min = Label(self.window, text='min:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        self.entry_spec_min = FloatEntry(self.window, width=element_width, state='readonly')
+        # self.entry_spec_min = FloatEntry(self.window, width=element_width, state='readonly')
+        self.label_spec_min_value = Label(self.window, text='', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
 
         self.label_spec_max = Label(self.window, text='max:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        self.entry_spec_max = FloatEntry(self.window, width=element_width, state='readonly')
+        # self.entry_spec_max = FloatEntry(self.window, width=element_width, state='readonly')
+        self.label_spec_max_value = Label(self.window, text='', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
 
 
         self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2, command=self.import_hit)
@@ -339,8 +341,10 @@ class Interface(object):
                 num_TID_upper = num_TID_lower - num_TID_upper
                 num_TID_lower = num_TID_lower - num_TID_upper
 
-            spec_min = float(self.entry_spec_min.get()) if self.entry_spec_min.get() != '' else None
-            spec_max = float(self.entry_spec_max.get()) if self.entry_spec_max.get() != '' else None
+            # spec_min = float(self.entry_spec_min.get()) if self.entry_spec_min.get() != '' else None
+            # spec_max = float(self.entry_spec_max.get()) if self.entry_spec_max.get() != '' else None
+            spec_min = float(self.label_spec_min_value.cget('text')) if self.label_spec_min_value.cget('text') != '' else None
+            spec_max = float(self.label_spec_max_value.cget('text')) if self.label_spec_max_value.cget('text') != '' else None
             plotted_X = Library.SPECIFICATION.get(part).get("Dataset")[0]
 
             self.X_list.clear()
@@ -575,6 +579,7 @@ class Interface(object):
                 self.cb_simulation.get() == '' or \
                 self.cb_output.get() == '':
             self.result_text.set('please check your input')
+            messagebox.showerror("Input Missing", "please check your input")
             return False
         self.result_text.set('in process, please wait...')
         return True
@@ -612,26 +617,30 @@ class Interface(object):
         spec_lib = Library.SPECIFICATION.get(part)
         self.clear_specs()
         if spec_lib is not None:
-            self.entry_spec_min.configure(state='normal')
-            self.entry_spec_max.configure(state='normal')
+            # self.entry_spec_min.configure(state='normal')
+            # self.entry_spec_max.configure(state='normal')
             spec = spec_lib.get(output)
             if spec is not None:
                 if spec[0] is not None:
-                    self.entry_spec_min.insert(0, spec[0])
+                    # self.entry_spec_min.insert(0, spec[0])
+                    self.label_spec_min_value['text'] = spec[0]
                 if spec[1] is not None:
-                    self.entry_spec_max.insert(0, spec[1])
-            self.entry_spec_min.configure(state='readonly')
-            self.entry_spec_max.configure(state='readonly')
+                    # self.entry_spec_max.insert(0, spec[1])
+                    self.label_spec_max_value['text'] = spec[1]
+            # self.entry_spec_min.configure(state='readonly')
+            # self.entry_spec_max.configure(state='readonly')
         self.cb_output.selection_clear()
         return
 
     def clear_specs(self):
-        self.entry_spec_min.configure(state='normal')
-        self.entry_spec_max.configure(state='normal')
-        self.entry_spec_min.delete(0, 'end')
-        self.entry_spec_max.delete(0, 'end')
-        self.entry_spec_min.configure(state='readonly')
-        self.entry_spec_max.configure(state='readonly')
+        self.label_spec_min_value['text'] = ''
+        self.label_spec_max_value['text'] = ''
+        # self.entry_spec_min.configure(state='normal')
+        # self.entry_spec_max.configure(state='normal')
+        # self.entry_spec_min.delete(0, 'end')
+        # self.entry_spec_max.delete(0, 'end')
+        # self.entry_spec_min.configure(state='readonly')
+        # self.entry_spec_max.configure(state='readonly')
 
     def callback(self, event):
         self.execute_hit()
@@ -683,7 +692,7 @@ class Interface(object):
 
         # row 7
         row = 7
-        self.entry_spec_max.grid(row=row, column=1)
+        self.label_spec_max_value.grid(row=row, column=1)
 
         # row 8
         row = 8
@@ -691,7 +700,7 @@ class Interface(object):
 
         # row 9
         row = 9
-        self.entry_spec_min.grid(row=row, column=1)
+        self.label_spec_min_value.grid(row=row, column=1)
 
         # row 10
         row = 10
@@ -725,12 +734,14 @@ class Interface(object):
             self.cb_output.set('Vref')
             self.cb_dose.set('0.02')
             self.cb_hydrogen.set('1.4')
-            self.entry_spec_max.configure(state='normal')
-            self.entry_spec_min.configure(state='normal')
-            self.entry_spec_max.insert(0, 2.55)
-            self.entry_spec_min.insert(0, 2.44)
-            self.entry_spec_max.configure(state='readonly')
-            self.entry_spec_min.configure(state='readonly')
+            self.label_spec_min_value['text'] = 2.44
+            self.label_spec_max_value['text'] = 2.55
+            # self.entry_spec_max.configure(state='normal')
+            # self.entry_spec_min.configure(state='normal')
+            # self.entry_spec_max.insert(0, 2.55)
+            # self.entry_spec_min.insert(0, 2.44)
+            # self.entry_spec_max.configure(state='readonly')
+            # self.entry_spec_min.configure(state='readonly')
             self.entry_TID_lower_bound.insert(0, "0")
             self.entry_TID_upper_bound.insert(0, "300k")
         else:

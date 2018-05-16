@@ -28,6 +28,5 @@ class Execute:
             command = 'whereis bin/Xyce'# the command that going to be executed
             Xyce_path = subprocess.getoutput(command)
             command = Xyce_path.split(' ')[1] + ' ' + path  # the command that going to be executed
-            print(command)
             result = subprocess.getoutput(command)
         return result

@@ -265,9 +265,9 @@ class NetListGenerator:
             # Section 2: Input Voltage Source
             content.extend(['*Input Voltage Source',
                             '*********************'])
-            temp =Library.INPUT_VOLTAGE_SOURCE.get(part)
+            temp =Library.INPUT_VOLTAGE_SOURCE.get(part + output_option)
             if temp is None:
-                temp = Library.INPUT_VOLTAGE_SOURCE.get(part + output_option)
+                temp = Library.INPUT_VOLTAGE_SOURCE.get(part)
             content.extend(temp)
             content.extend(['*End Input Voltage Source',
                             ''])
