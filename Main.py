@@ -458,7 +458,7 @@ class Interface(object):
             # post-processing for temperature
             if output_option == Library.TEMPERATURE:
                 divider = 1e-6
-                tmp_list = [y / divider - 272.15 for y in self.Y_list]
+                tmp_list = [y / divider - 273.15 for y in self.Y_list]
                 # print(tmp_list)
                 unit = '(\'C)'
                 self.Y_list = tmp_list
