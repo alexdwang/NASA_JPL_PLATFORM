@@ -265,7 +265,7 @@ class NetListGenerator:
             # Section 2: Input Voltage Source
             content.extend(['*Input Voltage Source',
                             '*********************'])
-            temp =Library.INPUT_VOLTAGE_SOURCE.get(part + output_option)
+            temp = Library.INPUT_VOLTAGE_SOURCE.get(part + output_option)
             if temp is None:
                 temp = Library.INPUT_VOLTAGE_SOURCE.get(part)
             content.extend(temp)
@@ -274,8 +274,10 @@ class NetListGenerator:
             # Section 3: Circuit core
             content.extend(['*Circuit Core',
                             '*************',])
-
-            content.extend(Library.CIRCUIT_CORE.get(part))
+            temp = Library.CIRCUIT_CORE.get(part + output_option)
+            if temp is None:
+                temp = Library.CIRCUIT_CORE.get(part)
+            content.extend(temp)
             content.extend(['*End Circuit Core',
                             ''])
 

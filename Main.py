@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
 import matplotlib.backends.tkagg as tkagg
-from matplotlib import ticker
+from matplotlib import ticker as mticker
 import matplotlib
 matplotlib.use("TkAgg")
 
@@ -50,7 +50,7 @@ class Interface(object):
         self.label_dose = Label(self.window, text='Dose Rate(rad/s):', font=my_font, width=element_width, height=element_height,
                                  bg=self.backgroundcolor)
         self.dose_options = StringVar()
-        self.dose_options_tuple = ("100","1","0.1","0.02")
+        self.dose_options_tuple = ("100","0.1","0.02")
         self.cb_dose = ttk.Combobox(self.window, textvariable=self.dose_options, exportselection=False,
                                      state='readonly')
         self.cb_dose['values'] = self.dose_options_tuple
@@ -109,7 +109,7 @@ class Interface(object):
                                        width=element_width * 2,
                                        height=5, bg=self.backgroundcolor, justify='center')
         self.cross_spec_text = StringVar()
-        self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=my_font,
+        self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=('Arial', 16,'bold'),
                                        width=element_width * 2,
                                        height=5, bg=self.backgroundcolor, justify='center')
 
@@ -527,12 +527,15 @@ class Interface(object):
                             cross_max.append(str(int(cross)))
                             # print(cross)
             cross_message = ""
+            next_line = ""
             if len(cross_min) != 0:
                 cross_message += "Cross min specification at " + ",".join(cross_min) + " rad. "
+                next_line = "\n"
             if len(cross_max) != 0:
+                cross_message += next_line
                 cross_message += "Cross max specification at " + ",".join(cross_max) + " rad. "
             if cross_message == "":
-                cross_message = "Cross specification at > 300k rad"
+                cross_message = "Cross specification at > " + TID_level_upper + " rad"
             self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
                               self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
@@ -870,6 +873,8 @@ class Interface(object):
         # subplot.yaxis.set_major_formatter(formatter)
         y_min = min(Y)
         y_max = max(Y)
+        if max(abs(y_max), abs(y_min)) < 1e-4 or max(abs(y_max), abs(y_min)) > 1e5:
+            subplot.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.2e'))
         if spec_max is not None:
             subplot.axhline(y=spec_max, color='r', linestyle='--')
             y_max = max(y_max, spec_max)
