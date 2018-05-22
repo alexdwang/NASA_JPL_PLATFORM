@@ -88,13 +88,17 @@ class Interface(object):
         self.cb_output = ttk.Combobox(self.window, textvariable=self.output_options, exportselection=False, state='readonly')
         self.cb_output['values'] = self.output_options_tuple
 
-        self.label_spec_min = Label(self.window, text='min:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.frame_min = Frame(height=element_height, width=element_width, bg=self.backgroundcolor)
+        self.label_spec_min = Label(self.frame_min, text='min:', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
         # self.entry_spec_min = FloatEntry(self.window, width=element_width, state='readonly')
-        self.label_spec_min_value = Label(self.window, text='', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.label_spec_min_value = Label(self.frame_min, text='', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
+        self.label_spec_min_unit = Label(self.frame_min, text='', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
 
-        self.label_spec_max = Label(self.window, text='max:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.frame_max = Frame(height=element_height, width=element_width, bg=self.backgroundcolor)
+        self.label_spec_max = Label(self.frame_max, text='max:', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
         # self.entry_spec_max = FloatEntry(self.window, width=element_width, state='readonly')
-        self.label_spec_max_value = Label(self.window, text='', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.label_spec_max_value = Label(self.frame_max, text='', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
+        self.label_spec_max_unit = Label(self.frame_max, text='', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
 
 
         self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2, command=self.import_hit)
@@ -345,7 +349,15 @@ class Interface(object):
             # spec_max = float(self.entry_spec_max.get()) if self.entry_spec_max.get() != '' else None
             spec_min = float(self.label_spec_min_value.cget('text')) if self.label_spec_min_value.cget('text') != '' else None
             spec_max = float(self.label_spec_max_value.cget('text')) if self.label_spec_max_value.cget('text') != '' else None
-            plotted_X = Library.SPECIFICATION.get(part).get("Dataset")[0]
+            nonlinearity = False
+            if part == Library.PART_AD590 and output_option == Library.Nonlinearity:
+                nonlinearity = True
+                X1 = Library.SPECIFICATION.get(part).get("Dataset")[0]
+                X2 = Library.SPECIFICATION.get(part).get("Dataset")[1]
+            if part == Library.PART_AD590 and (output_option == Library.TEMPERATURE_30V or output_option == Library.TEMPERATURE_ERROR_30V):
+                plotted_X = Library.SPECIFICATION.get(part).get("Dataset")[1]
+            else:
+                plotted_X = Library.SPECIFICATION.get(part).get("Dataset")[0]
 
             self.X_list.clear()
             self.Y_list.clear()
@@ -431,12 +443,20 @@ class Interface(object):
                     # self.plotfigure(X_label, Y_label, X, Y, part, simulation, TID_level)
                     self.X_list.append(num_TID)
                     lengthX = len(X)
-                    for i in range(len(X)):
-                        if X[i] == plotted_X:
-                            self.Y_list.append(Y[i])
-                            break
+                    if nonlinearity:
+                        for i in range(len(X)):
+                            if X[i] == X1:
+                                Y1 = Y[i]
+                            if X[i] == X2:
+                                Y2 = Y[i]
+                        self.Y_list.append(Y2 - Y1)
+                    else:
+                        for i in range(len(X)):
+                            if X[i] == plotted_X:
+                                self.Y_list.append(Y[i])
+                                break
 
-            unit = ''
+            unit = Library.SPECIFICATION.get(part).get(output_option)[2]
             # post-processing for input bias
             if output_option == Library.Positive_Input_Bias_Current or output_option == Library.Negative_Input_Bias_Current:
                 pre_rad_y = 0
@@ -455,16 +475,22 @@ class Interface(object):
                             break
                 tmp_list = [y - pre_rad_y for y in self.Y_list]
                 self.Y_list = tmp_list
+
+            # post-processing for nonlinearity
+            elif output_option == Library.Nonlinearity:
+                divider = 1e-6
+                tmp_list = [y / divider for y in self.Y_list]
+                self.Y_list = tmp_list
+
             # post-processing for temperature
-            if output_option == Library.TEMPERATURE:
+            elif output_option == Library.TEMPERATURE_5V or output_option == Library.TEMPERATURE_30V:
                 divider = 1e-6
                 tmp_list = [y / divider - 273.15 for y in self.Y_list]
                 # print(tmp_list)
-                unit = '(\'C)'
                 self.Y_list = tmp_list
 
             # post-processing for temperature_error
-            if output_option == Library.TEMPERATURE_ERROR:
+            elif output_option == Library.TEMPERATURE_ERROR_5V or output_option == Library.TEMPERATURE_ERROR_30V:
                 pre_rad_y = 0
                 divider = 1e-6
                 if Library.TPRE_RAD in self.X_list:
@@ -484,15 +510,9 @@ class Interface(object):
 
                 tmp_list = [(y - pre_rad_y) / divider for y in self.Y_list]
                 # print(tmp_list)
-                unit = '(\'C)'
                 self.Y_list = tmp_list
             # prepare data for plotting
-            if unit == '':
-                if Y_label[0] == 'V':
-                    unit = ' (V)'
-                elif Y_label[0] == 'I':
-                    unit = ' (A)'
-            Y_label = output_option + unit
+            Y_label = output_option + ' (' + unit + ')'
             if len(self.X_list) == 0 or len(self.Y_list) == 0:
                 message = "No result to show"
                 self.result_text.set(message)
@@ -630,6 +650,8 @@ class Interface(object):
                 if spec[1] is not None:
                     # self.entry_spec_max.insert(0, spec[1])
                     self.label_spec_max_value['text'] = spec[1]
+                self.label_spec_max_unit['text'] = spec[2]
+                self.label_spec_min_unit['text'] = spec[2]
             # self.entry_spec_min.configure(state='readonly')
             # self.entry_spec_max.configure(state='readonly')
         self.cb_output.selection_clear()
@@ -638,6 +660,8 @@ class Interface(object):
     def clear_specs(self):
         self.label_spec_min_value['text'] = ''
         self.label_spec_max_value['text'] = ''
+        self.label_spec_max_unit['text'] = ''
+        self.label_spec_min_unit['text'] = ''
         # self.entry_spec_min.configure(state='normal')
         # self.entry_spec_max.configure(state='normal')
         # self.entry_spec_min.delete(0, 'end')
@@ -691,19 +715,25 @@ class Interface(object):
 
         # row 6
         row = 6
-        self.label_spec_max.grid(row=row, column=1, pady=(20, 0))
+        self.frame_max.grid(row=row, column=1)
+        self.label_spec_max.grid(row=0, column=1)
+        self.label_spec_max_value.grid(row=0, column=2)
+        self.label_spec_max_unit.grid(row=0, column=3)
 
         # row 7
         row = 7
-        self.label_spec_max_value.grid(row=row, column=1)
+        # self.label_spec_max_value.grid(row=row, column=1)
 
         # row 8
         row = 8
-        self.label_spec_min.grid(row=row, column=1)
+        self.frame_min.grid(row=row, column=1)
+        self.label_spec_min.grid(row=0, column=1)
+        self.label_spec_min_value.grid(row=0, column=2)
+        self.label_spec_min_unit.grid(row=0, column=3)
 
         # row 9
         row = 9
-        self.label_spec_min_value.grid(row=row, column=1)
+        # self.label_spec_min_value.grid(row=row, column=1)
 
         # row 10
         row = 10
@@ -739,6 +769,8 @@ class Interface(object):
             self.cb_hydrogen.set('1.4')
             self.label_spec_min_value['text'] = 2.44
             self.label_spec_max_value['text'] = 2.55
+            self.label_spec_max_unit['text'] = 'V'
+            self.label_spec_min_unit['text'] = 'V'
             # self.entry_spec_max.configure(state='normal')
             # self.entry_spec_min.configure(state='normal')
             # self.entry_spec_max.insert(0, 2.55)
@@ -748,6 +780,7 @@ class Interface(object):
             self.entry_TID_lower_bound.insert(0, "0")
             self.entry_TID_upper_bound.insert(0, "300k")
         else:
+            self.cb_simulation.set(Library.SIMULATION_SOURCE)
             self.button_import.grid_remove()
 
         # screenwidth = self.window.winfo_screenwidth()

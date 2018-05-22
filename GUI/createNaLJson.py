@@ -46,8 +46,10 @@ SIMULATION_SOURCE = 'external current source'
 SIMULATION = [SIMULATION_MODEL, SIMULATION_SOURCE]
 
 Nonlinearity = 'Nonlinearity'
-Temperature = 'Temperature'
-Temperature_Error = 'Temperature Error'
+Temperature_5V = 'Temperature at 5V'
+Temperature_Error_5V = 'Temperature Error at 5V'
+Temperature_30V = 'Temperature at 30V'
+Temperature_Error_30V = 'Temperature Error at 30V'
 Line_Regulation = 'Line Regulation'
 Output_Voltage = 'Output Voltage'
 Output_Voltage_With_Vin_6V = 'Output Voltage with Vin 6V'
@@ -71,8 +73,11 @@ Cathode_Voltage_Vka = 'Vka'
 Ratio_DVref_DVka = 'Ratio DVref/DVka'
 Supply_Current = 'Supply Current'
 
-OUTPUT_NAME = {PART_AD590: [Temperature,
-                            Temperature_Error],
+OUTPUT_NAME = {PART_AD590: [Nonlinearity,
+                            Temperature_5V,
+                            Temperature_30V,
+                            Temperature_Error_5V,
+                            Temperature_30V],
                PART_LT1175: [Line_Regulation,
                              Output_Voltage,
                              Dropoff_Voltage,
@@ -349,9 +354,15 @@ INPUT = {PART_AD590: ['.dc VIN 0 30 1'],
          PART_TL431: ['.dc V1 0 25 1'],
          }
 
-OUTPUT = {PART_AD590: {Temperature: ['+ V(2)',
+OUTPUT = {PART_AD590: {Nonlinearity: ['+ V(2)',
                                      '+ I(VOUT)'],
-                       Temperature_Error: ['+ V(2)',
+                       Temperature_5V: ['+ V(2)',
+                                     '+ I(VOUT)'],
+                       Temperature_30V: ['+ V(2)',
+                                     '+ I(VOUT)'],
+                       Temperature_Error_5V: ['+ V(2)',
+                                     '+ I(VOUT)'],
+                       Temperature_Error_30V: ['+ V(2)',
                                      '+ I(VOUT)']
                        },
           PART_LM111: {Supply_Current: ['+ V(6)',

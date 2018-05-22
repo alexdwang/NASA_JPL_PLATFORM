@@ -7,6 +7,7 @@ import os
 ' Contents in this file should not be modified by program unless you are updating the library
 """
 
+PART_AD590 = NaLJson.PART_AD590
 SIMULATION_MODEL = NaLJson.SIMULATION_MODEL
 SIMULATION_SOURCE = NaLJson.SIMULATION_SOURCE
 TPRE_RAD = NaLJson.TPRE_RAD
@@ -14,8 +15,11 @@ Input_Offset_Voltage = NaLJson.Input_Offset_Voltage
 Input_Offset_Current = NaLJson.Input_Offset_Current
 Positive_Input_Bias_Current = NaLJson.Positive_Input_Bias_Current
 Negative_Input_Bias_Current = NaLJson.Negative_Input_Bias_Current
-TEMPERATURE = NaLJson.Temperature
-TEMPERATURE_ERROR = NaLJson.Temperature_Error
+Nonlinearity = NaLJson.Nonlinearity
+TEMPERATURE_5V = NaLJson.Temperature_5V
+TEMPERATURE_ERROR_5V = NaLJson.Temperature_Error_5V
+TEMPERATURE_30V = NaLJson.Temperature_30V
+TEMPERATURE_ERROR_30V = NaLJson.Temperature_Error_30V
 
 # os.chdir("/home/dwang/NASA_JPL/NASA_JPL_PLATFORM")
 with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
