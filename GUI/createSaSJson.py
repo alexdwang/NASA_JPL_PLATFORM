@@ -67,11 +67,11 @@ SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1, '
                                              createNaLJson.Reference_Voltage_With_Vin_6V: [1.215, 1.245,'V'],
                                              createNaLJson.Reference_Voltage_With_Vin_23V: [1.215, 1.245,'V'],
                                              createNaLJson.Reference_Voltage_With_Vin_30V: [1.215, 1.245,'V'],
-                                            "Dataset": [0.25]},
+                                            "Dataset": [0]},
                  createNaLJson.PART_LM3940: {createNaLJson.Supply_Current: [0, 1.7,'A'],
                                              createNaLJson.Output_Voltage: [3.2, 3.4,'V'],
                                              createNaLJson.Reference_Voltage: [1.215, 1.245, 'V'],
-                                            "Dataset": [1]}
+                                            "Dataset": [0]}
                  }
 
 save_specification_to_json(SPECIFICATION)

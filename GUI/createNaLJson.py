@@ -55,7 +55,7 @@ Output_Voltage = 'Output Voltage'
 Output_Voltage_With_Vin_6V = 'Output Voltage with Vin 6V'
 Output_Voltage_With_Vin_23V = 'Output Voltage with Vin 2.3V'
 Output_Voltage_With_Vin_30V = 'Output Voltage with Vin 30V'
-Dropoff_Voltage = 'Dropoff VoltaOUTPUT_NAMEge'
+Dropoff_Voltage = 'Dropoff Voltage'
 Load_Regulation = 'Load Regulation'
 Positive_Supply_Current = 'Positive Supply Current'
 Negative_Supply_Current = 'Negative Supply Current'
@@ -77,7 +77,7 @@ OUTPUT_NAME = {PART_AD590: [Nonlinearity,
                             Temperature_5V,
                             Temperature_30V,
                             Temperature_Error_5V,
-                            Temperature_30V],
+                            Temperature_Error_30V],
                PART_LT1175: [Line_Regulation,
                              Output_Voltage,
                              Dropoff_Voltage,
@@ -129,10 +129,11 @@ TID_LEVEL = [TPRE_RAD,        # 0
              T10KRAD,         # 3
              T20KRAD,         # 4
              T30KRAD,         # 5
-             T50KRAD,         # 6
-             T100KRAD,        # 7
-             T200KRAD,        # 8
-             T300KRAD         # 9
+             T40KRAD,         # 6
+             T50KRAD,         # 7
+             T100KRAD,        # 8
+             T200KRAD,        # 9
+             T300KRAD         # 10
              ]
 
 # Excel sheet name & column name
@@ -143,6 +144,7 @@ COL_NAME = {'VE':       "Ve (V)",
             T10KRAD:    '10krad',
             T20KRAD:    '20krad',
             T30KRAD:    '30krad',
+            T40KRAD:    '40krad',
             T50KRAD:    '50krad',
             T100KRAD:   '100krad',
             T200KRAD:   '200krad',

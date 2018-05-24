@@ -10,7 +10,7 @@ class Execute:
         return
     
     def rm_all(self):
-        command = 'rm -f ./Output/*'
+        command = 'rm -f ./Output/*.txt'
         os.system(command)
         return
 

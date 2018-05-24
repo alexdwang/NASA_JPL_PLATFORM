@@ -521,7 +521,7 @@ class Interface(object):
                 self.result_text.set(message)
                 return
             self.figure_input.clear()
-            self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, part, simulation,
+            self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, part, simulation, DR, H2,
                                       num_TID_lower, num_TID_upper, TID_level_lower, TID_level_upper, None, None,
                                       spec_min, spec_max, False, False])
             # calculate the point that exceed specification limits
@@ -562,7 +562,8 @@ class Interface(object):
             self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
                               self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
-                              self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15])
+                              self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15],
+                              self.figure_input[16], self.figure_input[17])
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
             self.cross_spec_text.set(cross_message)
@@ -875,7 +876,7 @@ class Interface(object):
     ' plot figure in the main window
     ' X_label: 
     '''
-    def plotfigureTK(self, X_label, Y_label, X, Y, part, simulation, X_min, X_max, TID_level, TID_level2=None,
+    def plotfigureTK(self, X_label, Y_label, X, Y, part, simulation, DR, H2, X_min, X_max, TID_level, TID_level2=None,
                      Y_min=None, Y_max=None, spec_min=None, spec_max=None, x_logscale=False, y_logscale=False):
         # preprocessing input
         font = {'size': 10}
@@ -912,7 +913,7 @@ class Interface(object):
         # subplot.yaxis.set_major_formatter(formatter)
         y_min = min(Y)
         y_max = max(Y)
-        if max(abs(y_max), abs(y_min)) < 1e-4 or max(abs(y_max), abs(y_min)) > 1e5:
+        if max(abs(y_max), abs(y_min)) < 1e-2 or max(abs(y_max), abs(y_min)) > 1e2:
             subplot.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.2e'))
         if spec_max is not None:
             subplot.axhline(y=spec_max, color='r', linestyle='--')
@@ -920,13 +921,13 @@ class Interface(object):
         if spec_min is not None:
             subplot.axhline(y=spec_min, color='r', linestyle='--')
             y_min = min(y_min, spec_min)
-        subplot.plot(X, Y, next(self.color_gen), label="Part=" + part + " TID level=" + TID_level + '~' + TID_level2)
+        subplot.plot(X, Y, next(self.color_gen), label=part + '_' + DR + '_' + H2)
         subplot.plot(X, Y, 'r*')
-        # y_gap = y_max - y_min
-        # y_lower_bound = float(Y_min) if Y_min is not None else y_min - 0.1 * y_gap
-        # y_upper_bound = float(Y_max) if Y_max is not None else y_max + 0.15 * y_gap
-        # if y_lower_bound != y_upper_bound:
-        #     subplot.set_ylim([y_lower_bound, y_upper_bound])
+        y_gap = y_max - y_min
+        y_lower_bound = float(Y_min) if Y_min is not None else y_min - 0.1 * y_gap
+        y_upper_bound = float(Y_max) if Y_max is not None else y_max + 0.15 * y_gap
+        if y_lower_bound != y_upper_bound:
+            subplot.set_ylim([y_lower_bound, y_upper_bound])
         x_gap = X_max - X_min
         if x_gap != 0:
             subplot.set_xlim([X_min, X_max])
@@ -962,34 +963,36 @@ class Interface(object):
             x_upper, x_lower, x_log, y_upper, y_lower, y_log = scaleinfo
             # x upper bound
             if x_upper != '':
-                self.figure_input[7] = self.get_num_TID(x_upper)
+                self.figure_input[9] = self.get_num_TID(x_upper)
             # x lower bound
             if x_lower != '':
-                self.figure_input[6] = self.get_num_TID(x_lower)
+                self.figure_input[8] = self.get_num_TID(x_lower)
             # x log scale
             if min(self.figure_input[3]) <= 0 and y_log is True:
                 self.result_text.set("can not use log scale on y axis \n non-positive value detected")
             else:
-                self.figure_input[15] = y_log
+                self.figure_input[17] = y_log
             # y upper bound
             if scaleinfo[3] != '':
-                self.figure_input[11] = y_upper
+                self.figure_input[13] = y_upper
             # y lower bound
             if scaleinfo[4] != '':
-                self.figure_input[10] = y_lower
+                self.figure_input[12] = y_lower
             # y log scale
-            self.figure_input[14] = x_log
+            self.figure_input[16] = x_log
 
             self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
                               self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
-                              self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15])
+                              self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15],
+                              self.figure_input[16], self.figure_input[17])
         return
 
     def save(self):
         path = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
         files = os.listdir(path)
-        result_path = relative_path(FILEPATHS.OUTPUT_DIR_PATH + 'Result.xlsx')
+        part_name = self.figure_input[4]
+        result_path = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part_name + '.xlsx')
         part_name = ''
         TIDs = []
         try:
@@ -1080,7 +1083,7 @@ class Interface(object):
                 worksheet.write(row, col + 1, Y[index])
                 row += 1
         workbook.close()
-        message = 'File saved at ./' + FILEPATHS.OUTPUT_DIR_PATH + 'Result.xlsx'
+        message = 'File saved at ./' + FILEPATHS.OUTPUT_DIR_PATH + part_name +'.xlsx'
         self.result_text.set(message)
         return
 
