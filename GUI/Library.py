@@ -47,9 +47,9 @@ SCALELIB = scale_json_dict
 
 TITLE = name_json_dict['TITLE']
 PARTS = name_json_dict['PARTS']
+OUTPUT_NAME = name_json_dict['OUTPUT_NAME']
 SIMULATION = name_json_dict['SIMULATION']
 TID_LEVEL = name_json_dict['TID_LEVEL']
-TID_LIST = name_json_dict['TID_LIST']
 # EXCEL_FILE_PATH = name_json_dict['EXCEL_FILE_PATH']
 COL_NAME = name_json_dict['COL_NAME']
 # SHEET_NAME = name_json_dict['SHEET_NAME']

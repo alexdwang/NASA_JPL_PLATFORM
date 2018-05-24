@@ -22,11 +22,11 @@ def save_scale_to_json(Scale):
     return
 
 # SPECIFICATION = {PART_NAME: {OUTPUT_NAME: [MIN, MAX, UNIT]}}
-SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1,'C'],
-                                            createNaLJson.Temperature_5V: [20, 30,'C'],
+SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1, 'C'],
+                                            createNaLJson.Temperature_5V: [20, 30, 'C'],
                                             createNaLJson.Temperature_Error_5V: [-5, 5,'C'],
-                                            createNaLJson.Temperature_30V: [20, 30,'C'],
-                                            createNaLJson.Temperature_Error_30V: [-5, 5,'C'],
+                                            createNaLJson.Temperature_30V: [20, 30, 'C'],
+                                            createNaLJson.Temperature_Error_30V: [-5, 5, 'C'],
                                             "Dataset": [5, 30]},
 
                  createNaLJson.PART_LT1175: {createNaLJson.Line_Regulation: [0, 0.015,'%/V'],
@@ -70,7 +70,8 @@ SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1,'C
                                             "Dataset": [0.25]},
                  createNaLJson.PART_LM3940: {createNaLJson.Supply_Current: [0, 1.7,'A'],
                                              createNaLJson.Output_Voltage: [3.2, 3.4,'V'],
-                                            "Dataset": [5]}
+                                             createNaLJson.Reference_Voltage: [1.215, 1.245, 'V'],
+                                            "Dataset": [1]}
                  }
 
 save_specification_to_json(SPECIFICATION)

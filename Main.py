@@ -107,6 +107,7 @@ class Interface(object):
         self.button_change_scale = Button(self.window, text='Change Scale', font=my_font, width=15, height=2, command=self.change_scale)
 
         self.canvas_plot = Canvas(self.window, width=800, height=400, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
+        self.figure = mpl.figure.Figure(figsize=(6, 4), facecolor=self.backgroundcolor, edgecolor='w')
 
         self.result_text = StringVar()
         self.label_result_text = Label(self.window, textvariable=self.result_text, font=my_font,
@@ -120,6 +121,8 @@ class Interface(object):
         self.X_list = list()
         self.Y_list = list()
         self.figure_input = list()
+        self.previous_part = ''
+        self.previous_Y_label = ''
         self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
         self.netlist_filepath = relative_path(FILEPATHS.TEMP_DIR_PATH + 'myNetlist.cir')
         self.output_filepath = ''
@@ -618,7 +621,7 @@ class Interface(object):
     def part_onselect(self, evt):
         try:
             part = self.cb_parts.get()
-            self.output_options_tuple = (list(Library.OUTPUT[part].keys()))
+            self.output_options_tuple = (list(Library.OUTPUT_NAME.get(part)))
             self.cb_output['values'] = self.output_options_tuple
             self.output_options.set('')
             self.clear_specs()
@@ -764,6 +767,8 @@ class Interface(object):
         if testmode is True:
             self.cb_parts.set('TL431')
             self.cb_simulation.set(Library.SIMULATION_SOURCE)
+            self.output_options_tuple = (list(Library.OUTPUT_NAME.get('TL431')))
+            self.cb_output['values'] = self.output_options_tuple
             self.cb_output.set('Vref')
             self.cb_dose.set('0.02')
             self.cb_hydrogen.set('1.4')
@@ -884,10 +889,11 @@ class Interface(object):
                 tmp = Y_min
                 Y_min = Y_max
                 Y_max = tmp
-
-        figure = mpl.figure.Figure(figsize=(6, 4), facecolor=self.backgroundcolor, edgecolor='w')
-        figure.clf()
-        subplot = figure.add_subplot(111)
+        if part != self.previous_part or Y_label != self.previous_Y_label:
+            self.figure.clf()
+        self.previous_part = part
+        self.previous_Y_label = Y_label
+        subplot = self.figure.add_subplot(111)
         if x_logscale is True:
             subplot.set_xscale('symlog')
         else:
@@ -916,11 +922,11 @@ class Interface(object):
             y_min = min(y_min, spec_min)
         subplot.plot(X, Y, next(self.color_gen), label="Part=" + part + " TID level=" + TID_level + '~' + TID_level2)
         subplot.plot(X, Y, 'r*')
-        y_gap = y_max - y_min
-        y_lower_bound = float(Y_min) if Y_min is not None else y_min - 0.1 * y_gap
-        y_upper_bound = float(Y_max) if Y_max is not None else y_max + 0.15 * y_gap
-        if y_lower_bound != y_upper_bound:
-            subplot.set_ylim([y_lower_bound, y_upper_bound])
+        # y_gap = y_max - y_min
+        # y_lower_bound = float(Y_min) if Y_min is not None else y_min - 0.1 * y_gap
+        # y_upper_bound = float(Y_max) if Y_max is not None else y_max + 0.15 * y_gap
+        # if y_lower_bound != y_upper_bound:
+        #     subplot.set_ylim([y_lower_bound, y_upper_bound])
         x_gap = X_max - X_min
         if x_gap != 0:
             subplot.set_xlim([X_min, X_max])
@@ -928,11 +934,11 @@ class Interface(object):
         subplot.set_ylabel(Y_label)
         # subplot.set_xticks(list(X))
         # subplot.get_xaxis().get_major_formatter().labelOnlyBase = False
-        subplot.legend(loc='upper left')
+        subplot.legend(loc='best', fancybox=True, framealpha=0.2)
 
-        figure_canvas_agg = FigureCanvasAgg(figure)
+        figure_canvas_agg = FigureCanvasAgg(self.figure)
         figure_canvas_agg.draw()
-        figure_x, figure_y, figure_w, figure_h = figure.bbox.bounds
+        figure_x, figure_y, figure_w, figure_h = self.figure.bbox.bounds
         figure_w, figure_h = int(figure_w), int(figure_h)
         photo = PhotoImage(master=self.canvas_plot, width=figure_w, height=figure_h)
         self.canvas_plot.create_image(figure_w / 2, figure_h / 2, image=photo)
