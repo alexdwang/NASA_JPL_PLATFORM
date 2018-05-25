@@ -89,21 +89,24 @@ class Interface(object):
         self.cb_output['values'] = self.output_options_tuple
 
         self.frame_min = Frame(height=element_height, width=element_width, bg=self.backgroundcolor)
-        self.label_spec_min = Label(self.frame_min, text='min:', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
+        self.label_spec_min = Label(self.frame_min, text='min:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
         # self.entry_spec_min = FloatEntry(self.window, width=element_width, state='readonly')
-        self.label_spec_min_value = Label(self.frame_min, text='', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
-        self.label_spec_min_unit = Label(self.frame_min, text='', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
+        self.label_spec_min_value = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
+        self.label_spec_min_unit = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
 
         self.frame_max = Frame(height=element_height, width=element_width, bg=self.backgroundcolor)
-        self.label_spec_max = Label(self.frame_max, text='max:', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
+        self.label_spec_max = Label(self.frame_max, text='max:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
         # self.entry_spec_max = FloatEntry(self.window, width=element_width, state='readonly')
-        self.label_spec_max_value = Label(self.frame_max, text='', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
-        self.label_spec_max_unit = Label(self.frame_max, text='', font=my_font, width=int(element_width/3), height=element_height, bg=self.backgroundcolor)
+        self.label_spec_max_value = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
+        self.label_spec_max_unit = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
 
 
         self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2, command=self.import_hit)
         self.button_execute = Button(self.window, text='Execute', font=my_font, width=15, height=2, command=self.execute_hit)
-        self.button_save = Button(self.window, text='Save', font=my_font, width=15, height=2, command=self.save)
+
+        self.frame_save_or_clear = Frame(height=element_height, width=element_width, bg=self.backgroundcolor)
+        self.button_save = Button(self.frame_save_or_clear, text='Save', font=my_font, width=7, height=2, command=self.save)
+        self.button_clear = Button(self.frame_save_or_clear, text='Clear', font=my_font, width=7, height=2, command=self.clear)
         self.button_change_scale = Button(self.window, text='Change Scale', font=my_font, width=15, height=2, command=self.change_scale)
 
         self.canvas_plot = Canvas(self.window, width=800, height=400, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
@@ -123,6 +126,7 @@ class Interface(object):
         self.figure_input = list()
         self.previous_part = ''
         self.previous_Y_label = ''
+        self.multiplot = False
         self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
         self.netlist_filepath = relative_path(FILEPATHS.TEMP_DIR_PATH + 'myNetlist.cir')
         self.output_filepath = ''
@@ -650,10 +654,16 @@ class Interface(object):
             if spec is not None:
                 if spec[0] is not None:
                     # self.entry_spec_min.insert(0, spec[0])
-                    self.label_spec_min_value['text'] = spec[0]
+                    if 0 < abs(spec[0]) < 1e-2 or abs(spec[0]) > 1e2:
+                        self.label_spec_min_value['text'] = "{0:.2e}".format(spec[0])
+                    else:
+                        self.label_spec_min_value['text'] = spec[0]
                 if spec[1] is not None:
                     # self.entry_spec_max.insert(0, spec[1])
-                    self.label_spec_max_value['text'] = spec[1]
+                    if 0 < abs(spec[1]) < 1e-2 or abs(spec[1]) > 1e2:
+                        self.label_spec_max_value['text'] = "{0:.2e}".format(spec[1])
+                    else:
+                        self.label_spec_max_value['text'] = spec[1]
                 self.label_spec_max_unit['text'] = spec[2]
                 self.label_spec_min_unit['text'] = spec[2]
             # self.entry_spec_min.configure(state='readonly')
@@ -745,7 +755,10 @@ class Interface(object):
 
         # row 11
         row = 11
-        self.button_save.grid(row=row, column=1)
+        self.frame_save_or_clear.grid(row=row, column=1)
+        self.button_save.grid(row=0, column=1)
+        self.button_clear.grid(row=0, column=2)
+        # self.button_save.grid(row=row, column=1)
 
         # row 12
         row = 12
@@ -892,6 +905,9 @@ class Interface(object):
                 Y_max = tmp
         if part != self.previous_part or Y_label != self.previous_Y_label:
             self.figure.clf()
+            self.multiplot = False
+        else:
+            self.multiplot = True
         self.previous_part = part
         self.previous_Y_label = Y_label
         subplot = self.figure.add_subplot(111)
@@ -913,7 +929,8 @@ class Interface(object):
         # subplot.yaxis.set_major_formatter(formatter)
         y_min = min(Y)
         y_max = max(Y)
-        if max(abs(y_max), abs(y_min)) < 1e-2 or max(abs(y_max), abs(y_min)) > 1e2:
+        # set the data range where we use scientific format on y axis
+        if 0 < max(abs(y_max), abs(y_min)) < 1e-2 or max(abs(y_max), abs(y_min)) > 1e2:
             subplot.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.2e'))
         if spec_max is not None:
             subplot.axhline(y=spec_max, color='r', linestyle='--')
@@ -950,6 +967,46 @@ class Interface(object):
         # self.canvas_plot.get_tk_widget().grid(row=4, column=2, rowspan=10, columnspan=4, padx=(20,0))
         return
 
+    def plot_scale(self, X_max, X_min, Y_max, Y_min, x_logscale, y_logscale):
+        if X_min > X_max:
+            tmp = X_min
+            X_min = X_max
+            X_max = tmp
+        if Y_min is not None and Y_max is not None:
+            if Y_min > Y_max:
+                tmp = Y_min
+                Y_min = Y_max
+                Y_max = tmp
+        subplot = self.figure.add_subplot(111)
+        if x_logscale is True:
+            subplot.set_xscale('symlog')
+        else:
+            subplot.set_xscale('linear')
+        if y_logscale is True:
+            subplot.set_yscale('log', nonposy='clip')
+        else:
+            subplot.set_yscale('linear')
+        if Y_min is not None and Y_max is not None:
+            subplot.set_ylim([float(Y_min), float(Y_max)])
+        elif Y_min is not None:
+            subplot.set_ylim(ymin=float(Y_min))
+        elif Y_max is not None:
+            subplot.set_ylim(ymax=float(Y_max))
+
+        x_gap = X_max - X_min
+        if x_gap != 0:
+            subplot.set_xlim([X_min, X_max])
+
+        figure_canvas_agg = FigureCanvasAgg(self.figure)
+        figure_canvas_agg.draw()
+        figure_x, figure_y, figure_w, figure_h = self.figure.bbox.bounds
+        figure_w, figure_h = int(figure_w), int(figure_h)
+        photo = PhotoImage(master=self.canvas_plot, width=figure_w, height=figure_h)
+        self.canvas_plot.create_image(figure_w / 2, figure_h / 2, image=photo)
+        self.image = photo  # make a reference to our plot. If not, the image will disappear because Python's garbage collection is like shit
+        tkagg.blit(photo, figure_canvas_agg.get_renderer()._renderer, colormode=2)
+        return
+
     def change_scale(self):
         if len(self.figure_input) != 0:
             changeScaleDialog = ChangeScaleWindow()
@@ -981,18 +1038,22 @@ class Interface(object):
             # y log scale
             self.figure_input[16] = x_log
 
-            self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
-                              self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
-                              self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
-                              self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15],
-                              self.figure_input[16], self.figure_input[17])
+            self.plot_scale(self.figure_input[9], self.figure_input[8], self.figure_input[13], self.figure_input[12], self.figure_input[16], self.figure_input[17])
         return
 
     def save(self):
+        if len(self.figure_input) == 0:
+            messagebox.showinfo("Failed", "Please run a simulation first before save data")
+            return
+        if self.multiplot is True:
+            messagebox.showinfo("Failed", "Can not save data when multiplot")
+            return
         path = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
         files = os.listdir(path)
         part_name = self.figure_input[4]
-        result_path = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part_name + '.xlsx')
+        DR = self.figure_input[6]
+        H2 = self.figure_input[7]
+        result_path = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part_name + '_' + DR + '_' + H2 + '.xlsx')
         part_name = ''
         TIDs = []
         try:
@@ -1086,6 +1147,20 @@ class Interface(object):
         message = 'File saved at ./' + FILEPATHS.OUTPUT_DIR_PATH + part_name +'.xlsx'
         self.result_text.set(message)
         return
+
+    def clear(self):
+        self.figure.clf()
+        self.figure_input.clear()
+        self.previous_part = ''
+        self.previous_Y_label = ''
+        figure_canvas_agg = FigureCanvasAgg(self.figure)
+        figure_canvas_agg.draw()
+        figure_x, figure_y, figure_w, figure_h = self.figure.bbox.bounds
+        figure_w, figure_h = int(figure_w), int(figure_h)
+        photo = PhotoImage(master=self.canvas_plot, width=figure_w, height=figure_h)
+        self.canvas_plot.create_image(figure_w / 2, figure_h / 2, image=photo)
+        self.image = photo  # make a reference to our plot. If not, the image will disappear because Python's garbage collection is like shit
+        tkagg.blit(photo, figure_canvas_agg.get_renderer()._renderer, colormode=2)
 
 
 class ChangeScaleWindow(Toplevel):
