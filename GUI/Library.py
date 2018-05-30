@@ -20,6 +20,7 @@ TEMPERATURE_5V = NaLJson.Temperature_5V
 TEMPERATURE_ERROR_5V = NaLJson.Temperature_Error_5V
 TEMPERATURE_30V = NaLJson.Temperature_30V
 TEMPERATURE_ERROR_30V = NaLJson.Temperature_Error_30V
+Load_Regulation = NaLJson.Load_Regulation
 
 # os.chdir("/home/dwang/NASA_JPL/NASA_JPL_PLATFORM")
 with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:

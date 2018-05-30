@@ -361,7 +361,8 @@ class Interface(object):
                 nonlinearity = True
                 X1 = Library.SPECIFICATION.get(part).get("Dataset")[0]
                 X2 = Library.SPECIFICATION.get(part).get("Dataset")[1]
-            if part == Library.PART_AD590 and (output_option == Library.TEMPERATURE_30V or output_option == Library.TEMPERATURE_ERROR_30V):
+            if (part == Library.PART_AD590 and (output_option == Library.TEMPERATURE_30V or output_option == Library.TEMPERATURE_ERROR_30V)) or \
+                    output_option == Library.Load_Regulation:
                 plotted_X = Library.SPECIFICATION.get(part).get("Dataset")[1]
             else:
                 plotted_X = Library.SPECIFICATION.get(part).get("Dataset")[0]

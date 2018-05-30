@@ -57,6 +57,7 @@ Output_Voltage_With_Vin_23V = 'Output Voltage with Vin 2.3V'
 Output_Voltage_With_Vin_30V = 'Output Voltage with Vin 30V'
 Dropoff_Voltage = 'Dropoff Voltage'
 Load_Regulation = 'Load Regulation'
+Sense_Current = 'Sense Current'
 Positive_Supply_Current = 'Positive Supply Current'
 Negative_Supply_Current = 'Negative Supply Current'
 Input_Offset_Voltage = 'Input Offset Voltage'
@@ -79,9 +80,10 @@ OUTPUT_NAME = {PART_AD590: [Nonlinearity,
                             Temperature_Error_5V,
                             Temperature_Error_30V],
                PART_LT1175: [Line_Regulation,
-                             Output_Voltage,
-                             Dropoff_Voltage,
-                             Load_Regulation],
+                             # Output_Voltage,
+                             # Dropoff_Voltage,
+                             Load_Regulation,
+                             Sense_Current],
                PART_LT1006: [Supply_Current,
                              Input_Offset_Voltage,
                              Input_Offset_Current,
@@ -202,7 +204,12 @@ INPUT_VOLTAGE_SOURCE = {PART_AD590: ['VIN 2 0 DC 0V',
                                       'V6 7 4 0V',
                                       'V7 7 0 0V'],
 
-                        PART_LT1175: ['V2 4 0 DC 0V'],
+                        PART_LT1175: ['V2 4 0 DC 0V',
+                                      'VSENSECURRENT 8 1 0'],
+
+                        PART_LT1175 + Load_Regulation: ['V2 4 0 DC -20V',
+                                                        'VSENSECURRENT 8 1 0',
+                                                        'I2 0 1 DC 0A'],
 
                         PART_TL431: ['V1 1 0 DC 0V'],
                         }
@@ -317,7 +324,7 @@ CIRCUIT_CORE = {PART_AD590: ['XZ 2 20 AD590',
                               '*X1 21 15 1 30 26',
                               'X1 1 2 3 4 5 OPAMP_sc'],
                 PART_LT1175: ['*Subcircuit',
-                           '*X1 VCC VEE VREF',
+                              '*X1 VCC VEE VREF',
                               'X1 0 4 5 BG_sc',
                               '',
                               '*X4 V+ V- VCC VEE VO',
@@ -331,7 +338,7 @@ CIRCUIT_CORE = {PART_AD590: ['XZ 2 20 AD590',
                               '',
                               '*Resistance: R<name> <+ node> <- node> [model name] <value>',
                               'r1 0 6 350k',
-                              'r2 6 1 100k',
+                              'r2 6 8 100k',
                               'rLIM 3 4 0.001'],
                 PART_TL431: ['*Subcircuit',
                              '*X1 20 21 22',
@@ -354,6 +361,7 @@ INPUT = {PART_AD590: ['.dc VIN 0 30 1'],
          PART_LP2953: ['.dc I1 0 250e-3 1e-3'],
          PART_LT1006: ['.dc V3 4.5 5.5 0.1'],
          PART_LT1175: ['.dc V2 0 -20 -1'],
+         PART_LT1175 + Load_Regulation : ['.dc I2 0 1 0.1'],
          PART_TL431: ['.dc V1 0 25 1'],
          }
 
@@ -425,6 +433,10 @@ OUTPUT = {PART_AD590: {Nonlinearity: ['+ V(2)',
                                                        '+ I(V2)']},
 
           PART_LT1175: {Line_Regulation: ['+ V(4)',
+                                          '+ V(1)'],
+                        Sense_Current: ['+ V(4)',
+                                        '+ I(VSENSECURRENT)'],
+                        Load_Regulation: ['+ I(I2)',
                                           '+ V(1)']},
           PART_TL431: {Reference_Voltage: ['+ V(1)',      # Vref
                                            '+ V(2)'],

@@ -343,7 +343,10 @@ class NetListGenerator:
             # Section 4: Input
             content.extend(['*Input',
                             '******',])
-            content.extend(Library.INPUT[part])
+            temp = Library.INPUT.get(part + output_option)
+            if temp is None:
+                temp = Library.INPUT.get(part)
+            content.extend(temp)
 
             content.extend(['*End Input',
                             ''])

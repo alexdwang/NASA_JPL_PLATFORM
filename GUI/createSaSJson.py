@@ -32,8 +32,9 @@ SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1, '
                  createNaLJson.PART_LT1175: {createNaLJson.Line_Regulation: [0, 0.015,'%/V'],
                                              createNaLJson.Output_Voltage: [4.93, 5.075,'V'],
                                              createNaLJson.Dropoff_Voltage: [0, 0.7,'V'],
-                                             createNaLJson.Load_Regulation: [0, 0.35,'%'],      # Line Regulation
-                                            "Dataset": [-20]},
+                                             createNaLJson.Load_Regulation: [0, 0.35,'%'],
+                                             createNaLJson.Sense_Current: [None, None, 'A'],
+                                            "Dataset": [-20, 0]},
 
                  createNaLJson.PART_TL431: {createNaLJson.Reference_Voltage: [2.44, 2.55,'V'],   # Vref
                                             createNaLJson.Reference_Input_Current: [-4e-6, 4e-6,'A'],       # Iref
