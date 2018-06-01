@@ -111,7 +111,8 @@ OUTPUT_NAME = {PART_AD590: [Nonlinearity,
                PART_TL431: [Reference_Voltage,
                             Reference_Input_Current,
                             Cathode_Current_Ika,
-                            Cathode_Voltage_Vka],
+                            Cathode_Voltage_Vka,
+                            Ratio_DVref_DVka],
                }
 
 TPRE_RAD = 'pre_rad'
@@ -445,7 +446,9 @@ OUTPUT = {PART_AD590: {Nonlinearity: ['+ V(2)',
                        Cathode_Voltage_Vka: ['+ V(1)',      # Vka
                                              '+ V(3)'],
                        Cathode_Current_Ika: ['+ V(1)',      # Ika
-                                             '+ I(Vika)']},
+                                             '+ I(Vika)'],
+                       Ratio_DVref_DVka: ['+ V(1)',
+                                          '+ {V(2)/V(3)}']},
           }
 
 SUBCIRCUIT = {PART_AD590: {SIMULATION_MODEL: ['.subckt AD590 2 20',

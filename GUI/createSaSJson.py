@@ -40,7 +40,7 @@ SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1, '
                                             createNaLJson.Reference_Input_Current: [-4e-6, 4e-6,'A'],       # Iref
                                             createNaLJson.Cathode_Current_Ika: [-1e-6, 1e-6,'A'],       # Ika
                                             createNaLJson.Cathode_Voltage_Vka: [None, None,'V'],
-                                            createNaLJson.Ratio_DVref_DVka: [0, -2.7,'mV/V'],       # Vka
+                                            createNaLJson.Ratio_DVref_DVka: [0, -2.7, 'mV/V'],       # Vka
                                             "Dataset": [25]
                                             },
                  createNaLJson.PART_LM111: {createNaLJson.Supply_Current: [0, 6e-3,'A'],

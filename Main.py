@@ -16,6 +16,7 @@ import numpy as np
 import importlib
 import xlsxwriter
 import os
+import datetime
 
 from GUI import execute, NetListGenerator, Library, FILEPATHS, fit
 
@@ -118,7 +119,7 @@ class Interface(object):
                                        height=5, bg=self.backgroundcolor, justify='center')
         self.cross_spec_text = StringVar()
         self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=('Arial', 16,'bold'),
-                                       width=element_width * 2,
+                                       width=element_width * 3,
                                        height=5, bg=self.backgroundcolor, justify='center')
 
         self.X_list = list()
@@ -126,6 +127,7 @@ class Interface(object):
         self.figure_input = list()
         self.previous_part = ''
         self.previous_Y_label = ''
+        self.cross_message = ""
         self.multiplot = False
         self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
         self.netlist_filepath = relative_path(FILEPATHS.TEMP_DIR_PATH + 'myNetlist.cir')
@@ -377,7 +379,8 @@ class Interface(object):
                 str_TID = Tid_Levels[i][1]
                 if (num_TID < num_TID_lower and i + 1 < len(Tid_Levels) and Tid_Levels[i + 1][0] > num_TID_lower) or \
                         (num_TID_lower <= num_TID and (num_TID < num_TID_upper or oneMore)):
-                    self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + str_TID + '_test.txt')
+                    self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + str_TID + '_' + DR + '_' + H2 + '_' +
+                    datetime.datetime.now().strftime("%Y-%m-%d-%H:%M") + '.txt')
                     result = netListGenerator.generate(part, simulation, DR, H2, str_TID, output_option,
                                               self.output_filepath, self.netlist_filepath)
                     if result == False:
@@ -557,13 +560,13 @@ class Interface(object):
             cross_message = ""
             next_line = ""
             if len(cross_min) != 0:
-                cross_message += "Cross min specification at " + ",".join(cross_min) + " rad. "
+                cross_message += "Cross min at " + ",".join(cross_min) + " rad (DR=" + DR + ", H2=" + H2 + "). "
                 next_line = "\n"
             if len(cross_max) != 0:
                 cross_message += next_line
-                cross_message += "Cross max specification at " + ",".join(cross_max) + " rad. "
+                cross_message += "Cross max at " + ",".join(cross_max) + " rad (DR=" + DR + ", H2=" + H2 + "). "
             if cross_message == "":
-                cross_message = "Cross specification at > " + TID_level_upper + " rad"
+                cross_message = "Cross specification at > " + TID_level_upper + " rad (DR=" + DR + ", H2=" + H2 + "). "
             self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
                               self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
@@ -571,7 +574,11 @@ class Interface(object):
                               self.figure_input[16], self.figure_input[17])
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
-            self.cross_spec_text.set(cross_message)
+            if self.multiplot:
+                self.cross_message += "\n" + cross_message
+            else:
+                self.cross_message = cross_message
+            self.cross_spec_text.set(self.cross_message)
             self.result_text.set(message)
 
         # except Exception as error:
@@ -1051,19 +1058,24 @@ class Interface(object):
             return
         path = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
         files = os.listdir(path)
-        part_name = self.figure_input[4]
-        DR = self.figure_input[6]
-        H2 = self.figure_input[7]
-        result_path = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part_name + '_' + DR + '_' + H2 + '.xlsx')
         part_name = ''
+        DR = ''
+        H2 = ''
+        time = ''
+
         TIDs = []
         try:
             for file in files:
-                if '.txt' in file:
-                    part_name = file.split('_')[0]
-                    TIDs.append(file.split('_')[1])
+                if file[-4:] == ".txt":
+                    filename_aray = file[0:-4].split('_')
+                    part_name = filename_aray[0]
+                    TIDs.append(filename_aray[1])
+                    DR = filename_aray[2]
+                    H2 = filename_aray[3]
+                    time = filename_aray[4]
         except:
             return
+        result_path = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part_name + '_' + DR + '_' + H2 + '_' + time + '.xlsx')
         assign_col = 0
         col_dict = {}
         if TIDs.count('pre') != 0:
@@ -1100,7 +1112,7 @@ class Interface(object):
         workbook = xlsxwriter.Workbook(result_path)
         worksheet = workbook.add_worksheet(part_name)
         for file in files:
-            if '.txt' not in file:
+            if file[-4:] != ".txt":
                 continue
             TID_level = file.split('_')[1]
 
@@ -1113,24 +1125,15 @@ class Interface(object):
             for line in f:
                 line = line.strip('\n')
                 my_line = line.split(' ')
-                cnt = 0
-                for word in my_line:
-                    if cnt < 2 and word != '':
-                        if X_label == '':
-                            X_label = word
-                        elif Y_label == '':
-                            Y_label = word
-                        else:
-                            try:
-                                if isX is True:
-                                    X.append(float(word))
-                                    cnt += 1
-                                    isX = False
-                                else:
-                                    Y.append(float(word))
-                                    isX = True
-                            except:
-                                cnt = cnt
+                my_line = list(filter(self.not_empty, my_line))
+                if my_line[0] == 'End':
+                    break
+                if X_label == '' and Y_label == '':
+                    X_label = my_line[0]
+                    Y_label = my_line[1]
+                else:
+                    X.append(float(my_line[0]))
+                    Y.append(float(my_line[1]))
             f.close()
             row = 0
             col = col_dict.get(TID_level)
@@ -1148,6 +1151,9 @@ class Interface(object):
         message = 'File saved at ./' + FILEPATHS.OUTPUT_DIR_PATH + part_name +'.xlsx'
         self.result_text.set(message)
         return
+
+    def not_empty(self, s):
+        return s and s.strip() != ''
 
     def clear(self):
         self.figure.clf()
