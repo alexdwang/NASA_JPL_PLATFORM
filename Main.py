@@ -1078,36 +1078,10 @@ class Interface(object):
         result_path = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part_name + '_' + DR + '_' + H2 + '_' + time + '.xlsx')
         assign_col = 0
         col_dict = {}
-        if TIDs.count('pre') != 0:
-            col_dict['pre'] = assign_col
-            assign_col += 3
-        if TIDs.count('2.5k') != 0:
-            col_dict['2.5k'] = assign_col
-            assign_col += 3
-        if TIDs.count('5k') != 0:
-            col_dict['5k'] = assign_col
-            assign_col += 3
-        if TIDs.count('10k') != 0:
-            col_dict['10k'] = assign_col
-            assign_col += 3
-        if TIDs.count('20k') != 0:
-            col_dict['20k'] = assign_col
-            assign_col += 3
-        if TIDs.count('30k') != 0:
-            col_dict['30k'] = assign_col
-            assign_col += 3
-        if TIDs.count('50k') != 0:
-            col_dict['50k'] = assign_col
-            assign_col += 3
-        if TIDs.count('100k') != 0:
-            col_dict['100k'] = assign_col
-            assign_col += 3
-        if TIDs.count('200k') != 0:
-            col_dict['200k'] = assign_col
-            assign_col += 3
-        if TIDs.count('300k') != 0:
-            col_dict['300k'] = assign_col
-            assign_col += 3
+        for TID_option in Library.TID_LEVEL:
+            if TIDs.count(TID_option) != 0:
+                col_dict[TID_option] = assign_col
+                assign_col += 3
 
         workbook = xlsxwriter.Workbook(result_path)
         worksheet = workbook.add_worksheet(part_name)
@@ -1160,6 +1134,8 @@ class Interface(object):
         self.figure_input.clear()
         self.previous_part = ''
         self.previous_Y_label = ''
+        self.result_text.set('')
+        self.cross_spec_text.set('')
         figure_canvas_agg = FigureCanvasAgg(self.figure)
         figure_canvas_agg.draw()
         figure_x, figure_y, figure_w, figure_h = self.figure.bbox.bounds

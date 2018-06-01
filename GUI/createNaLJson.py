@@ -115,7 +115,7 @@ OUTPUT_NAME = {PART_AD590: [Nonlinearity,
                             Ratio_DVref_DVka],
                }
 
-TPRE_RAD = 'pre_rad'
+TPRE_RAD = 'pre-rad'
 T2_5KRAD = '2.5k'
 T5KRAD = '5k'
 T10KRAD = '10k'
