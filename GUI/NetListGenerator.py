@@ -372,7 +372,7 @@ class NetListGenerator:
                 content.extend(Library.LIBRARY_TID_LEVEL_MODEL[TID_level])
             else:
                 content.extend(Library.LIBRARY_TID_LEVEL_MODEL[Library.TPRE_RAD])
-            # JFET
+            # Additional library
             if Library.LIBRARY_JFET.get(part) is not None:
                 content.extend(Library.LIBRARY_JFET[part]),
 

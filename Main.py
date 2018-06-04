@@ -51,17 +51,15 @@ class Interface(object):
         self.label_dose = Label(self.window, text='Dose Rate(rad/s):', font=my_font, width=element_width, height=element_height,
                                  bg=self.backgroundcolor)
         self.dose_options = StringVar()
-        self.dose_options_tuple = ("100","0.1","0.02")
-        self.cb_dose = ttk.Combobox(self.window, textvariable=self.dose_options, exportselection=False,
-                                     state='readonly')
+        self.dose_options_tuple = ["100","0.1","0.02"]
+        self.cb_dose = ttk.Combobox(self.window, textvariable=self.dose_options, exportselection=False, state='readonly')
         self.cb_dose['values'] = self.dose_options_tuple
 
         self.label_hydrogen = Label(self.window, text='Hydrogen Content(%):', font=my_font, width=element_width + 1, height=element_height,
                                  bg=self.backgroundcolor)
         self.hydrogen_options = StringVar()
-        self.hydrogen_options_tuple = ("1.4","1","100")
-        self.cb_hydrogen = ttk.Combobox(self.window, textvariable=self.hydrogen_options, exportselection=False,
-                                     state='readonly')
+        self.hydrogen_options_tuple = ["1.4","1","100"]
+        self.cb_hydrogen = ttk.Combobox(self.window, textvariable=self.hydrogen_options, exportselection=False, state='readonly')
         self.cb_hydrogen['values'] = self.hydrogen_options_tuple
 
         self.label_simulation = Label(self.window, text='Simulation Mode:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
@@ -127,7 +125,7 @@ class Interface(object):
         self.figure_input = list()
         self.previous_part = ''
         self.previous_Y_label = ''
-        self.cross_message = ""
+        self.cross_message = list()
         self.multiplot = False
         self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
         self.netlist_filepath = relative_path(FILEPATHS.TEMP_DIR_PATH + 'myNetlist.cir')
@@ -575,10 +573,16 @@ class Interface(object):
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
             if self.multiplot:
-                self.cross_message += "\n" + cross_message
+                if len(self.cross_message) == 4:
+                    self.cross_message.pop(0)
+                self.cross_message.append(cross_message)
             else:
-                self.cross_message = cross_message
-            self.cross_spec_text.set(self.cross_message)
+                self.cross_message.clear()
+                self.cross_message.append(cross_message)
+            display_message = ''
+            for cur_message in self.cross_message:
+                display_message += cur_message + "\n"
+            self.cross_spec_text.set(display_message)
             self.result_text.set(message)
 
         # except Exception as error:
@@ -616,9 +620,16 @@ class Interface(object):
                 self.entry_TID_upper_bound.get() == '' or \
                 self.cb_parts.get() == '' or \
                 self.cb_simulation.get() == '' or \
+                self.cb_dose.get() == '' or \
+                self.cb_hydrogen.get() == '' or \
                 self.cb_output.get() == '':
             self.result_text.set('please check your input')
             messagebox.showerror("Input Missing", "please check your input")
+            return False
+        data = [("1.4", "0.02"), ("1", "0.1"), ("1", "100"), ("100", "0.1"), ("100", "100")]
+        my_t = (self.cb_hydrogen.get(), self.cb_dose.get())
+        if my_t not in data:
+            messagebox.showerror("No Such Data", "please choose Hydrogen Content and dose rate from one of the following:\n (1.4, 0.02), (1, 0.1), (1, 100), (100, 0.1), (100, 100)")
             return False
         self.result_text.set('in process, please wait...')
         return True
