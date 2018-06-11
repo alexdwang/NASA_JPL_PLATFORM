@@ -58,7 +58,7 @@ class Interface(object):
         self.label_hydrogen = Label(self.window, text='Hydrogen Content(%):', font=my_font, width=element_width + 1, height=element_height,
                                  bg=self.backgroundcolor)
         self.hydrogen_options = StringVar()
-        self.hydrogen_options_tuple = ["1.4","1","100"]
+        self.hydrogen_options_tuple = ["0","0.1","1","1.3","100"]
         self.cb_hydrogen = ttk.Combobox(self.window, textvariable=self.hydrogen_options, exportselection=False, state='readonly')
         self.cb_hydrogen['values'] = self.hydrogen_options_tuple
 
@@ -626,10 +626,10 @@ class Interface(object):
             self.result_text.set('please check your input')
             messagebox.showerror("Input Missing", "please check your input")
             return False
-        data = [("1.4", "0.02"), ("1", "0.1"), ("1", "100"), ("100", "0.1"), ("100", "100")]
+        data = [("0","0.02"), ("0","100"), ("1.3", "0.02"), ("1", "0.1"), ("1", "100"), ("100", "0.1"), ("100", "100")]
         my_t = (self.cb_hydrogen.get(), self.cb_dose.get())
         if my_t not in data:
-            messagebox.showerror("No Such Data", "please choose Hydrogen Content and dose rate from one of the following:\n (1.4, 0.02), (1, 0.1), (1, 100), (100, 0.1), (100, 100)")
+            messagebox.showerror("No Such Data", "please choose Hydrogen Content and dose rate from one of the following:\n (0,0.02), (0,100), (1.3, 0.02), (1, 0.1), (1, 100), (100, 0.1), (100, 100)")
             return False
         self.result_text.set('in process, please wait...')
         return True
@@ -804,7 +804,7 @@ class Interface(object):
             self.cb_output['values'] = self.output_options_tuple
             self.cb_output.set('Vref')
             self.cb_dose.set('0.02')
-            self.cb_hydrogen.set('1.4')
+            self.cb_hydrogen.set('1.3')
             self.label_spec_min_value['text'] = 2.44
             self.label_spec_max_value['text'] = 2.55
             self.label_spec_max_unit['text'] = 'V'

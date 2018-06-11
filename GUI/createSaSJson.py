@@ -30,7 +30,7 @@ SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1, '
                                             "Dataset": [5, 30]},
 
                  createNaLJson.PART_LT1175: {createNaLJson.Line_Regulation: [0, 0.015,'%/V'],
-                                             createNaLJson.Output_Voltage: [4.93, 5.075,'V'],
+                                             createNaLJson.Output_Voltage: [-5.075,-4.93, 'V'],
                                              createNaLJson.Dropoff_Voltage: [0, 0.7,'V'],
                                              createNaLJson.Load_Regulation: [0, 0.35,'%'],
                                              createNaLJson.Sense_Current: [None, None, 'A'],

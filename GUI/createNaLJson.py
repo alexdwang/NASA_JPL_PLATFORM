@@ -116,7 +116,7 @@ OUTPUT_NAME = {PART_AD590: [Nonlinearity,
                }
 
 TPRE_RAD = 'pre-rad'
-T2_5KRAD = '2.5k'
+T2KRAD = '2k'
 T5KRAD = '5k'
 T10KRAD = '10k'
 T20KRAD = '20k'
@@ -127,7 +127,7 @@ T100KRAD = '100k'
 T200KRAD = '200k'
 T300KRAD = '300k'
 TID_LEVEL = [TPRE_RAD,        # 0
-             T2_5KRAD,        # 1
+             T2KRAD,        # 1
              T5KRAD,          # 2
              T10KRAD,         # 3
              T20KRAD,         # 4
@@ -142,7 +142,7 @@ TID_LEVEL = [TPRE_RAD,        # 0
 # Excel sheet name & column name
 COL_NAME = {'VE':       "Ve (V)",
             TPRE_RAD:   '0krad',
-            T2_5KRAD:   '2.5krad',
+            T2KRAD:     '2krad',
             T5KRAD:     '5krad',
             T10KRAD:    '10krad',
             T20KRAD:    '20krad',
