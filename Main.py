@@ -62,6 +62,9 @@ class Interface(object):
         self.cb_hydrogen = ttk.Combobox(self.window, textvariable=self.hydrogen_options, exportselection=False, state='readonly')
         self.cb_hydrogen['values'] = self.hydrogen_options_tuple
 
+        self.label_temperature = Label(self.window, text='Temperature(C):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.entry_temperature = FloatEntry(self.window, width=element_width)
+
         self.label_simulation = Label(self.window, text='Simulation Mode:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.simulation_options = StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
@@ -339,12 +342,13 @@ class Interface(object):
             # get part name, TID level range, output option and specifications
             part = self.cb_parts.get()
             # simulation = self.cb_simulation.get()
+            DR = self.cb_dose.get()
+            H2 = self.cb_hydrogen.get()
+            temperature = self.entry_temperature.get()
             simulation = Library.SIMULATION_SOURCE
             TID_level_lower = self.entry_TID_lower_bound.get()
             TID_level_upper = self.entry_TID_upper_bound.get()
             output_option = self.cb_output.get()
-            DR = self.cb_dose.get()
-            H2 = self.cb_hydrogen.get()
             num_TID_lower = self.get_num_TID(TID_level_lower)
             num_TID_upper = self.get_num_TID(TID_level_upper)
             if num_TID_lower > num_TID_upper:
@@ -379,7 +383,7 @@ class Interface(object):
                         (num_TID_lower <= num_TID and (num_TID < num_TID_upper or oneMore)):
                     self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + str_TID + '_' + DR + '_' + H2 + '_' +
                     datetime.datetime.now().strftime("%Y-%m-%d-%H:%M") + '.txt')
-                    result = netListGenerator.generate(part, simulation, DR, H2, str_TID, output_option,
+                    result = netListGenerator.generate(part, simulation, DR, H2, temperature, str_TID, output_option,
                                               self.output_filepath, self.netlist_filepath)
                     if result == False:
                         continue
@@ -474,7 +478,7 @@ class Interface(object):
                 else:
                     str_TID = Library.TPRE_RAD
                     self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + Library.TPRE_RAD + '_test.txt')
-                    result = netListGenerator.generate(part, simulation, DR, H2, str_TID, output_option,
+                    result = netListGenerator.generate(part, simulation, DR, H2, temperature, str_TID, output_option,
                                                        self.output_filepath, self.netlist_filepath)
                     my_result = execute.execute_module3(self.netlist_filepath)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
@@ -508,7 +512,7 @@ class Interface(object):
                     str_TID = Library.TPRE_RAD
                     self.output_filepath = relative_path(
                         FILEPATHS.OUTPUT_DIR_PATH + part + '_' + Library.TPRE_RAD + '_test.txt')
-                    result = netListGenerator.generate(part, simulation, DR, H2, str_TID, output_option,
+                    result = netListGenerator.generate(part, simulation, DR, H2, temperature, str_TID, output_option,
                                                        self.output_filepath, self.netlist_filepath)
                     my_result = execute.execute_module3(self.netlist_filepath)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
@@ -712,7 +716,7 @@ class Interface(object):
         # self.label_topline.grid(row=row, columnspan=3)
 
         # row 1
-        row = 1
+        row += 1
         # self.label_input_header.grid(row=row, rowspan=3)
         self.label_parts.grid(row=row, column=1)
         # self.label_simulation.grid(row=row, column=2)
@@ -722,7 +726,7 @@ class Interface(object):
         self.label_TID_level_upper_bound.grid(row=row, column=5)
 
         # row 2
-        row = 2
+        row += 1
         self.cb_parts.grid(row=row, column=1)
         # self.cb_simulation.grid(row=row, column=2)
         self.cb_hydrogen.grid(row=row, column=2)
@@ -733,58 +737,59 @@ class Interface(object):
         # self.cb_TID_upper_bound.grid(row=row, column=3)
 
         # row 3
-        row = 3
-        # self.button_import.grid(row=row, column=1, pady=10)
+        row += 1
+        self.label_temperature.grid(row=row, column=1)
 
         # row 4
-        row = 4
-        # self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
-        self.label_output.grid(row=row, column=1, pady=(20, 0))
-        self.canvas_plot.grid(row=row, column=2, rowspan=9, columnspan=4)
+        row += 1
+        self.entry_temperature.grid(row=row, column=1)
+        # self.button_import.grid(row=row, column=1, pady=10)
 
         # row 5
-        row = 5
-        self.cb_output.grid(row=row, column=1)
+        row += 1
+        # self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
+        self.label_output.grid(row=row, column=1, pady=(20, 0))
+        self.canvas_plot.grid(row=row - 1, column=2, rowspan=9, columnspan=4)
 
         # row 6
-        row = 6
+        row += 1
+        self.cb_output.grid(row=row, column=1)
+
+        # row 7
+        row += 1
         self.frame_max.grid(row=row, column=1)
         self.label_spec_max.grid(row=0, column=1)
         self.label_spec_max_value.grid(row=0, column=2)
         self.label_spec_max_unit.grid(row=0, column=3)
 
-        # row 7
-        row = 7
-        # self.label_spec_max_value.grid(row=row, column=1)
-
         # row 8
-        row = 8
+        row += 1
         self.frame_min.grid(row=row, column=1)
         self.label_spec_min.grid(row=0, column=1)
         self.label_spec_min_value.grid(row=0, column=2)
         self.label_spec_min_unit.grid(row=0, column=3)
 
         # row 9
-        row = 9
+        row += 1
         # self.label_spec_min_value.grid(row=row, column=1)
 
         # row 10
-        row = 10
+        row += 1
         self.button_execute.grid(row=row, column=1, pady=10)
 
         # row 11
-        row = 11
+        row += 1
         self.frame_save_or_clear.grid(row=row, column=1)
         self.button_save.grid(row=0, column=1)
         self.button_clear.grid(row=0, column=2)
         # self.button_save.grid(row=row, column=1)
 
         # row 12
-        row = 12
+        row += 1
         self.button_change_scale.grid(row=row, column=1)
 
         # row 13
-        row = 13
+        row += 1
         self.label_result_text.grid(row=row, column=1, columnspan=2)
         self.label_cross_spec_text.grid(row=row, column=3, columnspan=3)
 
@@ -1275,15 +1280,15 @@ class TIDEntry(ValidatingEntry):
     def validate(self, value):
         try:
             if len(value) > 1 and value[-1] == 'k' and value.find('k', 0, len(value) - 1) == -1:
-                if float(value[0:-1]) > 300:
-                    return '300k'
+                # if float(value[0:-1]) > 300:
+                #     return '300k'
                 return value
             elif len(value) > 1 and value[-1] != 'k' and value.find('k') != -1:
                 return None
             elif value:
                 v = float(value)
-                if v > 300000:
-                    return '300000'
+                # if v > 300000:
+                #     return '300000'
             return value
         except ValueError:
             return None
