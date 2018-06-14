@@ -17,6 +17,7 @@ import importlib
 import xlsxwriter
 import os
 import datetime
+import xlrd
 
 from GUI import execute, NetListGenerator, Library, FILEPATHS, fit
 
@@ -630,10 +631,17 @@ class Interface(object):
             self.result_text.set('please check your input')
             messagebox.showerror("Input Missing", "please check your input")
             return False
-        data = [("0","0.02"), ("0","100"), ("1.3", "0.02"), ("1", "0.1"), ("1", "100"), ("100", "0.1"), ("100", "100")]
-        my_t = (self.cb_hydrogen.get(), self.cb_dose.get())
-        if my_t not in data:
-            messagebox.showerror("No Such Data", "please choose Hydrogen Content and dose rate from one of the following:\n (0,0.02), (0,100), (1.3, 0.02), (1, 0.1), (1, 100), (100, 0.1), (100, 100)")
+        # data = [("0","0.02"), ("0","100"), ("1.3", "0.02"), ("1", "0.1"), ("1", "100"), ("100", "0.1"), ("100", "100")]
+        my_t = "DR=" + self.cb_dose.get() + "_H2=" + self.cb_hydrogen.get()
+        data1 = xlrd.open_workbook(FILEPATHS.NPN_IB_DATABASE_FILE_PATH)
+        data2 = xlrd.open_workbook(FILEPATHS.PNP_IB_DATABASE_FILE_PATH)
+        exist_data = [sheet_name for sheet_name in data1.sheet_names() if sheet_name in data2.sheet_names()]
+        if my_t not in exist_data:
+            message = "please choose Dose Rate and Hydrogen Content from one of the following:\n"
+            for data in exist_data:
+                addon = data + ", "
+                message += addon
+            messagebox.showerror("No Such Data", message[:-2])
             return False
         self.result_text.set('in process, please wait...')
         return True
@@ -720,8 +728,8 @@ class Interface(object):
         # self.label_input_header.grid(row=row, rowspan=3)
         self.label_parts.grid(row=row, column=1)
         # self.label_simulation.grid(row=row, column=2)
-        self.label_hydrogen.grid(row=row, column=2)
-        self.label_dose.grid(row=row, column=3)
+        self.label_dose.grid(row=row, column=2)
+        self.label_hydrogen.grid(row=row, column=3)
         self.label_TID_level_lower_bound.grid(row=row, column=4)
         self.label_TID_level_upper_bound.grid(row=row, column=5)
 
@@ -729,8 +737,8 @@ class Interface(object):
         row += 1
         self.cb_parts.grid(row=row, column=1)
         # self.cb_simulation.grid(row=row, column=2)
-        self.cb_hydrogen.grid(row=row, column=2)
-        self.cb_dose.grid(row=row, column=3)
+        self.cb_dose.grid(row=row, column=2)
+        self.cb_hydrogen.grid(row=row, column=3)
         self.entry_TID_lower_bound.grid(row=row, column=4)
         self.entry_TID_upper_bound.grid(row=row, column=5)
         # self.cb_TID_lower_bound.grid(row=row, column=2)
