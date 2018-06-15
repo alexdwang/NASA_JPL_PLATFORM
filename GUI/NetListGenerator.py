@@ -386,21 +386,6 @@ class NetListGenerator:
                 content.extend(Library.LIBRARY_JFET[part]),
 
             if simulation == Library.SIMULATION_SOURCE:
-                # DMOD
-                content.extend(['.model DMOD D (IS = 4E-10',
-                                '+ RS = .105',
-                                '+ N = 1.48',
-                                '+ TT = 8E-7',
-                                '+ CJO = 1.95E-11',
-                                '+ VJ = .4',
-                                '+ M = .38',
-                                '+ EG = 1.36',
-                                '+ XTI = -8',
-                                '+ KF = 0',
-                                '+ AF = 1',
-                                '+ FC = .9',
-                                '+ BV = 600',
-                                '+ IBV = 1E-4)'])
 
                 a1, b1 = fit.fit('PNP', TID_level, DR, H2)
                 a2, b2 = fit.fit('NPN', TID_level, DR, H2)
