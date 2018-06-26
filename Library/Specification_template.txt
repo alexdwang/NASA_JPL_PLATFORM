@@ -1,0 +1,53 @@
+***************
+*Specification*
+***************
+
+*******
+*AD590*
+*******
+Dataset=5,30
+
+*Nonlinearity (C)
+min=-1
+max=1
+unit=C
+
+*Temperature (C)
+min=20
+max=30
+unit=C
+
+*Temperature Error (C)
+min=-5
+max=5
+unit=C
+
+*******
+*LM193*
+*******
+Dataset=30
+
+*Supply Current (A)
+min=0
+max=3e-3
+unit=A
+
+*Input Offset Voltage (V)
+min=-5e-3
+max=5e-3
+unit=V
+
+*Positive Input Bias Current (A)
+min=-100e-9
+max=+100e-9
+unit=A
+
+*Negative Input Bias Current (A)
+min=-100e-9
+max=+100e-9
+unit=A
+
+*Input Offset Current (A)
+min=-25e-9
+max=+25e-9
+unit=A

@@ -130,6 +130,8 @@ class Interface(object):
         self.previous_part = ''
         self.previous_Y_label = ''
         self.cross_message = list()
+        self.AD590_base_temperature = 25
+        self.AD590_prev_temperature = 25
         self.multiplot = False
         self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
         self.netlist_filepath = relative_path(FILEPATHS.TEMP_DIR_PATH + 'myNetlist.cir')
@@ -339,6 +341,7 @@ class Interface(object):
         if self.input_check():
             # remove every file in Output folder
             execute.rm_all()
+            self.temp_focus_out_helper()
 
             # get part name, TID level range, output option and specifications
             part = self.cb_parts.get()
@@ -654,6 +657,27 @@ class Interface(object):
         self.cb_TID_lower_bound['values'] = self.TID_options_tuple
         self.cb_TID_upper_bound['values'] = self.TID_options_tuple
 
+    def temp_focus_out(self, evt):
+        self.temp_focus_out_helper()
+        return
+
+    def temp_focus_out_helper(self):
+        temp = self.entry_temperature.get()
+        if temp != '':
+            self.AD590_base_temperature = float(temp)
+            self.AD590_spec_change()
+            self.AD590_prev_temperature = float(temp)
+        return
+
+    def AD590_spec_change(self):
+        if self.cb_parts.get() == Library.PART_AD590 and (self.cb_output.get() == Library.TEMPERATURE_30V or self.cb_output.get() == Library.TEMPERATURE_5V):
+            diff = self.AD590_base_temperature - self.AD590_prev_temperature
+            if self.label_spec_min_value.cget('text') != '':
+                self.label_spec_min_value['text'] = float(self.label_spec_min_value.cget('text')) + diff
+            if self.label_spec_max_value.cget('text') != '':
+                self.label_spec_max_value['text'] = float(self.label_spec_max_value.cget('text')) + diff
+        return
+
     def part_onselect(self, evt):
         try:
             part = self.cb_parts.get()
@@ -695,6 +719,7 @@ class Interface(object):
                         self.label_spec_max_value['text'] = "{0:.2e}".format(spec[1])
                     else:
                         self.label_spec_max_value['text'] = spec[1]
+                self.AD590_spec_change()
                 self.label_spec_max_unit['text'] = spec[2]
                 self.label_spec_min_unit['text'] = spec[2]
             # self.entry_spec_min.configure(state='readonly')
@@ -803,6 +828,7 @@ class Interface(object):
 
         self.button_execute.focus_set()
         # bind onselect function with widget
+        self.entry_temperature.bind('<FocusOut>', self.temp_focus_out)
         self.cb_parts.bind('<<ComboboxSelected>>', self.part_onselect)
         self.cb_simulation.bind('<<ComboboxSelected>>', self.simulation_onselect)
         self.cb_output.bind('<<ComboboxSelected>>', self.output_onselect)
