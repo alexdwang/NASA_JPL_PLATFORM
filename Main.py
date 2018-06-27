@@ -66,6 +66,12 @@ class Interface(object):
         self.label_temperature = Label(self.window, text='Temperature(C):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.entry_temperature = FloatEntry(self.window, width=element_width)
 
+        self.label_dataset = Label(self.window, text='Dataset:', font=my_font, width=element_width,
+                                       height=element_height, bg=self.backgroundcolor)
+        self.label_dataset_range = Label(self.window, text='(Range)', font=my_font, width=element_width,
+                                       height=element_height, bg=self.backgroundcolor)
+        self.entry_dataset = FloatEntry(self.window, width=element_width)
+
         self.label_simulation = Label(self.window, text='Simulation Mode:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.simulation_options = StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
@@ -778,6 +784,15 @@ class Interface(object):
         self.entry_temperature.grid(row=row, column=1)
         # self.button_import.grid(row=row, column=1, pady=10)
 
+        row += 1
+        self.label_dataset.grid(row=row, column=1)
+
+        row += 1
+        self.label_dataset_range.grid(row=row, column=1)
+
+        row += 1
+        self.entry_dataset.grid(row=row, column=1)
+
         # row 5
         row += 1
         # self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
@@ -844,6 +859,9 @@ class Interface(object):
             self.cb_output.set('Vref')
             self.cb_dose.set('0.02')
             self.cb_hydrogen.set('1.3')
+            self.entry_temperature.insert(0, "25")
+            self.label_dataset_range['text'] = "(0-25, gap=1)"
+            self.entry_dataset.insert(0, "25")
             self.label_spec_min_value['text'] = 2.44
             self.label_spec_max_value['text'] = 2.55
             self.label_spec_max_unit['text'] = 'V'
