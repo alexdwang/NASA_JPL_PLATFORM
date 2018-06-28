@@ -16,14 +16,14 @@ def save_name_to_json(TITLE, PARTS, OUTPUT_NAME, SIMULATION, TID_LEVEL, COL_NAME
 
 
 def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, INPUT, OUTPUT,
-                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET):
+                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, EXTRA_LIBRARY):
     output_object = {'INPUT_VOLTAGE_SOURCE': INPUT_VOLTAGE_SOURCE,
                      'CIRCUIT_CORE': CIRCUIT_CORE,
                      'INPUT': INPUT,
                      'OUTPUT': OUTPUT,
                      'SUBCIRCUIT': SUBCIRCUIT,
                      'LIBRARY_TID_LEVEL_MODEL': LIBRARY_TID_LEVEL_MODEL,
-                     'LIBRARY_JFET': LIBRARY_JFET}
+                     'EXTRA_LIBRARY': EXTRA_LIBRARY}
 
     with open("../" + FILEPATHS.LIBRARY_FILE_PATH, 'w') as f:
         json.dump(output_object, f)
@@ -46,10 +46,8 @@ SIMULATION_SOURCE = 'external current source'
 SIMULATION = [SIMULATION_MODEL, SIMULATION_SOURCE]
 
 Nonlinearity = 'Nonlinearity'
-Temperature_5V = 'Temperature at 5V'
-Temperature_Error_5V = 'Temperature Error at 5V'
-Temperature_30V = 'Temperature at 30V'
-Temperature_Error_30V = 'Temperature Error at 30V'
+Temperature = 'Temperature'
+Temperature_Error = 'Temperature Error'
 Line_Regulation = 'Line Regulation'
 Output_Voltage = 'Output Voltage'
 Output_Voltage_With_Vin_6V = 'Output Voltage with Vin 6V'
@@ -75,10 +73,9 @@ Ratio_DVref_DVka = 'Ratio DVref/DVka'
 Supply_Current = 'Supply Current'
 
 OUTPUT_NAME = {PART_AD590: [Nonlinearity,
-                            Temperature_5V,
-                            Temperature_30V,
-                            Temperature_Error_5V,
-                            Temperature_Error_30V],
+                            Temperature,
+                            Temperature_Error,
+                            ],
                PART_LT1175: [# Line_Regulation,
                              Output_Voltage,
                              # Dropoff_Voltage,
@@ -380,14 +377,10 @@ INPUT = {PART_AD590: ['.dc VIN 0 30 1'],
 
 OUTPUT = {PART_AD590: {Nonlinearity: ['+ V(2)',
                                      '+ I(VOUT)'],
-                       Temperature_5V: ['+ V(2)',
+                       Temperature: ['+ V(2)',
                                      '+ I(VOUT)'],
-                       Temperature_30V: ['+ V(2)',
+                       Temperature_Error: ['+ V(2)',
                                      '+ I(VOUT)'],
-                       Temperature_Error_5V: ['+ V(2)',
-                                     '+ I(VOUT)'],
-                       Temperature_Error_30V: ['+ V(2)',
-                                     '+ I(VOUT)']
                        },
           PART_LM111: {Supply_Current: ['+ V(6)',
                                        '+ I(VAM4)'],
@@ -1699,14 +1692,14 @@ LIBRARY_TID_LEVEL_MODEL = {TPRE_RAD: ['* npn prerad off ctp 3b',
                                       ]
                            }
 
-ADDITIONAL_LIBRARY = {PART_AD590: ['',
+EXTRA_LIBRARY = {PART_AD590: ['',
                             '*JFET',
                             '.model NJF_TYP NJF (',
                             '+ VTO = -1.0	BETA = 6.2E-4	LAMBDA = 0.003',
                             '+ RD = 0.01      RS = 1e-4',
                             '+ CGS = 3E-12    CGD=1.5E-12     IS=5E-10)',
                             ''],
-                      PART_LT1175: ['',
+                 PART_LT1175: ['',
                                     '* npn prerad off ctp 3b',
                                     '.model QNMODBG NPN (',
                                     '',
@@ -1729,7 +1722,7 @@ ADDITIONAL_LIBRARY = {PART_AD590: ['',
                                     '+ NC = 2                 RB = 6.72555e-3                        IRB = 4.06046',
                                     '+ RBM = 8.866e-4              RE = 3.63151e-5                           RC = 8.866e-6)',
                                     ''],
-                      PART_LM193: ['.model DMOD D (IS = 4E-10',
+                 PART_LM193: ['.model DMOD D (IS = 4E-10',
                                 '+ RS = .105',
                                 '+ N = 1.48',
                                 '+ TT = 8E-7',
@@ -1747,7 +1740,7 @@ ADDITIONAL_LIBRARY = {PART_AD590: ['',
 if __name__=='__main__':
     save_name_to_json(TITLE, PARTS, OUTPUT_NAME, SIMULATION, TID_LEVEL, COL_NAME)
     save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, INPUT, OUTPUT,
-                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, ADDITIONAL_LIBRARY)
+                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, EXTRA_LIBRARY)
 
 
 # with open(CONSTANT.LIBRARY_FILE_PATH,'r') as f:

@@ -382,8 +382,8 @@ class NetListGenerator:
             else:
                 content.extend(Library.LIBRARY_TID_LEVEL_MODEL[Library.TPRE_RAD])
             # Additional library
-            if Library.LIBRARY_JFET.get(part) is not None:
-                content.extend(Library.LIBRARY_JFET[part]),
+            if Library.EXTRA_LIBRARY.get(part) is not None:
+                content.extend(Library.EXTRA_LIBRARY[part]),
 
             if simulation == Library.SIMULATION_SOURCE:
 

@@ -24,7 +24,7 @@ from GUI import execute, NetListGenerator, Library, FILEPATHS, fit
 
 class Interface(object):
     def __init__(self):
-        element_width = 16
+        element_width = 20
         element_height = 2
         element_half_width = int(element_width/2 + 2)
         self.backgroundcolor = '#87CEFA'
@@ -35,6 +35,12 @@ class Interface(object):
         self.window.configure(background=self.backgroundcolor)
         self.window.option_add("*Font", my_font)
         # self.window.geometry('1150x700')
+
+        menubar = Menu(self.window)
+        filemenu = Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=filemenu)
+        filemenu.add_command(label="Import", command=self.import_hit)
+        self.window.config(menu=menubar)
 
         self.label_topline = Label(self.window, text=Library.TITLE, font=my_font, width=30, height=element_height, bg=self.backgroundcolor)
         self.label_input_header = Label(self.window, text="Input: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
@@ -137,7 +143,6 @@ class Interface(object):
         self.previous_Y_label = ''
         self.cross_message = list()
         self.AD590_base_temperature = 25
-        self.AD590_prev_temperature = 25
         self.multiplot = False
         self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
         self.netlist_filepath = relative_path(FILEPATHS.TEMP_DIR_PATH + 'myNetlist.cir')
@@ -147,185 +152,162 @@ class Interface(object):
         return
 
     def import_hit(self):
-        filename = filedialog.askopenfilename(initialdir=relative_path('Netlist'))
+        # filename = filedialog.askopenfilename(initialdir=relative_path('Netlist'))
         # print(filename)
-        if filename == () or filename == '':
-            return
-        f = open(filename, 'r')
-        line = next(f)
-        while line[0:5] != 'Title':
-            line = next(f, None)
-            if line is None:
-                print('Missing Title')
+        for filename in os.listdir(relative_path('Netlist')):
+            # filename = filedialog.askopenfilename(initialdir=relative_path('Netlist'))
+            # # print(filename)
+            # if filename == () or filename == '':
+            #     return
+            f = open('Netlist/' + filename, 'r')
+            line = next(f)
+            while line[0:5] != 'Title':
+                line = next(f, None)
+                if line is None:
+                    print('Missing Title')
+                    return
+            title = line.split(':')[1].replace(' ', '').split('/')
+            my_part = title[0]
+            my_spec = title[1]
+            my_voltage_source = list()
+            my_circuit_core = list()
+            my_input = list()
+            my_output = list()
+            my_subcircuit = list()
+            my_extra_library = list()
+
+            line = next(f)
+            while line is not None:
+                if line.find('*Input Voltage Source') != -1:
+                    line = next(f)
+                    while line.find('*Circuit Core') == -1:
+                        if line is None:
+                            print('ERROR!!! Missing \'*Circuit Core\', abort import')
+                            return
+                        elif line.find('*****') == -1:
+                            my_voltage_source.append(line.replace('\n', ''))
+                        line = next(f)
+                    continue
+                elif line.find('*Circuit Core') != -1:
+                    line = next(f)
+                    while line.find('*Input') == -1:
+                        if line is None:
+                            print('ERROR!!! Missing \'*Input\', abort import')
+                            return
+                        elif line.find('*****') == -1:
+                            my_circuit_core.append(line.replace('\n', ''))
+                        line = next(f)
+                    continue
+                elif line.find('*Input') != -1:
+                    line = next(f)
+                    while line.find('*Output') == -1:
+                        if line is None:
+                            print('ERROR!!! Missing \'*Output\', abort import')
+                            return
+                        elif line.find('*****') == -1:
+                            my_input.append(line.replace('\n', ''))
+                        line = next(f)
+                    continue
+                elif line.find('*Output') != -1:
+                    line = next(f)
+                    while line.find('*Subcircuit') == -1:
+                        if line is None:
+                            print('ERROR!!! Missing \'*Subcircuit\', abort import')
+                            return
+                        elif line.find('*****') == -1 and line.find('.print') == -1:
+                            my_output.append(line.replace('\n', ''))
+                        line = next(f)
+                    continue
+                elif line.find('*Subcircuit') != -1:
+                    line = next(f)
+                    while line.find('*Library') == -1:
+                        if line is None:
+                            print('ERROR!!! Missing \'*Library\', abort import')
+                            return
+                        elif line.find('*****') == -1:
+                            my_subcircuit.append(line.replace('\n', ''))
+                        line = next(f)
+                    continue
+                elif line.find('*Library') != -1:
+                    line = next(f)
+                    while line.find('*Extra Library') == -1:
+                        if line is None:
+                            print('ERROR!!! Missing \'*Extra Library\', abort import')
+                            return
+                        line = next(f)
+                    continue
+                elif line.find('*Extra Library') != -1:
+                    line = next(f)
+                    while line.find('*end of the netlist') == -1:
+                        if line is None:
+                            print('ERROR!!! Missing \'*end of the netlist\', abort import')
+                            return
+                        elif line.find('*****') == -1 and line.replace(' ','') != '':
+                            my_extra_library.append(line.replace('\n', ''))
+                        line = next(f)
+                    break
+                line = next(f, None)
+            f.close()
+            if len(my_voltage_source) == 0:
+                print('ERROR!!! Missing \'*Input Voltage Source\', abort import')
                 return
-        title = line.split(':')[1].replace(' ', '').split('/')
-        if len(title) < 3:
-            print('Missing simulation type, part name or parameter in Title')
-            return
-        my_simulation = title[0]
-        if my_simulation == 'source':
-            my_simulation = Library.SIMULATION_SOURCE
-        elif my_simulation == 'model':
-            my_simulation = Library.SIMULATION_MODEL
-        my_part = title[1]
-        my_parameter = title[2]
-        my_voltage_source = list()
-        my_circuit_core = list()
-        my_input = list()
-        my_output = list()
-        my_output_option = list()
-        my_subcircuit = list()
-        my_library = list()
+            # elif len(my_circuit_core) == 0:
+            #     print('ERROR!!! Missing \'*Circuit Core\', abort import')
+            #     return
+            elif len(my_input) == 0:
+                print('ERROR!!! Missing \'*Input\', abort import')
+                return
+            elif len(my_output) == 0:
+                print('ERROR!!! Missing \'*Output\', abort import')
+                return
+            elif len(my_subcircuit) == 0:
+                print('ERROR!!! Missing \'*Subcircuit\', abort import')
+                return
 
-        my_parameters = list()
-        my_scales = list()
-        my_functions = list()
+            # if my_simulation == Library.SIMULATION_SOURCE and (len(my_parameters) == 0 or len(my_functions) == 0 or len(my_scales) == 0):
+            #     print('ERROR!!! Missing \'*Parameters\' , \'*Scales\' or \'*Functions\' for Current Source simulation, abort import')
+            #     return
+            Library.PARTS.append(my_part)
+            Library.PARTS = list(set(Library.PARTS))
+            if Library.OUTPUT_NAME.get(my_part) is None:
+                Library.OUTPUT_NAME[my_part] = list()
+            Library.OUTPUT_NAME[my_part].append(my_spec)
+            Library.save_name_to_json(Library.TITLE, Library.PARTS, Library.OUTPUT_NAME, Library.SIMULATION,
+                                      Library.TID_LEVEL, Library.COL_NAME)
+            Library.INPUT_VOLTAGE_SOURCE[my_part] = my_voltage_source
+            Library.CIRCUIT_CORE[my_part] = my_circuit_core
+            Library.INPUT[my_part] = my_input
+            m_output_dict = Library.OUTPUT.get(my_part)
+            if m_output_dict is not None:
+                m_output_dict[my_spec] = my_output
+            else:
+                temp = dict()
+                temp[my_spec] = my_output
+                Library.OUTPUT[my_part] = temp
+            # temp = dict()
+            # temp[my_simulation] = my_subcircuit
+            # Library.SUBCIRCUIT[my_part] = temp
+            my_subcircuit_model = list()
+            for line in my_subcircuit:
+                if line.find('PNP') == -1 and line.find('NPN') == -1:
+                    my_subcircuit_model.append(line)
+            m_dict = Library.SUBCIRCUIT.get(my_part)
+            if m_dict is not None:
+                m_dict[Library.SIMULATION_SOURCE] = my_subcircuit
+                m_dict[Library.SIMULATION_MODEL] = my_subcircuit_model
+            else:
+                temp = dict()
+                temp[Library.SIMULATION_SOURCE] = my_subcircuit
+                temp[Library.SIMULATION_MODEL] = my_subcircuit_model
+                Library.SUBCIRCUIT[my_part] = temp
+            if len(my_extra_library) != 0:
+                Library.EXTRA_LIBRARY[my_part] = my_extra_library
+            elif Library.EXTRA_LIBRARY.get(my_part) is None:
+                Library.EXTRA_LIBRARY[my_part] = []
 
-        line = next(f)
-        while line is not None:
-            if line.find('*Input Voltage Source') != -1:
-                line = next(f)
-                while line.find('*End Input Voltage Source') == -1:
-                    if line is None:
-                        print('ERROR!!! Missing \'*End Input Voltage Source\', abort import')
-                        return
-                    elif line.find('*****') == -1:
-                        my_voltage_source.append(line.replace('\n', ''))
-                    line = next(f)
-            elif line.find('*Circuit Core') != -1:
-                line = next(f)
-                while line.find('*End Circuit Core') == -1:
-                    if line is None:
-                        print('ERROR!!! Missing \'*End Circuit Core\', abort import')
-                        return
-                    elif line.find('*****') == -1:
-                        my_circuit_core.append(line.replace('\n', ''))
-                    line = next(f)
-            elif line.find('*Input') != -1:
-                line = next(f)
-                while line.find('*End Input') == -1:
-                    if line is None:
-                        print('ERROR!!! Missing \'*End Input\', abort import')
-                        return
-                    elif line.find('*****') == -1:
-                        my_input.append(line.replace('\n', ''))
-                    line = next(f)
-            elif line.find('*Output') != -1:
-                line = next(f)
-                while line.find('*End Output') == -1:
-                    if line is None:
-                        print('ERROR!!! Missing \'*End Output\', abort import')
-                        return
-                    elif line.find('*****') == -1 and line.find('.print') == -1:
-                        my_output.append(line.replace('\n', ''))
-                        my_output_option.append(line.replace('\n', ''))
-                    line = next(f)
-            elif line.find('*Subcircuit') != -1:
-                line = next(f)
-                while line.find('*End Subcircuit') == -1:
-                    if line is None:
-                        print('ERROR!!! Missing \'*End Subcircuit\', abort import')
-                        return
-                    elif line.find('*****') == -1:
-                        my_subcircuit.append(line.replace('\n', ''))
-                    line = next(f)
-            elif line.find('*Library') != -1:
-                line = next(f)
-                while line.find('*End Library') == -1:
-                    if line is None:
-                        print('ERROR!!! Missing \'*End Library\', abort import')
-                        return
-                    elif line.find('*****') == -1:
-                        my_library.append(line.replace('\n', ''))
-                    line = next(f)
-            elif line.find('*Parameters') != -1:
-                line = next(f)
-                while line.find('*End Parameters') == -1:
-                    if line is None:
-                        print('ERROR!!! Missing \'*End Parameters\', abort import')
-                        return
-                    elif line.find('*****') == -1:
-                        my_parameters.append(line.replace('\n', ''))
-                    line = next(f)
-            elif line.find('*Scales') != -1:
-                line = next(f)
-                while line.find('*End Scales') == -1:
-                    if line is None:
-                        print('ERROR!!! Missing \'*End Scales\', abort import')
-                        return
-                    elif line.find('*****') == -1:
-                        my_scales.append(line.replace('\n', ''))
-                    line = next(f)
-            elif line.find('*Function') != -1:
-                line = next(f)
-                while line.find('*End Function') == -1:
-                    if line is None:
-                        print('ERROR!!! Missing \'*End Function\', abort import')
-                        return
-                    elif line.find('*****') == -1:
-                        my_functions.append(line.replace('\n', ''))
-                    line = next(f)
-            line = next(f, None)
-        f.close()
-        if len(my_voltage_source) == 0:
-            print('ERROR!!! Missing \'*Input Voltage Source\', abort import')
-            return
-        elif len(my_circuit_core) == 0:
-            print('ERROR!!! Missing \'*Circuit Core\', abort import')
-            return
-        elif len(my_input) == 0:
-            print('ERROR!!! Missing \'*Input\', abort import')
-            return
-        elif len(my_output_option) == 0:
-            print('ERROR!!! Missing \'*Output\', abort import')
-            return
-        elif len(my_subcircuit) == 0:
-            print('ERROR!!! Missing \'*Subcircuit\', abort import')
-            return
-
-        if my_simulation == Library.SIMULATION_SOURCE and (len(my_parameters) == 0 or len(my_functions) == 0 or len(my_scales) == 0):
-            print('ERROR!!! Missing \'*Parameters\' , \'*Scales\' or \'*Functions\' for Current Source simulation, abort import')
-            return
-        Library.PARTS.append(my_part)
-        Library.PARTS = list(set(Library.PARTS))
-        count = 0;
-        if my_simulation == Library.SIMULATION_SOURCE:
-            for line in my_parameters:
-                if line.replace(" ", "") != "":
-                    count += 1;
-            num_of_para = int(count / 3)
-            Library.NUM_OF_PARAMETER[my_part] = num_of_para
-            Library.SCALE[my_part] = my_scales
-            Library.FUNCTIONS[my_part] = my_functions
-        Library.save_name_to_json(Library.TITLE, Library.PARTS, Library.SIMULATION, Library.TID_LEVEL, Library.TID_LIST,
-                          Library.EXCEL_FILE_PATH, Library.COL_NAME, Library.SHEET_NAME, Library.NUM_OF_PARAMETER)
-        Library.INPUT_VOLTAGE_SOURCE[my_part] = my_voltage_source
-        Library.CIRCUIT_CORE[my_part] = my_circuit_core
-        Library.INPUT[my_part] = my_input
-        m_output_dict = Library.OUTPUT.get(my_part)
-        if m_output_dict is not None:
-            m_output_dict[my_parameter] = my_output
-        else:
-            temp = dict()
-            temp[my_parameter] = my_output
-            Library.OUTPUT[my_part] = temp
-        Library.OUTPUT_OPTION[my_part] = my_output_option
-        # temp = dict()
-        # temp[my_simulation] = my_subcircuit
-        # Library.SUBCIRCUIT[my_part] = temp
-        m_dict = Library.SUBCIRCUIT.get(my_part)
-        if m_dict is not None:
-            m_dict[my_simulation] = my_subcircuit
-        else:
-            temp = dict()
-            temp[my_simulation] = my_subcircuit
-            Library.SUBCIRCUIT[my_part] = temp
-        if Library.LIBRARY_JFET.get(my_part) is None:
-            Library.LIBRARY_JFET[my_part] = []
-
-        Library.save_library_to_json(Library.INPUT_VOLTAGE_SOURCE, Library.CIRCUIT_CORE, Library.SCALE,
-                                      Library.FUNCTIONS, Library.INPUT, Library.OUTPUT_OPTION, Library.OUTPUT, Library.SUBCIRCUIT,
-                                      Library.LIBRARY_TID_LEVEL_MODEL, Library.LIBRARY_JFET)
+            Library.save_library_to_json(Library.INPUT_VOLTAGE_SOURCE, Library.CIRCUIT_CORE, Library.INPUT,
+                                         Library.OUTPUT,
+                                         Library.SUBCIRCUIT, Library.LIBRARY_TID_LEVEL_MODEL, Library.EXTRA_LIBRARY)
         self.refresh()
         self.result_text.set("Import complete")
         return
@@ -355,6 +337,7 @@ class Interface(object):
             DR = self.cb_dose.get()
             H2 = self.cb_hydrogen.get()
             temperature = self.entry_temperature.get()
+            dataset = self.entry_dataset.get()
             simulation = Library.SIMULATION_SOURCE
             TID_level_lower = self.entry_TID_lower_bound.get()
             TID_level_upper = self.entry_TID_upper_bound.get()
@@ -375,9 +358,8 @@ class Interface(object):
                 nonlinearity = True
                 X1 = Library.SPECIFICATION.get(part).get("Dataset")[0]
                 X2 = Library.SPECIFICATION.get(part).get("Dataset")[1]
-            if (part == Library.PART_AD590 and (output_option == Library.TEMPERATURE_30V or output_option == Library.TEMPERATURE_ERROR_30V)) or \
-                    output_option == Library.Load_Regulation:
-                plotted_X = Library.SPECIFICATION.get(part).get("Dataset")[1]
+            if dataset != "":
+                plotted_X = float(dataset)
             else:
                 plotted_X = Library.SPECIFICATION.get(part).get("Dataset")[0]
 
@@ -506,14 +488,14 @@ class Interface(object):
                 self.Y_list = tmp_list
 
             # post-processing for temperature
-            elif output_option == Library.TEMPERATURE_5V or output_option == Library.TEMPERATURE_30V:
+            elif output_option == Library.TEMPERATURE:
                 divider = 1e-6
                 tmp_list = [y / divider - 273.15 for y in self.Y_list]
                 # print(tmp_list)
                 self.Y_list = tmp_list
 
             # post-processing for temperature_error
-            elif output_option == Library.TEMPERATURE_ERROR_5V or output_option == Library.TEMPERATURE_ERROR_30V:
+            elif output_option == Library.TEMPERATURE_ERROR:
                 pre_rad_y = 0
                 divider = 1e-6
                 if Library.TPRE_RAD in self.X_list:
@@ -540,8 +522,9 @@ class Interface(object):
                 message = "No result to show"
                 self.result_text.set(message)
                 return
+            label_name = part + '_' + DR + '_' + H2 + '_' + temperature + '_' + dataset
             self.figure_input.clear()
-            self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, part, simulation, DR, H2,
+            self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, part, simulation, label_name,
                                       num_TID_lower, num_TID_upper, TID_level_lower, TID_level_upper, None, None,
                                       spec_min, spec_max, False, False])
             # calculate the point that exceed specification limits
@@ -583,7 +566,7 @@ class Interface(object):
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
                               self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
                               self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15],
-                              self.figure_input[16], self.figure_input[17])
+                              self.figure_input[16])
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
             if self.multiplot:
@@ -672,16 +655,12 @@ class Interface(object):
         if temp != '':
             self.AD590_base_temperature = float(temp)
             self.AD590_spec_change()
-            self.AD590_prev_temperature = float(temp)
         return
 
     def AD590_spec_change(self):
-        if self.cb_parts.get() == Library.PART_AD590 and (self.cb_output.get() == Library.TEMPERATURE_30V or self.cb_output.get() == Library.TEMPERATURE_5V):
-            diff = self.AD590_base_temperature - self.AD590_prev_temperature
-            if self.label_spec_min_value.cget('text') != '':
-                self.label_spec_min_value['text'] = float(self.label_spec_min_value.cget('text')) + diff
-            if self.label_spec_max_value.cget('text') != '':
-                self.label_spec_max_value['text'] = float(self.label_spec_max_value.cget('text')) + diff
+        if self.cb_parts.get() == Library.PART_AD590 and self.cb_output.get() == Library.TEMPERATURE:
+            self.label_spec_min_value['text'] = self.AD590_base_temperature - 5
+            self.label_spec_max_value['text'] = self.AD590_base_temperature + 5
         return
 
     def part_onselect(self, evt):
@@ -691,6 +670,7 @@ class Interface(object):
             self.cb_output['values'] = self.output_options_tuple
             self.output_options.set('')
             self.clear_specs()
+            self.clear_dataset()
             self.cb_parts.selection_clear()
         except:
             pass
@@ -706,6 +686,12 @@ class Interface(object):
     def output_onselect(self, evt):
         part = self.cb_parts.get()
         output = self.cb_output.get()
+        if Library.INPUT.get(part + output) is not None:
+            input_lib = Library.INPUT.get(part + output)
+        else:
+            input_lib = Library.INPUT.get(part)
+        dataset_range = input_lib[0].split(' ')[1] + ":(" + input_lib[0].split(' ')[2] + "~" + input_lib[0].split(' ')[3] + ", gap=" + input_lib[0].split(' ')[4] + ")"
+        self.label_dataset_range['text'] = dataset_range
         spec_lib = Library.SPECIFICATION.get(part)
         self.clear_specs()
         if spec_lib is not None:
@@ -728,6 +714,10 @@ class Interface(object):
                 self.AD590_spec_change()
                 self.label_spec_max_unit['text'] = spec[2]
                 self.label_spec_min_unit['text'] = spec[2]
+            dataset = spec_lib.get("Dataset")
+            if dataset is not None:
+                self.entry_dataset.delete(0, 'end')
+                self.entry_dataset.insert(0, dataset[0])
             # self.entry_spec_min.configure(state='readonly')
             # self.entry_spec_max.configure(state='readonly')
         self.cb_output.selection_clear()
@@ -744,7 +734,12 @@ class Interface(object):
         # self.entry_spec_max.delete(0, 'end')
         # self.entry_spec_min.configure(state='readonly')
         # self.entry_spec_max.configure(state='readonly')
+        return
 
+    def clear_dataset(self):
+        self.label_dataset_range['text'] = ''
+        self.entry_dataset.delete('0', 'end')
+        return
     def callback(self, event):
         self.execute_hit()
         return
@@ -782,13 +777,14 @@ class Interface(object):
         # row 4
         row += 1
         self.entry_temperature.grid(row=row, column=1)
-        # self.button_import.grid(row=row, column=1, pady=10)
+        # self.button_import.grid(row=row, column=2, pady=10)
 
         row += 1
         self.label_dataset.grid(row=row, column=1)
 
         row += 1
         self.label_dataset_range.grid(row=row, column=1)
+        self.canvas_plot.grid(row=row - 1, column=2, rowspan=9, columnspan=4)
 
         row += 1
         self.entry_dataset.grid(row=row, column=1)
@@ -797,7 +793,6 @@ class Interface(object):
         row += 1
         # self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
         self.label_output.grid(row=row, column=1, pady=(20, 0))
-        self.canvas_plot.grid(row=row - 1, column=2, rowspan=9, columnspan=4)
 
         # row 6
         row += 1
@@ -860,7 +855,7 @@ class Interface(object):
             self.cb_dose.set('0.02')
             self.cb_hydrogen.set('1.3')
             self.entry_temperature.insert(0, "25")
-            self.label_dataset_range['text'] = "(0-25, gap=1)"
+            self.label_dataset_range['text'] = "V1:(0~25, gap=1)"
             self.entry_dataset.insert(0, "25")
             self.label_spec_min_value['text'] = 2.44
             self.label_spec_max_value['text'] = 2.55
@@ -965,7 +960,7 @@ class Interface(object):
     ' plot figure in the main window
     ' X_label: 
     '''
-    def plotfigureTK(self, X_label, Y_label, X, Y, part, simulation, DR, H2, X_min, X_max, TID_level, TID_level2=None,
+    def plotfigureTK(self, X_label, Y_label, X, Y, part, simulation, label_name, X_min, X_max, TID_level, TID_level2=None,
                      Y_min=None, Y_max=None, spec_min=None, spec_max=None, x_logscale=False, y_logscale=False):
         # preprocessing input
         font = {'size': 10}
@@ -1014,7 +1009,7 @@ class Interface(object):
         if spec_min is not None:
             subplot.axhline(y=spec_min, color='r', linestyle='--')
             y_min = min(y_min, spec_min)
-        subplot.plot(X, Y, next(self.color_gen), label=part + '_' + DR + '_' + H2)
+        subplot.plot(X, Y, next(self.color_gen), label=label_name)
         subplot.plot(X, Y, 'r*')
         y_gap = y_max - y_min
         y_lower_bound = float(Y_min) if Y_min is not None else y_min - 0.1 * y_gap
@@ -1096,25 +1091,25 @@ class Interface(object):
             x_upper, x_lower, x_log, y_upper, y_lower, y_log = scaleinfo
             # x upper bound
             if x_upper != '':
-                self.figure_input[9] = self.get_num_TID(x_upper)
+                self.figure_input[8] = self.get_num_TID(x_upper)
             # x lower bound
             if x_lower != '':
-                self.figure_input[8] = self.get_num_TID(x_lower)
+                self.figure_input[7] = self.get_num_TID(x_lower)
             # x log scale
             if min(self.figure_input[3]) <= 0 and y_log is True:
                 self.result_text.set("can not use log scale on y axis \n non-positive value detected")
             else:
-                self.figure_input[17] = y_log
+                self.figure_input[16] = y_log
             # y upper bound
             if scaleinfo[3] != '':
-                self.figure_input[13] = y_upper
+                self.figure_input[12] = y_upper
             # y lower bound
             if scaleinfo[4] != '':
-                self.figure_input[12] = y_lower
+                self.figure_input[11] = y_lower
             # y log scale
-            self.figure_input[16] = x_log
+            self.figure_input[15] = x_log
 
-            self.plot_scale(self.figure_input[9], self.figure_input[8], self.figure_input[13], self.figure_input[12], self.figure_input[16], self.figure_input[17])
+            self.plot_scale(self.figure_input[8], self.figure_input[7], self.figure_input[12], self.figure_input[11], self.figure_input[15], self.figure_input[16])
         return
 
     def save(self):

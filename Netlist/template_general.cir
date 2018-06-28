@@ -28,7 +28,7 @@ Title: {Your Part Name} / {Your Spec Name} / {Your TID Level} / {Your Temperatur
 
 *Extra Library
 **************
-{Your Extra Library}
+{Your Extra Library, delete this line if not applicable}
 
 *end of the netlist
 .end
