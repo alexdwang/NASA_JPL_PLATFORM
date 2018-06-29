@@ -27,7 +27,8 @@ class Interface(object):
         element_width = 20
         element_height = 2
         element_half_width = int(element_width/2 + 2)
-        self.backgroundcolor = '#87CEFA'
+        self.backgroundcolor = '#CBE7CE'
+        self.figsize = (8, 5)
         my_font = ('Arial', 10)
 
         self.window = Tk()
@@ -36,7 +37,7 @@ class Interface(object):
         self.window.option_add("*Font", my_font)
         # self.window.geometry('1150x700')
 
-        menubar = Menu(self.window)
+        menubar = Menu(self.window, bg="khaki")
         filemenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=filemenu)
         filemenu.add_command(label="Import", command=self.import_hit)
@@ -49,83 +50,91 @@ class Interface(object):
 
         self.empty = Label(self.window, text="", font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
 
-        self.label_parts = Label(self.window, text='Parts:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.frame_part = Frame(height=element_height * 9, width=element_width, bg=self.backgroundcolor, bd=2, relief=RIDGE)
+
+        self.label_parts = Label(self.frame_part, text='Parts:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.parts_options = StringVar()
         self.parts_options_tuple = (Library.PARTS)
-        self.cb_parts = ttk.Combobox(self.window, textvariable=self.parts_options, exportselection=False, state='readonly')
+        self.cb_parts = ttk.Combobox(self.frame_part, textvariable=self.parts_options, exportselection=False, state='readonly')
         self.cb_parts['values'] = self.parts_options_tuple
 
-        self.label_dose = Label(self.window, text='Dose Rate(rad/s):', font=my_font, width=element_width, height=element_height,
+        self.label_dataset = Label(self.frame_part, text='Dataset:', font=my_font, width=element_width,
+                                       height=element_height, bg=self.backgroundcolor)
+        self.label_dataset_range = Label(self.frame_part, text='(Range)', font=my_font, width=element_width,
+                                       height=element_height, bg=self.backgroundcolor)
+        self.entry_dataset = FloatEntry(self.frame_part, width=element_width)
+
+        self.label_simulation = Label(self.frame_part, text='Simulation Mode:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.simulation_options = StringVar()
+        self.simulation_options_tuple = (Library.SIMULATION)
+        self.cb_simulation = ttk.Combobox(self.frame_part, textvariable=self.simulation_options, exportselection=False, state='readonly')
+        self.cb_simulation['values'] = self.simulation_options_tuple
+
+        self.label_output = Label(self.frame_part, text='Specification:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.output_options = StringVar()
+        self.output_options_tuple = ()
+        self.cb_output = ttk.Combobox(self.frame_part, textvariable=self.output_options, exportselection=False, state='readonly')
+        self.cb_output['values'] = self.output_options_tuple
+
+        self.frame_environment = Frame(height=element_height * 2, width=element_width * 5, bg=self.backgroundcolor, bd=2, relief=RIDGE)
+
+        self.label_dose = Label(self.frame_environment, text='Dose Rate(rad/s):', font=my_font, width=element_width, height=element_height,
                                  bg=self.backgroundcolor)
         self.dose_options = StringVar()
         self.dose_options_tuple = ["100","0.1","0.02"]
-        self.cb_dose = ttk.Combobox(self.window, textvariable=self.dose_options, exportselection=False, state='readonly')
+        self.cb_dose = ttk.Combobox(self.frame_environment, textvariable=self.dose_options, exportselection=False, state='readonly')
         self.cb_dose['values'] = self.dose_options_tuple
 
-        self.label_hydrogen = Label(self.window, text='Hydrogen Content(%):', font=my_font, width=element_width + 1, height=element_height,
+        self.label_hydrogen = Label(self.frame_environment, text='Hydrogen Content(%):', font=my_font, width=element_width + 1, height=element_height,
                                  bg=self.backgroundcolor)
         self.hydrogen_options = StringVar()
         self.hydrogen_options_tuple = ["0","0.1","1","1.3","100"]
-        self.cb_hydrogen = ttk.Combobox(self.window, textvariable=self.hydrogen_options, exportselection=False, state='readonly')
+        self.cb_hydrogen = ttk.Combobox(self.frame_environment, textvariable=self.hydrogen_options, exportselection=False, state='readonly')
         self.cb_hydrogen['values'] = self.hydrogen_options_tuple
 
-        self.label_temperature = Label(self.window, text='Temperature(C):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        self.entry_temperature = FloatEntry(self.window, width=element_width)
+        self.label_temperature = Label(self.frame_environment, text='Temperature(C):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.entry_temperature = FloatEntry(self.frame_environment, width=element_width)
 
-        self.label_dataset = Label(self.window, text='Dataset:', font=my_font, width=element_width,
-                                       height=element_height, bg=self.backgroundcolor)
-        self.label_dataset_range = Label(self.window, text='(Range)', font=my_font, width=element_width,
-                                       height=element_height, bg=self.backgroundcolor)
-        self.entry_dataset = FloatEntry(self.window, width=element_width)
 
-        self.label_simulation = Label(self.window, text='Simulation Mode:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        self.simulation_options = StringVar()
-        self.simulation_options_tuple = (Library.SIMULATION)
-        self.cb_simulation = ttk.Combobox(self.window, textvariable=self.simulation_options, exportselection=False, state='readonly')
-        self.cb_simulation['values'] = self.simulation_options_tuple
-
-        self.label_TID_level_lower_bound = Label(self.window, text='TID min(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.label_TID_level_lower_bound = Label(self.frame_environment, text='TID min(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         # self.TID_options_lower = StringVar()
         # self.TID_options_tuple = ()
         # self.cb_TID_lower_bound = ttk.Combobox(self.window, textvariable=self.TID_options_lower, exportselection=False, state='readonly')
         # self.cb_TID_lower_bound['values'] = self.TID_options_tuple
-        self.entry_TID_lower_bound = TIDEntry(self.window, width=element_width)
+        self.entry_TID_lower_bound = TIDEntry(self.frame_environment, width=element_width)
 
-        self.label_TID_level_upper_bound = Label(self.window, text='TID max(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.label_TID_level_upper_bound = Label(self.frame_environment, text='TID max(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         # self.TID_options_upper = StringVar()
         # self.cb_TID_upper_bound = ttk.Combobox(self.window, textvariable=self.TID_options_upper, exportselection=False, state='readonly')
         # self.cb_TID_upper_bound['values'] = self.TID_options_tuple
-        self.entry_TID_upper_bound = TIDEntry(self.window, width=element_width)
+        self.entry_TID_upper_bound = TIDEntry(self.frame_environment, width=element_width)
 
-        self.label_output = Label(self.window, text='Specification:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        self.output_options = StringVar()
-        self.output_options_tuple = ()
-        self.cb_output = ttk.Combobox(self.window, textvariable=self.output_options, exportselection=False, state='readonly')
-        self.cb_output['values'] = self.output_options_tuple
-
-        self.frame_min = Frame(height=element_height, width=element_width, bg=self.backgroundcolor)
-        self.label_spec_min = Label(self.frame_min, text='min:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
-        # self.entry_spec_min = FloatEntry(self.window, width=element_width, state='readonly')
-        self.label_spec_min_value = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
-        self.label_spec_min_unit = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
-
-        self.frame_max = Frame(height=element_height, width=element_width, bg=self.backgroundcolor)
+        self.frame_max = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
         self.label_spec_max = Label(self.frame_max, text='max:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
         # self.entry_spec_max = FloatEntry(self.window, width=element_width, state='readonly')
         self.label_spec_max_value = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
         self.label_spec_max_unit = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
 
+        self.frame_min = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
+        self.label_spec_min = Label(self.frame_min, text='min:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
+        # self.entry_spec_min = FloatEntry(self.window, width=element_width, state='readonly')
+        self.label_spec_min_value = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
+        self.label_spec_min_unit = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
+
 
         self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2, command=self.import_hit)
-        self.button_execute = Button(self.window, text='Execute', font=my_font, width=15, height=2, command=self.execute_hit)
 
-        self.frame_save_or_clear = Frame(height=element_height, width=element_width, bg=self.backgroundcolor)
-        self.button_save = Button(self.frame_save_or_clear, text='Save', font=my_font, width=7, height=2, command=self.save)
-        self.button_clear = Button(self.frame_save_or_clear, text='Clear', font=my_font, width=7, height=2, command=self.clear)
-        self.button_change_scale = Button(self.window, text='Change Scale', font=my_font, width=15, height=2, command=self.change_scale)
+
+        self.frame_execute_or_change_scale = Frame(height=element_height, width=element_width * 2, bg=self.backgroundcolor)
+        self.button_execute = Button(self.frame_execute_or_change_scale, text='Execute', font=my_font, width=10, height=2, command=self.execute_hit, bg="pale green")
+        self.button_change_scale = Button(self.frame_execute_or_change_scale, text='Change Scale', font=my_font, width=10, height=2, command=self.change_scale, bg="lemon chiffon")
+
+        self.frame_save_or_clear = Frame(height=element_height, width=element_width * 2, bg=self.backgroundcolor)
+        self.button_save = Button(self.frame_save_or_clear, text='Save', font=my_font, width=10, height=2, command=self.save, bg="SlateGray1")
+        self.button_clear = Button(self.frame_save_or_clear, text='Clear', font=my_font, width=10, height=2, command=self.clear, bg="peach puff")
 
         self.canvas_plot = Canvas(self.window, width=800, height=400, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
-        self.figure = mpl.figure.Figure(figsize=(6, 4), facecolor=self.backgroundcolor, edgecolor='w')
+        self.figure = mpl.figure.Figure(figsize=self.figsize, facecolor=self.backgroundcolor, edgecolor='w')
 
         self.result_text = StringVar()
         self.label_result_text = Label(self.window, textvariable=self.result_text, font=my_font,
@@ -595,6 +604,10 @@ class Interface(object):
         result = - (b / a)
         return result
 
+    def getClearGraph(self):
+        self.figure_input.clear()
+        self.plotfigureTK('TID level (rad)', "", [], [], "", "", "", 0, 300000, "0", "300k", None, None, None, None, False, False)
+
     def refresh(self):
         importlib.reload(Library)
         self.parts_options_tuple = (Library.PARTS)
@@ -690,7 +703,7 @@ class Interface(object):
             input_lib = Library.INPUT.get(part + output)
         else:
             input_lib = Library.INPUT.get(part)
-        dataset_range = input_lib[0].split(' ')[1] + ":(" + input_lib[0].split(' ')[2] + "~" + input_lib[0].split(' ')[3] + ", gap=" + input_lib[0].split(' ')[4] + ")"
+        dataset_range = input_lib[0].split(' ')[1] + ":(" + input_lib[0].split(' ')[2] + "~" + input_lib[0].split(' ')[3] + ", step=" + input_lib[0].split(' ')[4] + ")"
         self.label_dataset_range['text'] = dataset_range
         spec_lib = Library.SPECIFICATION.get(part)
         self.clear_specs()
@@ -751,63 +764,76 @@ class Interface(object):
 
         # row 1
         row += 1
+        self.frame_part.grid(row=row, column=1, rowspan=7)
+        self.frame_environment.grid(row=row, column=2, rowspan=2, columnspan=5)
         # self.label_input_header.grid(row=row, rowspan=3)
-        self.label_parts.grid(row=row, column=1)
+
+        # frame_part layouts
+        self.label_parts.grid(row=0, column=1)
+        self.cb_parts.grid(row=1, column=1)
+        self.label_output.grid(row=2, column=1, pady=(20, 0))
+        self.cb_output.grid(row=3, column=1)
+        self.label_dataset.grid(row=4, column=1)
+        self.label_dataset_range.grid(row=5, column=1)
+        self.entry_dataset.grid(row=6, column=1)
+        self.frame_max.grid(row=7, column=1)
+        self.frame_min.grid(row=8, column=1)
+
+
         # self.label_simulation.grid(row=row, column=2)
-        self.label_dose.grid(row=row, column=2)
-        self.label_hydrogen.grid(row=row, column=3)
-        self.label_TID_level_lower_bound.grid(row=row, column=4)
-        self.label_TID_level_upper_bound.grid(row=row, column=5)
+
+        # frame_environment layouts
+        self.label_dose.grid(row=0, column=1)
+        self.label_hydrogen.grid(row=0, column=2)
+        self.label_temperature.grid(row=0, column=3)
+        self.label_TID_level_lower_bound.grid(row=0, column=4)
+        self.label_TID_level_upper_bound.grid(row=0, column=5)
+        self.cb_dose.grid(row=1, column=1)
+        self.cb_hydrogen.grid(row=1, column=2)
+        self.entry_temperature.grid(row=1, column=3)
+        self.entry_TID_lower_bound.grid(row=1, column=4)
+        self.entry_TID_upper_bound.grid(row=1, column=5)
+
 
         # row 2
         row += 1
-        self.cb_parts.grid(row=row, column=1)
         # self.cb_simulation.grid(row=row, column=2)
-        self.cb_dose.grid(row=row, column=2)
-        self.cb_hydrogen.grid(row=row, column=3)
-        self.entry_TID_lower_bound.grid(row=row, column=4)
-        self.entry_TID_upper_bound.grid(row=row, column=5)
         # self.cb_TID_lower_bound.grid(row=row, column=2)
         # self.cb_TID_upper_bound.grid(row=row, column=3)
 
         # row 3
-        row += 1
-        self.label_temperature.grid(row=row, column=1)
+        # row += 1
 
         # row 4
-        row += 1
-        self.entry_temperature.grid(row=row, column=1)
+        # row += 1
         # self.button_import.grid(row=row, column=2, pady=10)
 
         row += 1
-        self.label_dataset.grid(row=row, column=1)
 
         row += 1
-        self.label_dataset_range.grid(row=row, column=1)
-        self.canvas_plot.grid(row=row - 1, column=2, rowspan=9, columnspan=4)
+        self.canvas_plot.grid(row=row - 1, column=2, rowspan=9, columnspan=5)
 
         row += 1
-        self.entry_dataset.grid(row=row, column=1)
 
         # row 5
         row += 1
         # self.label_spec_header.grid(row=row, column=0, rowspan=2, pady=(20, 0))
-        self.label_output.grid(row=row, column=1, pady=(20, 0))
 
         # row 6
         row += 1
-        self.cb_output.grid(row=row, column=1)
 
         # row 7
         row += 1
-        self.frame_max.grid(row=row, column=1)
+
+        # frame_max layout
         self.label_spec_max.grid(row=0, column=1)
         self.label_spec_max_value.grid(row=0, column=2)
         self.label_spec_max_unit.grid(row=0, column=3)
 
         # row 8
         row += 1
-        self.frame_min.grid(row=row, column=1)
+
+        # frame_min layout
         self.label_spec_min.grid(row=0, column=1)
         self.label_spec_min_value.grid(row=0, column=2)
         self.label_spec_min_unit.grid(row=0, column=3)
@@ -818,18 +844,23 @@ class Interface(object):
 
         # row 10
         row += 1
-        self.button_execute.grid(row=row, column=1, pady=10)
+        self.frame_execute_or_change_scale.grid(row=row, column=1)
+
+        # frame_execute_or_change_scale layout
+        self.button_execute.grid(row=0, column=1, pady=10)
+        self.button_change_scale.grid(row=0, column=2)
 
         # row 11
         row += 1
         self.frame_save_or_clear.grid(row=row, column=1)
+
+        # frame_save_or_clear layout
         self.button_save.grid(row=0, column=1)
         self.button_clear.grid(row=0, column=2)
         # self.button_save.grid(row=row, column=1)
 
         # row 12
         row += 1
-        self.button_change_scale.grid(row=row, column=1)
 
         # row 13
         row += 1
@@ -855,7 +886,7 @@ class Interface(object):
             self.cb_dose.set('0.02')
             self.cb_hydrogen.set('1.3')
             self.entry_temperature.insert(0, "25")
-            self.label_dataset_range['text'] = "V1:(0~25, gap=1)"
+            self.label_dataset_range['text'] = "V1:(0~25, step=1)"
             self.entry_dataset.insert(0, "25")
             self.label_spec_min_value['text'] = 2.44
             self.label_spec_max_value['text'] = 2.55
@@ -880,6 +911,7 @@ class Interface(object):
         #
         # size = '%dx%d+%d+%d' % (interfacewidth, interfaceheight, (screenwidth - interfacewidth) / 2, (screenheight - interfaceheight) / 2)
         # self.window.geometry(size)
+        self.getClearGraph()
         self.window.mainloop()
         return
 
@@ -931,7 +963,7 @@ class Interface(object):
     ' plot figure in a pop up window
     '''
     def plotfigure(self, X_label, Y_label, X, Y, part, simulation, TID_level, TID_level2=None, spec_min=None, spec_max=None):
-        plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=(10,8))
+        plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=self.figsize)
         if TID_level2:
             plt.clf()
             y_min = min(Y)
@@ -998,24 +1030,25 @@ class Interface(object):
         # formatter.set_scientific(True)
         # formatter.set_powerlimits((-1,1))
         # subplot.yaxis.set_major_formatter(formatter)
-        y_min = min(Y)
-        y_max = max(Y)
-        # set the data range where we use scientific format on y axis
-        if 0 < max(abs(y_max), abs(y_min)) < 1e-2 or max(abs(y_max), abs(y_min)) > 1e2:
-            subplot.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.2e'))
-        if spec_max is not None:
-            subplot.axhline(y=spec_max, color='r', linestyle='--')
-            y_max = max(y_max, spec_max)
-        if spec_min is not None:
-            subplot.axhline(y=spec_min, color='r', linestyle='--')
-            y_min = min(y_min, spec_min)
-        subplot.plot(X, Y, next(self.color_gen), label=label_name)
-        subplot.plot(X, Y, 'r*')
-        y_gap = y_max - y_min
-        y_lower_bound = float(Y_min) if Y_min is not None else y_min - 0.1 * y_gap
-        y_upper_bound = float(Y_max) if Y_max is not None else y_max + 0.15 * y_gap
-        if y_lower_bound != y_upper_bound:
-            subplot.set_ylim([y_lower_bound, y_upper_bound])
+        if len(Y) != 0:
+            y_min = min(Y)
+            y_max = max(Y)
+            # set the data range where we use scientific format on y axis
+            if 0 < max(abs(y_max), abs(y_min)) < 1e-2 or max(abs(y_max), abs(y_min)) > 1e2:
+                subplot.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.2e'))
+            if spec_max is not None:
+                subplot.axhline(y=spec_max, color='r', linestyle='--')
+                y_max = max(y_max, spec_max)
+            if spec_min is not None:
+                subplot.axhline(y=spec_min, color='r', linestyle='--')
+                y_min = min(y_min, spec_min)
+            subplot.plot(X, Y, next(self.color_gen), label=label_name)
+            subplot.plot(X, Y, 'r*')
+            y_gap = y_max - y_min
+            y_lower_bound = float(Y_min) if Y_min is not None else y_min - 0.1 * y_gap
+            y_upper_bound = float(Y_max) if Y_max is not None else y_max + 0.15 * y_gap
+            if y_lower_bound != y_upper_bound:
+                subplot.set_ylim([y_lower_bound, y_upper_bound])
         x_gap = X_max - X_min
         if x_gap != 0:
             subplot.set_xlim([X_min, X_max])
@@ -1194,7 +1227,7 @@ class Interface(object):
 
     def clear(self):
         self.figure.clf()
-        self.figure_input.clear()
+        self.getClearGraph()
         self.previous_part = ''
         self.previous_Y_label = ''
         self.result_text.set('')
