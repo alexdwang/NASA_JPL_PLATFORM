@@ -104,7 +104,8 @@ def excel_table_byname2delta(sheet, TID_level, DR, H2):
     for row in range(1, nrows):
         # print(Library.COL_NAME['VE'])
         ve = table.cell(row,col_dict[Library.COL_NAME['VE']]).value
-        ib = table.cell(row, col_dict[Library.COL_NAME[TID_level]]).value
+        ib_column_name = Library.COL_NAME[TID_level] if Library.COL_NAME[TID_level] is not None else TID_level + 'rad'
+        ib = table.cell(row, col_dict[ib_column_name]).value
         ib_pre = table.cell(row, col_dict[Library.COL_NAME[Library.TPRE_RAD]]).value
         delta_ib = ib - ib_pre
         # print(ve)

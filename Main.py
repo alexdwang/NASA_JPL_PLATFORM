@@ -28,7 +28,7 @@ class Interface(object):
         element_height = 2
         element_half_width = int(element_width/2 + 2)
         self.backgroundcolor = '#CBE7CE'
-        self.figsize = (8, 5)
+        self.figsize = (8, 4)
         my_font = ('Arial', 10)
 
         self.window = Tk()
@@ -51,6 +51,7 @@ class Interface(object):
         self.empty = Label(self.window, text="", font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
 
         self.frame_part = Frame(height=element_height * 9, width=element_width, bg=self.backgroundcolor, bd=2, relief=RIDGE)
+        # self.frame_part.config(highlightbackground="black", highlightthickness=1)
 
         self.label_parts = Label(self.frame_part, text='Parts:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.parts_options = StringVar()
@@ -377,6 +378,9 @@ class Interface(object):
             oneMore = True
             Tid_Levels_dict = {self.get_num_TID(tid): tid for tid in Library.TID_LEVEL}
             Tid_Levels = [(k, Tid_Levels_dict[k]) for k in sorted(Tid_Levels_dict.keys())]
+            for tid_level in range(1000, 300000, 1000):
+                Tid_Levels_dict[tid_level] = str(tid_level / 1000) + 'k'
+
             for i in range(len(Tid_Levels)):
                 num_TID = Tid_Levels[i][0]
                 str_TID = Tid_Levels[i][1]
@@ -764,8 +768,8 @@ class Interface(object):
 
         # row 1
         row += 1
-        self.frame_part.grid(row=row, column=1, rowspan=7)
-        self.frame_environment.grid(row=row, column=2, rowspan=2, columnspan=5)
+        self.frame_part.grid(row=row, column=1, rowspan=7, pady=(10, 0))
+        self.frame_environment.grid(row=row, column=2, rowspan=2, columnspan=5, pady=(10, 0))
         # self.label_input_header.grid(row=row, rowspan=3)
 
         # frame_part layouts
