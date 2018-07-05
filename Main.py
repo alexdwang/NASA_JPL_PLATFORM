@@ -384,7 +384,7 @@ class Interface(object):
             oneMore = True
             Tid_Levels_dict = {self.get_num_TID(tid): tid for tid in Library.TID_LEVEL}
             Tid_Levels = [(k, Tid_Levels_dict[k]) for k in sorted(Tid_Levels_dict.keys())]
-            for tid_level in range(1000, 300000, 1000):
+            for tid_level in range(500, 300000, 500):
                 Tid_Levels_dict[tid_level] = str(tid_level / 1000) + 'k'
 
             for i in range(len(Tid_Levels)):
@@ -401,66 +401,6 @@ class Interface(object):
                     if num_TID >= num_TID_upper:
                         oneMore = False
                     my_result = execute.execute_module3(self.netlist_filepath)
-
-                    # for current source only
-                    # if simulation == Library.SIMULATION_SOURCE and str_TID != Library.TPRE_RAD:
-                    #     V0_deltaIbs = []
-                    #     # fit curve
-                    #     excel_file_path = Library.EXCEL_FILE_PATH[part]
-                    #     f = open(FILEPATHS.XDATA_FILE_PATH, 'r')
-                    #     labels = []
-                    #     xdata = []
-                    #     isLabel = True
-                    #     for line in f:
-                    #         line = line.strip('\n')
-                    #         my_line = line.split(' ')
-                    #         cnt = 0
-                    #         linedata = []
-                    #         for word in my_line:
-                    #             if word != '':
-                    #                 if isLabel is True:
-                    #                     labels.append(word)
-                    #                     isLabel = False
-                    #                 else:
-                    #                     try:
-                    #                         linedata.append(float(word))
-                    #                     except:
-                    #                         cnt = cnt
-                    #         if len(linedata) != 0:
-                    #             xdata.append(linedata)
-                    #     f.close()
-                    #     tmp_dict = Library.SCALELIB.get(part)
-                    #     scales = tmp_dict.get('scale')
-                    #     types = tmp_dict.get('type')
-                    #     try:
-                    #         a1, b1, c1 = fit.fit('NPN', Library.TPRE_RAD, excel_file_path)
-                    #         a2, b2, c2 = fit.fit('NPN', str_TID, excel_file_path)
-                    #
-                    #         a3, b3, c3 = fit.fit('PNP', Library.TPRE_RAD, excel_file_path)
-                    #         a4, b4, c4 = fit.fit('PNP', str_TID, excel_file_path)
-                    #         for xs in xdata:
-                    #             V0_deltaIb = [xs[0]]
-                    #             for index in range(-1, -len(scales) - 1, -1):
-                    #                 scale = scales[index]
-                    #                 type = types[index]
-                    #                 x = xs[index]
-                    #                 if type == 'NPN':
-                    #                     deltaIb = scale * fit.f(x, a2, b2, c2) - fit.f(x, a1, b1, c1)
-                    #                 else:
-                    #                     deltaIb = scale * fit.f(x, a4, b4, c4) - fit.f(x, a3, b3, c3)
-                    #                 V0_deltaIb.append(deltaIb)
-                    #             V0_deltaIbs.append(V0_deltaIb)
-                    #     except:
-                    #         continue
-                    # if simulation == Library.SIMULATION_SOURCE and str_TID != Library.TPRE_RAD:
-                    #     for V0_deltaIb in V0_deltaIbs:
-                    #         V0_deltaIb = [str(V0_deltaIb_element) for V0_deltaIb_element in V0_deltaIb]
-                    #         self.output_filepath = relative_path(
-                    #             FILEPATHS.OUTPUT_DIR_PATH + part + '_' + str_TID + '_' + V0_deltaIb[0] + '.txt')
-                    #         netlist_filepath = relative_path(FILEPATHS.TEMP_DIR_PATH + part + '_' + str_TID + '_' + V0_deltaIb[0] + '.cir')
-                    #         if netListGenerator.generate_for_current_source_2(part, simulation, str_TID, output_option,
-                    #                               self.output_filepath, netlist_filepath, V0_deltaIb) is True:
-                    #             execute.execute_module3(netlist_filepath)
 
                     # print(my_result)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
@@ -918,7 +858,7 @@ class Interface(object):
             self.cb_output.set('Vref')
             self.cb_dose.set('0.02')
             self.cb_hydrogen.set('1.3')
-            self.entry_temperature.insert(0, "25")
+            self.entry_temperature.insert(0, "27")
             self.label_dataset_range['text'] = "V1:(0~25, step=1)"
             self.entry_dataset.insert(0, "25")
             self.label_spec_min_value['text'] = 2.44
