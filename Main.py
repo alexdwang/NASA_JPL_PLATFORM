@@ -122,6 +122,12 @@ class Interface(object):
         self.label_spec_min_value = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
         self.label_spec_min_unit = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
 
+        self.frame_switch_button = Frame(self.window, height=element_height, width=element_width, bg=self.backgroundcolor)
+
+        self.button_switch = Button(self.frame_switch_button, text='Switch', font=my_font, width=10, height=2, command=self.switch_hit)
+        self.switched_plot = False
+        self.switch_tids = StringVar()
+        self.cb_switch_tid = ttk.Combobox(self.frame_switch_button, width=10, textvariable=self.switch_tids, exportselection=False, state='readonly')
 
         self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2, command=self.import_hit)
 
@@ -540,31 +546,12 @@ class Interface(object):
             self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, part, simulation, label_name,
                                       num_TID_lower, num_TID_upper, TID_level_lower, TID_level_upper, None, None,
                                       spec_min, spec_max, False, False])
-            # calculate the point that exceed specification limits
-            cross_max = []
-            cross_min = []
-            if spec_min is not None:
-                if max(self.Y_list) > spec_min and min(self.Y_list) < spec_min:
-                    for index in range(len(self.Y_list) - 1):
-                        y1 = self.Y_list[index]
-                        y2 = self.Y_list[index + 1]
-                        if (y1 < spec_min and y2 >= spec_min) or (y1 > spec_min and y2 <= spec_min):
-                            x1 = self.X_list[index]
-                            x2 = self.X_list[index + 1]
-                            cross = self.get_cross_point(x1, y1, x2, y2, spec_min)
-                            # print(cross)
-                            cross_min.append(str(int(cross)))
-            if spec_max is not None:
-                if max(self.Y_list) > spec_max and min(self.Y_list) < spec_max:
-                    for index in range(len(self.Y_list) - 1):
-                        y1 = self.Y_list[index]
-                        y2 = self.Y_list[index + 1]
-                        if (y1 < spec_max and y2 >= spec_max) or (y1 > spec_max and y2 <= spec_max):
-                            x1 = self.X_list[index]
-                            x2 = self.X_list[index + 1]
-                            cross = self.get_cross_point(x1, y1, x2, y2, spec_max)
-                            cross_max.append(str(int(cross)))
-                            # print(cross)
+            self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
+                              self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
+                              self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
+                              self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15],
+                              self.figure_input[16])
+            cross_min, cross_max = self.get_cross_points(self.X_list, self.Y_list, spec_min, spec_max)
             cross_message = ""
             next_line = ""
             if len(cross_min) != 0:
@@ -575,11 +562,6 @@ class Interface(object):
                 cross_message += "Cross max at " + ",".join(cross_max) + " rad (DR=" + DR + ", H2=" + H2 + "). "
             if cross_message == "":
                 cross_message = "Cross specification at > " + TID_level_upper + " rad (DR=" + DR + ", H2=" + H2 + "). "
-            self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
-                              self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
-                              self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
-                              self.figure_input[12], self.figure_input[13], self.figure_input[14], self.figure_input[15],
-                              self.figure_input[16])
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
             if self.multiplot:
@@ -595,10 +577,48 @@ class Interface(object):
             self.cross_spec_text.set(display_message)
             self.result_text.set(message)
 
+            if self.switched_plot:
+                self.switched_plot = not self.switched_plot
+                self.cb_switch_tid.grid_remove()
+
         # except Exception as error:
         #     print(error)
         #     self.result_text.set('Error! Do you have ' + str(error) + ' data in excel?')
         return
+
+    def get_cross_points(self, X_list, Y_list, spec_min, spec_max, useDouble=False):
+        # calculate the point that exceed specification limits
+        cross_min = []
+        cross_max = []
+        if spec_min is not None:
+            if max(Y_list) > spec_min and min(Y_list) < spec_min:
+                for index in range(len(Y_list) - 1):
+                    y1 = Y_list[index]
+                    y2 = Y_list[index + 1]
+                    if (y1 < spec_min and y2 >= spec_min) or (y1 > spec_min and y2 <= spec_min):
+                        x1 = X_list[index]
+                        x2 = X_list[index + 1]
+                        cross = self.get_cross_point(x1, y1, x2, y2, spec_min)
+                        # print(cross)
+                        if useDouble:
+                            cross_min.append(str(round(cross, 3)))
+                        else:
+                            cross_min.append(str(int(cross)))
+        if spec_max is not None:
+            if max(Y_list) > spec_max and min(Y_list) < spec_max:
+                for index in range(len(Y_list) - 1):
+                    y1 = Y_list[index]
+                    y2 = Y_list[index + 1]
+                    if (y1 < spec_max and y2 >= spec_max) or (y1 > spec_max and y2 <= spec_max):
+                        x1 = X_list[index]
+                        x2 = X_list[index + 1]
+                        cross = self.get_cross_point(x1, y1, x2, y2, spec_max)
+                        if useDouble:
+                            cross_max.append(str(round(cross, 3)))
+                        else:
+                            cross_max.append(str(int(cross)))
+                        # print(cross)
+        return cross_min, cross_max
 
     def get_cross_point(self, x1, y1, x2, y2, spec_line):
         y1 -= spec_line
@@ -740,6 +760,10 @@ class Interface(object):
         self.cb_output.selection_clear()
         return
 
+    def switch_tid_onselect(self, evt):
+        tid = self.cb_switch_tid.get()
+        self.plot_switched_figure_for_tid(tid)
+
     def clear_specs(self):
         self.label_spec_min_value['text'] = ''
         self.label_spec_max_value['text'] = ''
@@ -768,7 +792,7 @@ class Interface(object):
 
         # row 1
         row += 1
-        self.frame_part.grid(row=row, column=1, rowspan=7, pady=(10, 0))
+        self.frame_part.grid(row=row, column=1, rowspan=8, pady=(10, 0))
         self.frame_environment.grid(row=row, column=2, rowspan=2, columnspan=5, pady=(10, 0))
         # self.label_input_header.grid(row=row, rowspan=3)
 
@@ -812,8 +836,10 @@ class Interface(object):
         # row += 1
         # self.button_import.grid(row=row, column=2, pady=10)
 
+        # row 3
         row += 1
 
+        # row 4
         row += 1
         self.canvas_plot.grid(row=row - 1, column=2, rowspan=9, columnspan=5)
 
@@ -844,6 +870,8 @@ class Interface(object):
 
         # row 9
         row += 1
+        self.frame_switch_button.grid(row=row, column=1)
+        self.button_switch.grid(row=0, column=1)
         # self.label_spec_min_value.grid(row=row, column=1)
 
         # row 10
@@ -877,6 +905,7 @@ class Interface(object):
         self.cb_parts.bind('<<ComboboxSelected>>', self.part_onselect)
         self.cb_simulation.bind('<<ComboboxSelected>>', self.simulation_onselect)
         self.cb_output.bind('<<ComboboxSelected>>', self.output_onselect)
+        self.cb_switch_tid.bind('<<ComboboxSelected>>', self.switch_tid_onselect)
         self.window.bind('<Return>', self.callback)
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -925,14 +954,24 @@ class Interface(object):
             self.window.quit()
         return
 
-    def load_and_finalize_output(self, part, TID_level):
+    def load_and_finalize_output(self, part, TID_level, costom_output_filepath=False):
 
         X_label = ''
         Y_label = ''
         XnY = []
         X = []
         Y = []
-        f = open(self.output_filepath, 'r')
+        if costom_output_filepath:
+            prefix = part + '_' + TID_level
+            output_folder = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
+            for file in os.listdir(output_folder):
+                if file[0:len(prefix)] == prefix:
+                    output_filepath = output_folder + '/' + file
+                else:
+                    continue
+        else:
+            output_filepath = self.output_filepath
+        f = open(output_filepath, 'r')
         # lines = f.readlines()
 
         # n = open(self.output_filepath, 'w')
@@ -962,6 +1001,60 @@ class Interface(object):
             else:
                 Y.append(XnY[i])
         return X_label, Y_label, X, Y
+
+    def switch_hit(self):
+        if len(self.figure_input) == 0:
+            return
+        self.switched_plot = not self.switched_plot
+        if self.switched_plot:
+            self.cb_switch_tid.grid(row=0, column=2)
+            output_folder = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
+            str_TIDs = list()
+            for file in os.listdir(output_folder):
+                str_TID = file.split('_')[1]
+                str_TIDs.append(str_TID)
+            str_TIDs = sorted(str_TIDs)
+            self.cb_switch_tid['values'] = str_TIDs
+            self.cb_switch_tid.set(str_TIDs[0])
+            self.plot_switched_figure_for_tid(str_TIDs[0])
+
+        else:
+            self.cb_switch_tid.grid_remove()
+            self.figure.clf()
+            self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
+                              self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
+                              self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
+                              self.figure_input[12], self.figure_input[13], self.figure_input[14],
+                              self.figure_input[15],
+                              self.figure_input[16])
+            display_message = ''
+            self.cross_message = self.cross_message[-1:]
+            for cur_message in self.cross_message:
+                display_message += cur_message + "\n"
+            self.cross_spec_text.set(display_message)
+        return
+
+    def plot_switched_figure_for_tid(self, str_TID):
+        X_label, Y_label, X, Y = self.load_and_finalize_output(self.figure_input[4], str_TID, costom_output_filepath=True)
+        Y_label = self.figure_input[1]
+        label_name = self.figure_input[6][0:self.figure_input[6].rfind('_') + 1] + str_TID
+        spec_min = self.figure_input[13]
+        spec_max = self.figure_input[14]
+        cross_min, cross_max = self.get_cross_points(X, Y, spec_min, spec_max, useDouble=True)
+        cross_message = ""
+        next_line = ""
+        if len(cross_min) != 0:
+            cross_message += "Cross min at " + X_label + " = " + ",".join(cross_min) + ". "
+            next_line = "\n"
+        if len(cross_max) != 0:
+            cross_message += next_line
+            cross_message += "Cross max at " + X_label + " = " + ",".join(cross_max) + ". "
+        if cross_message == "":
+            cross_message = "Cross specification at > " + str(max(X)) + ". "
+
+        display_message = cross_message
+        self.cross_spec_text.set(display_message)
+        self.plot_switched_figureTK(X_label, Y_label, X, Y, label_name, spec_min=spec_min, spec_max=spec_max)
 
     '''
     ' plot figure in a pop up window
@@ -1073,6 +1166,50 @@ class Interface(object):
         # self.canvas_plot = FigureCanvasTkAgg(figure, self.window)
         # self.canvas_plot.show()
         # self.canvas_plot.get_tk_widget().grid(row=4, column=2, rowspan=10, columnspan=4, padx=(20,0))
+        return
+
+    def plot_switched_figureTK(self, X_label, Y_label, X, Y, label_name, spec_min=None, spec_max=None, x_logscale=False, y_logscale=False):
+        # preprocessing input
+        font = {'size': 10}
+        matplotlib.rc('font', **font)
+        self.figure.clf()
+        subplot = self.figure.add_subplot(111)
+        if x_logscale is True:
+            subplot.set_xscale('symlog')
+        else:
+            subplot.set_xscale('linear')
+            # subplot.set_yscale('log')
+        if y_logscale is True:
+            subplot.set_yscale('log', nonposy='clip')
+            # Y = np.log(Y)
+        else:
+            subplot.set_yscale('linear')
+        if len(Y) != 0:
+            y_min = min(Y)
+            y_max = max(Y)
+            # set the data range where we use scientific format on y axis
+            if 0 < max(abs(y_max), abs(y_min)) < 1e-2 or max(abs(y_max), abs(y_min)) > 1e2:
+                subplot.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.2e'))
+            if spec_max is not None:
+                subplot.axhline(y=spec_max, color='r', linestyle='--')
+                y_max = max(y_max, spec_max)
+            if spec_min is not None:
+                subplot.axhline(y=spec_min, color='r', linestyle='--')
+                y_min = min(y_min, spec_min)
+            subplot.plot(X, Y, next(self.color_gen), label=label_name)
+            # subplot.plot(X, Y, 'r*')
+        subplot.set_xlabel(X_label)
+        subplot.set_ylabel(Y_label)
+        subplot.legend(loc='best', fancybox=True, framealpha=0.2)
+
+        figure_canvas_agg = FigureCanvasAgg(self.figure)
+        figure_canvas_agg.draw()
+        figure_x, figure_y, figure_w, figure_h = self.figure.bbox.bounds
+        figure_w, figure_h = int(figure_w), int(figure_h)
+        photo = PhotoImage(master=self.canvas_plot, width=figure_w, height=figure_h)
+        self.canvas_plot.create_image(figure_w / 2, figure_h / 2, image=photo)
+        self.image = photo  # make a reference to our plot. If not, the image will disappear because Python's garbage collection is like shit
+        tkagg.blit(photo, figure_canvas_agg.get_renderer()._renderer, colormode=2)
         return
 
     def plot_scale(self, X_max, X_min, Y_max, Y_min, x_logscale, y_logscale):
