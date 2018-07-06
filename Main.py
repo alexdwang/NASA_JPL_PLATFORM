@@ -6,20 +6,17 @@ from matplotlib import ticker as mticker
 import matplotlib
 matplotlib.use("TkAgg")
 
-import tkinter.filedialog as filedialog
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from itertools import cycle
-from time import sleep
-import numpy as np
 import importlib
 import xlsxwriter
 import os
 import datetime
 import xlrd
 
-from GUI import execute, NetListGenerator, Library, FILEPATHS, fit
+from GUI import execute, NetListGenerator, Library, FILEPATHS
 
 
 class Interface(object):
@@ -37,7 +34,7 @@ class Interface(object):
         self.window.option_add("*Font", my_font)
         # self.window.geometry('1150x700')
 
-        menubar = Menu(self.window, bg="khaki")
+        menubar = Menu(self.window, bg="DarkSeaGreen1")
         filemenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=filemenu)
         filemenu.add_command(label="Import", command=self.import_hit)
@@ -47,8 +44,6 @@ class Interface(object):
         self.label_input_header = Label(self.window, text="Input: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
         self.label_output_header = Label(self.window, text="Output: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
         self.label_spec_header = Label(self.window, text="Specification: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
-
-        self.empty = Label(self.window, text="", font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
 
         self.frame_part = Frame(height=element_height * 9, width=element_width, bg=self.backgroundcolor, bd=2, relief=RIDGE)
         # self.frame_part.config(highlightbackground="black", highlightthickness=1)
@@ -60,7 +55,7 @@ class Interface(object):
         self.cb_parts['values'] = self.parts_options_tuple
 
         self.label_dataset = Label(self.frame_part, text='Dataset:', font=my_font, width=element_width,
-                                       height=element_height, bg=self.backgroundcolor)
+                                       height=1, bg=self.backgroundcolor)
         self.label_dataset_range = Label(self.frame_part, text='(Range)', font=my_font, width=element_width,
                                        height=element_height, bg=self.backgroundcolor)
         self.entry_dataset = FloatEntry(self.frame_part, width=element_width)
@@ -98,47 +93,39 @@ class Interface(object):
 
 
         self.label_TID_level_lower_bound = Label(self.frame_environment, text='TID min(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        # self.TID_options_lower = StringVar()
-        # self.TID_options_tuple = ()
-        # self.cb_TID_lower_bound = ttk.Combobox(self.window, textvariable=self.TID_options_lower, exportselection=False, state='readonly')
-        # self.cb_TID_lower_bound['values'] = self.TID_options_tuple
         self.entry_TID_lower_bound = TIDEntry(self.frame_environment, width=element_width)
 
         self.label_TID_level_upper_bound = Label(self.frame_environment, text='TID max(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        # self.TID_options_upper = StringVar()
-        # self.cb_TID_upper_bound = ttk.Combobox(self.window, textvariable=self.TID_options_upper, exportselection=False, state='readonly')
-        # self.cb_TID_upper_bound['values'] = self.TID_options_tuple
         self.entry_TID_upper_bound = TIDEntry(self.frame_environment, width=element_width)
 
         self.frame_max = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
         self.label_spec_max = Label(self.frame_max, text='max:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
-        # self.entry_spec_max = FloatEntry(self.window, width=element_width, state='readonly')
         self.label_spec_max_value = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
         self.label_spec_max_unit = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
 
         self.frame_min = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
         self.label_spec_min = Label(self.frame_min, text='min:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
-        # self.entry_spec_min = FloatEntry(self.window, width=element_width, state='readonly')
         self.label_spec_min_value = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
         self.label_spec_min_unit = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
 
         self.frame_switch_button = Frame(self.window, height=element_height, width=element_width, bg=self.backgroundcolor)
 
-        self.button_switch = Button(self.frame_switch_button, text='Switch', font=my_font, width=10, height=2, command=self.switch_hit)
+        self.button_switch = Button(self.frame_switch_button, text='Switch', font=my_font, width=10, height=2, command=self.switch_hit, bg="CadetBlue2", activebackground ="CadetBlue1")
         self.switched_plot = False
         self.switch_tids = StringVar()
         self.cb_switch_tid = ttk.Combobox(self.frame_switch_button, width=10, textvariable=self.switch_tids, exportselection=False, state='readonly')
+        self.empty = Label(self.frame_switch_button, text="", font=my_font, width=13, height=element_height, bg=self.backgroundcolor)
 
         self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2, command=self.import_hit)
 
 
         self.frame_execute_or_change_scale = Frame(height=element_height, width=element_width * 2, bg=self.backgroundcolor)
-        self.button_execute = Button(self.frame_execute_or_change_scale, text='Execute', font=my_font, width=10, height=2, command=self.execute_hit, bg="pale green")
-        self.button_change_scale = Button(self.frame_execute_or_change_scale, text='Change Scale', font=my_font, width=10, height=2, command=self.change_scale, bg="lemon chiffon")
+        self.button_execute = Button(self.frame_execute_or_change_scale, text='Execute', font=my_font, width=10, height=2, command=self.execute_hit, bg="PaleGreen2", activebackground ="PaleGreen1")
+        self.button_change_scale = Button(self.frame_execute_or_change_scale, text='Change Scale', font=my_font, width=10, height=2, command=self.change_scale, bg="LemonChiffon2", activebackground ="lemon chiffon")
 
         self.frame_save_or_clear = Frame(height=element_height, width=element_width * 2, bg=self.backgroundcolor)
-        self.button_save = Button(self.frame_save_or_clear, text='Save', font=my_font, width=10, height=2, command=self.save, bg="SlateGray1")
-        self.button_clear = Button(self.frame_save_or_clear, text='Clear', font=my_font, width=10, height=2, command=self.clear, bg="peach puff")
+        self.button_save = Button(self.frame_save_or_clear, text='Save', font=my_font, width=10, height=2, command=self.save, bg="SlateGray2", activebackground="SlateGray1")
+        self.button_clear = Button(self.frame_save_or_clear, text='Clear', font=my_font, width=10, height=2, command=self.clear, bg="PeachPuff2", activebackground="peach puff")
 
         self.canvas_plot = Canvas(self.window, width=800, height=400, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
         self.figure = mpl.figure.Figure(figsize=self.figsize, facecolor=self.backgroundcolor, edgecolor='w')
@@ -280,9 +267,6 @@ class Interface(object):
                 print('ERROR!!! Missing \'*Subcircuit\', abort import')
                 return
 
-            # if my_simulation == Library.SIMULATION_SOURCE and (len(my_parameters) == 0 or len(my_functions) == 0 or len(my_scales) == 0):
-            #     print('ERROR!!! Missing \'*Parameters\' , \'*Scales\' or \'*Functions\' for Current Source simulation, abort import')
-            #     return
             Library.PARTS.append(my_part)
             Library.PARTS = list(set(Library.PARTS))
             if Library.OUTPUT_NAME.get(my_part) is None:
@@ -300,9 +284,7 @@ class Interface(object):
                 temp = dict()
                 temp[my_spec] = my_output
                 Library.OUTPUT[my_part] = temp
-            # temp = dict()
-            # temp[my_simulation] = my_subcircuit
-            # Library.SUBCIRCUIT[my_part] = temp
+
             my_subcircuit_model = list()
             for line in my_subcircuit:
                 if line.find('PNP') == -1 and line.find('NPN') == -1:
@@ -343,7 +325,7 @@ class Interface(object):
     def execute_hit(self):
         # do input check first and then execute:
         if self.input_check():
-            # remove every file in Output folder
+            # remove every .txt file in Output folder
             execute.rm_all()
             self.temp_focus_out_helper()
 
@@ -365,8 +347,6 @@ class Interface(object):
                 num_TID_upper = num_TID_lower - num_TID_upper
                 num_TID_lower = num_TID_lower - num_TID_upper
 
-            # spec_min = float(self.entry_spec_min.get()) if self.entry_spec_min.get() != '' else None
-            # spec_max = float(self.entry_spec_max.get()) if self.entry_spec_max.get() != '' else None
             spec_min = float(self.label_spec_min_value.cget('text')) if self.label_spec_min_value.cget('text') != '' else None
             spec_max = float(self.label_spec_max_value.cget('text')) if self.label_spec_max_value.cget('text') != '' else None
             nonlinearity = False
@@ -404,7 +384,6 @@ class Interface(object):
 
                     # print(my_result)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
-                    # self.plotfigure(X_label, Y_label, X, Y, part, simulation, TID_level)
                     self.X_list.append(num_TID)
                     lengthX = len(X)
                     if nonlinearity:
@@ -519,7 +498,9 @@ class Interface(object):
 
             if self.switched_plot:
                 self.switched_plot = not self.switched_plot
-                self.cb_switch_tid.grid_remove()
+                self.cb_switch_tid_remove()
+
+            self.switch_availability_check(part)
 
         # except Exception as error:
         #     print(error)
@@ -582,10 +563,6 @@ class Interface(object):
         self.cb_simulation['values'] = self.simulation_options_tuple
         self.output_options.set('')
         self.clear_specs()
-        # self.TID_options_lower.set('')
-        # self.TID_options_upper.set('')
-        # self.output_options_x.set('')
-        # self.output_options_y.set('')
         self.result_text.set('')
         return
 
@@ -653,6 +630,13 @@ class Interface(object):
             pass
         return
 
+    def switch_availability_check(self, part):
+        if part == Library.PART_LT1175 or part == Library.PART_LP2953 or part == Library.PART_LM3940:
+            self.frame_switch_button.grid(row=10, column=1)
+        else:
+            self.frame_switch_button.grid_remove()
+        return
+
     def simulation_onselect(self, evt):
         # try:
         #     self.TID_option_update()
@@ -667,23 +651,20 @@ class Interface(object):
             input_lib = Library.INPUT.get(part + output)
         else:
             input_lib = Library.INPUT.get(part)
-        dataset_range = input_lib[0].split(' ')[1] + ":(" + input_lib[0].split(' ')[2] + "~" + input_lib[0].split(' ')[3] + ", step=" + input_lib[0].split(' ')[4] + ")"
+        # dataset_range = input_lib[0].split(' ')[1] + ":(" + input_lib[0].split(' ')[2] + "~" + input_lib[0].split(' ')[3] + ", step=" + input_lib[0].split(' ')[4] + ")"
+        dataset_range = "VCC:(" + input_lib[0].split(' ')[2] + "~" + input_lib[0].split(' ')[3] + ", step=" + input_lib[0].split(' ')[4] + ")"
         self.label_dataset_range['text'] = dataset_range
         spec_lib = Library.SPECIFICATION.get(part)
         self.clear_specs()
         if spec_lib is not None:
-            # self.entry_spec_min.configure(state='normal')
-            # self.entry_spec_max.configure(state='normal')
             spec = spec_lib.get(output)
             if spec is not None:
                 if spec[0] is not None:
-                    # self.entry_spec_min.insert(0, spec[0])
                     if 0 < abs(spec[0]) < 1e-2 or abs(spec[0]) > 1e2:
                         self.label_spec_min_value['text'] = "{0:.2e}".format(spec[0])
                     else:
                         self.label_spec_min_value['text'] = spec[0]
                 if spec[1] is not None:
-                    # self.entry_spec_max.insert(0, spec[1])
                     if 0 < abs(spec[1]) < 1e-2 or abs(spec[1]) > 1e2:
                         self.label_spec_max_value['text'] = "{0:.2e}".format(spec[1])
                     else:
@@ -695,8 +676,6 @@ class Interface(object):
             if dataset is not None:
                 self.entry_dataset.delete(0, 'end')
                 self.entry_dataset.insert(0, dataset[0])
-            # self.entry_spec_min.configure(state='readonly')
-            # self.entry_spec_max.configure(state='readonly')
         self.cb_output.selection_clear()
         return
 
@@ -709,12 +688,6 @@ class Interface(object):
         self.label_spec_max_value['text'] = ''
         self.label_spec_max_unit['text'] = ''
         self.label_spec_min_unit['text'] = ''
-        # self.entry_spec_min.configure(state='normal')
-        # self.entry_spec_max.configure(state='normal')
-        # self.entry_spec_min.delete(0, 'end')
-        # self.entry_spec_max.delete(0, 'end')
-        # self.entry_spec_min.configure(state='readonly')
-        # self.entry_spec_max.configure(state='readonly')
         return
 
     def clear_dataset(self):
@@ -733,7 +706,7 @@ class Interface(object):
         # row 1
         row += 1
         self.frame_part.grid(row=row, column=1, rowspan=8, pady=(10, 0))
-        self.frame_environment.grid(row=row, column=2, rowspan=2, columnspan=5, pady=(10, 0))
+        self.frame_environment.grid(row=row, column=2, rowspan=2, columnspan=5, padx=(0, 10), pady=(10, 0))
         # self.label_input_header.grid(row=row, rowspan=3)
 
         # frame_part layouts
@@ -741,12 +714,21 @@ class Interface(object):
         self.cb_parts.grid(row=1, column=1)
         self.label_output.grid(row=2, column=1, pady=(20, 0))
         self.cb_output.grid(row=3, column=1)
-        self.label_dataset.grid(row=4, column=1)
+        self.label_dataset.grid(row=4, column=1, pady=(20, 0))
         self.label_dataset_range.grid(row=5, column=1)
         self.entry_dataset.grid(row=6, column=1)
         self.frame_max.grid(row=7, column=1)
         self.frame_min.grid(row=8, column=1)
 
+        # frame_max layout
+        self.label_spec_max.grid(row=0, column=1)
+        self.label_spec_max_value.grid(row=0, column=2)
+        self.label_spec_max_unit.grid(row=0, column=3)
+
+        # frame_min layout
+        self.label_spec_min.grid(row=0, column=1)
+        self.label_spec_min_value.grid(row=0, column=2)
+        self.label_spec_min_unit.grid(row=0, column=3)
 
         # self.label_simulation.grid(row=row, column=2)
 
@@ -756,11 +738,11 @@ class Interface(object):
         self.label_temperature.grid(row=0, column=3)
         self.label_TID_level_lower_bound.grid(row=0, column=4)
         self.label_TID_level_upper_bound.grid(row=0, column=5)
-        self.cb_dose.grid(row=1, column=1)
-        self.cb_hydrogen.grid(row=1, column=2)
-        self.entry_temperature.grid(row=1, column=3)
-        self.entry_TID_lower_bound.grid(row=1, column=4)
-        self.entry_TID_upper_bound.grid(row=1, column=5)
+        self.cb_dose.grid(row=1, column=1, padx=(5, 5), pady=(0, 5))
+        self.cb_hydrogen.grid(row=1, column=2, padx=(5, 5))
+        self.entry_temperature.grid(row=1, column=3, padx=(5, 5))
+        self.entry_TID_lower_bound.grid(row=1, column=4, padx=(5, 5))
+        self.entry_TID_upper_bound.grid(row=1, column=5, padx=(5, 5))
 
 
         # row 2
@@ -795,23 +777,14 @@ class Interface(object):
         # row 7
         row += 1
 
-        # frame_max layout
-        self.label_spec_max.grid(row=0, column=1)
-        self.label_spec_max_value.grid(row=0, column=2)
-        self.label_spec_max_unit.grid(row=0, column=3)
-
         # row 8
         row += 1
 
-        # frame_min layout
-        self.label_spec_min.grid(row=0, column=1)
-        self.label_spec_min_value.grid(row=0, column=2)
-        self.label_spec_min_unit.grid(row=0, column=3)
-
         # row 9
         row += 1
-        self.frame_switch_button.grid(row=row, column=1)
+        # self.frame_switch_button.grid(row=row, column=1)
         self.button_switch.grid(row=0, column=1)
+        self.empty.grid(row=0, column=2)
         # self.label_spec_min_value.grid(row=row, column=1)
 
         # row 10
@@ -859,18 +832,12 @@ class Interface(object):
             self.cb_dose.set('0.02')
             self.cb_hydrogen.set('1.3')
             self.entry_temperature.insert(0, "27")
-            self.label_dataset_range['text'] = "V1:(0~25, step=1)"
+            self.label_dataset_range['text'] = "VCC:(0~25, step=1)"
             self.entry_dataset.insert(0, "25")
             self.label_spec_min_value['text'] = 2.44
             self.label_spec_max_value['text'] = 2.55
             self.label_spec_max_unit['text'] = 'V'
             self.label_spec_min_unit['text'] = 'V'
-            # self.entry_spec_max.configure(state='normal')
-            # self.entry_spec_min.configure(state='normal')
-            # self.entry_spec_max.insert(0, 2.55)
-            # self.entry_spec_min.insert(0, 2.44)
-            # self.entry_spec_max.configure(state='readonly')
-            # self.entry_spec_min.configure(state='readonly')
             self.entry_TID_lower_bound.insert(0, "0")
             self.entry_TID_upper_bound.insert(0, "300k")
         else:
@@ -912,11 +879,6 @@ class Interface(object):
         else:
             output_filepath = self.output_filepath
         f = open(output_filepath, 'r')
-        # lines = f.readlines()
-
-        # n = open(self.output_filepath, 'w')
-        # n.write('part: ' + part + ', TID level = ' + TID_level + '\n')
-        # n.writelines(lines)
         for line in f:
             line = line.strip('\n')
             my_line = line.split(' ')
@@ -942,24 +904,36 @@ class Interface(object):
                 Y.append(XnY[i])
         return X_label, Y_label, X, Y
 
+    def cb_switch_tid_put(self):
+        self.empty.grid_remove()
+        self.cb_switch_tid.grid(row=0, column=2, padx=(8,0))
+        return
+
+    def cb_switch_tid_remove(self):
+        self.cb_switch_tid.grid_remove()
+        self.empty.grid(row=0, column=2)
+        return
+
     def switch_hit(self):
         if len(self.figure_input) == 0:
             return
         self.switched_plot = not self.switched_plot
         if self.switched_plot:
-            self.cb_switch_tid.grid(row=0, column=2)
+            self.figure.clf()
+            self.cb_switch_tid_put()
             output_folder = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
             str_TIDs = list()
             for file in os.listdir(output_folder):
-                str_TID = file.split('_')[1]
-                str_TIDs.append(str_TID)
+                if file[-4:] == '.txt':
+                    str_TID = file.split('_')[1]
+                    str_TIDs.append(str_TID)
             str_TIDs = sorted(str_TIDs)
             self.cb_switch_tid['values'] = str_TIDs
             self.cb_switch_tid.set(str_TIDs[0])
             self.plot_switched_figure_for_tid(str_TIDs[0])
 
         else:
-            self.cb_switch_tid.grid_remove()
+            self.cb_switch_tid_remove()
             self.figure.clf()
             self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
@@ -976,6 +950,7 @@ class Interface(object):
 
     def plot_switched_figure_for_tid(self, str_TID):
         X_label, Y_label, X, Y = self.load_and_finalize_output(self.figure_input[4], str_TID, costom_output_filepath=True)
+        X_label = 'ILOAD (A)'
         Y_label = self.figure_input[1]
         label_name = self.figure_input[6][0:self.figure_input[6].rfind('_') + 1] + str_TID
         spec_min = self.figure_input[13]
@@ -1112,7 +1087,6 @@ class Interface(object):
         # preprocessing input
         font = {'size': 10}
         matplotlib.rc('font', **font)
-        self.figure.clf()
         subplot = self.figure.add_subplot(111)
         if x_logscale is True:
             subplot.set_xscale('symlog')
@@ -1313,6 +1287,8 @@ class Interface(object):
         self.previous_Y_label = ''
         self.result_text.set('')
         self.cross_spec_text.set('')
+        self.cb_switch_tid['values']=()
+        self.cb_switch_tid.set('')
         figure_canvas_agg = FigureCanvasAgg(self.figure)
         figure_canvas_agg.draw()
         figure_x, figure_y, figure_w, figure_h = self.figure.bbox.bounds
