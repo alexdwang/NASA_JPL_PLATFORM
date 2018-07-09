@@ -30,3 +30,8 @@ class Execute:
             command = Xyce_path.split(' ')[1] + ' ' + path  # the command that going to be executed
             result = subprocess.getoutput(command)
         return result
+
+    def open_file(self, path):
+        command = 'xdg-open ' + path
+        os.system(command)
+        return

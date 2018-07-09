@@ -8,7 +8,7 @@ import GUI.Library as Library
 import GUI.FILEPATHS as FILEPATHS
 
 
-def fit(sheet, TID_level, DR, H2):
+def fit(sheet, TID_level, DR, H2, bias):
     choice = 5
     if choice == 1: # fit curve with 3-paras function without log-scaled
         Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
@@ -46,7 +46,7 @@ def fit(sheet, TID_level, DR, H2):
         #     plot_data(xdata, logged_ydata, popt, func_loged_logabx)
         return popt
     elif choice == 5:
-        Ve, Delta_Ib = excel_table_byname2delta(sheet, TID_level, DR, H2)
+        Ve, Delta_Ib = excel_table_byname2delta(sheet, TID_level, DR, H2, bias)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Delta_Ib))
         popt, pcov = curve_fit(func_loged_logabx, xdata, logged_ydata)
@@ -89,11 +89,11 @@ def excel_table_byname(sheet, TID_level, DR, H2):
             Ib.append(ib)
     return Ve, Ib
 
-def excel_table_byname2delta(sheet, TID_level, DR, H2):
+def excel_table_byname2delta(sheet, TID_level, DR, H2, bias):
     file_path = FILEPATHS.NPN_IB_DATABASE_FILE_PATH if sheet == "NPN" else FILEPATHS.PNP_IB_DATABASE_FILE_PATH
     file = relative_path(file_path)
     data = xlrd.open_workbook(file)
-    table = data.sheet_by_name("DR=" + str(DR) + "_H2=" + str(H2))
+    table = data.sheet_by_name("DR=" + str(DR) + "_H2=" + str(H2) + "_B=" + str(bias))
 
     Ve = []
     Delta_Ib = []

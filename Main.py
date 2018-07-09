@@ -48,11 +48,14 @@ class Interface(object):
         self.frame_part = Frame(height=element_height * 9, width=element_width, bg=self.backgroundcolor, bd=2, relief=RIDGE)
         # self.frame_part.config(highlightbackground="black", highlightthickness=1)
 
-        self.label_parts = Label(self.frame_part, text='Parts:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.frame_part_help = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
+        self.label_parts = Label(self.frame_part_help, text='Parts:', font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
+        self.button_part_help = Button(self.frame_part_help, text='?', font=my_font, width=1, height=1, command=self.part_help_hit)
         self.parts_options = StringVar()
         self.parts_options_tuple = (Library.PARTS)
         self.cb_parts = ttk.Combobox(self.frame_part, textvariable=self.parts_options, exportselection=False, state='readonly')
         self.cb_parts['values'] = self.parts_options_tuple
+
 
         self.label_dataset = Label(self.frame_part, text='Dataset:', font=my_font, width=element_width,
                                        height=1, bg=self.backgroundcolor)
@@ -72,7 +75,7 @@ class Interface(object):
         self.cb_output = ttk.Combobox(self.frame_part, textvariable=self.output_options, exportselection=False, state='readonly')
         self.cb_output['values'] = self.output_options_tuple
 
-        self.frame_environment = Frame(height=element_height * 2, width=element_width * 5, bg=self.backgroundcolor, bd=2, relief=RIDGE)
+        self.frame_environment = Frame(height=element_height * 2, width=element_width * 6, bg=self.backgroundcolor, bd=2, relief=RIDGE)
 
         self.label_dose = Label(self.frame_environment, text='Dose Rate(rad/s):', font=my_font, width=element_width, height=element_height,
                                  bg=self.backgroundcolor)
@@ -87,6 +90,13 @@ class Interface(object):
         self.hydrogen_options_tuple = ["0","0.1","1","1.3","100"]
         self.cb_hydrogen = ttk.Combobox(self.frame_environment, textvariable=self.hydrogen_options, exportselection=False, state='readonly')
         self.cb_hydrogen['values'] = self.hydrogen_options_tuple
+
+        self.label_bias = Label(self.frame_environment, text='Bias(%):', font=my_font, width=element_width + 1, height=element_height,
+                                 bg=self.backgroundcolor)
+        self.bias_options = StringVar()
+        self.bias_options_tuple = ["0","-6","+6","-12","+12","-30","+30"]
+        self.cb_bias = ttk.Combobox(self.frame_environment, textvariable=self.bias_options, exportselection=False, state='readonly')
+        self.cb_bias['values'] = self.bias_options_tuple
 
         self.label_temperature = Label(self.frame_environment, text='Temperature(C):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.entry_temperature = FloatEntry(self.frame_environment, width=element_width)
@@ -310,16 +320,47 @@ class Interface(object):
         self.result_text.set("Import complete")
         return
 
-    def get_num_TID(self, str_TID):
-        if str_TID == Library.TPRE_RAD:
-            return 0
-        num_TID = float(re.findall(r"\d+\.?\d*", str_TID)[0])
-        if str_TID.find("k") != -1:
-            num_TID = num_TID * 1000
-        return num_TID
+    def switch_hit(self):
+        if len(self.figure_input) == 0:
+            return
+        self.switched_plot = not self.switched_plot
+        if self.switched_plot:
+            self.figure.clf()
+            self.cb_switch_tid_put()
+            output_folder = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
+            str_TIDs = list()
+            for file in os.listdir(output_folder):
+                if file[-4:] == '.txt':
+                    str_TID = file.split('_')[1]
+                    str_TIDs.append(str_TID)
+            str_TIDs = sorted(str_TIDs)
+            self.cb_switch_tid['values'] = str_TIDs
+            self.cb_switch_tid.set(str_TIDs[0])
+            self.plot_switched_figure_for_tid(str_TIDs[0])
 
-    def get_X_and_Y_labels_and_lists(self):
+        else:
+            self.cb_switch_tid_remove()
+            self.figure.clf()
+            self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
+                              self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
+                              self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
+                              self.figure_input[12], self.figure_input[13], self.figure_input[14],
+                              self.figure_input[15],
+                              self.figure_input[16])
+            display_message = ''
+            self.cross_message = self.cross_message[-1:]
+            for cur_message in self.cross_message:
+                display_message += cur_message + "\n"
+            self.cross_spec_text.set(display_message)
+        return
 
+    def part_help_hit(self):
+        part = self.cb_parts.get()
+        datasheet_path = relative_path('Datasheet') + '/' + part + '.pdf'
+        try:
+            execute.open_file(datasheet_path)
+        except:
+            messagebox.showinfo("Failed", "No datasheet for this part")
         return
 
     def execute_hit(self):
@@ -334,6 +375,7 @@ class Interface(object):
             # simulation = self.cb_simulation.get()
             DR = self.cb_dose.get()
             H2 = self.cb_hydrogen.get()
+            bias = self.cb_bias.get()
             temperature = self.entry_temperature.get()
             dataset = self.entry_dataset.get()
             simulation = Library.SIMULATION_SOURCE
@@ -372,9 +414,9 @@ class Interface(object):
                 str_TID = Tid_Levels[i][1]
                 if (num_TID < num_TID_lower and i + 1 < len(Tid_Levels) and Tid_Levels[i + 1][0] > num_TID_lower) or \
                         (num_TID_lower <= num_TID and (num_TID < num_TID_upper or oneMore)):
-                    self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + str_TID + '_' + DR + '_' + H2 + '_' +
+                    self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + str_TID + '_' + DR + '_' + H2 + '_' + '_' + bias +
                     datetime.datetime.now().strftime("%Y-%m-%d-%H:%M") + '.txt')
-                    result = netListGenerator.generate(part, simulation, DR, H2, temperature, str_TID, output_option,
+                    result = netListGenerator.generate(part, simulation, DR, H2, bias, temperature, str_TID, output_option,
                                               self.output_filepath, self.netlist_filepath)
                     if result == False:
                         continue
@@ -408,7 +450,7 @@ class Interface(object):
                 else:
                     str_TID = Library.TPRE_RAD
                     self.output_filepath = relative_path(FILEPATHS.OUTPUT_DIR_PATH + part + '_' + Library.TPRE_RAD + '_test.txt')
-                    result = netListGenerator.generate(part, simulation, DR, H2, temperature, str_TID, output_option,
+                    result = netListGenerator.generate(part, simulation, DR, H2, bias, temperature, str_TID, output_option,
                                                        self.output_filepath, self.netlist_filepath)
                     my_result = execute.execute_module3(self.netlist_filepath)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
@@ -442,7 +484,7 @@ class Interface(object):
                     str_TID = Library.TPRE_RAD
                     self.output_filepath = relative_path(
                         FILEPATHS.OUTPUT_DIR_PATH + part + '_' + Library.TPRE_RAD + '_test.txt')
-                    result = netListGenerator.generate(part, simulation, DR, H2, temperature, str_TID, output_option,
+                    result = netListGenerator.generate(part, simulation, DR, H2, bias, temperature, str_TID, output_option,
                                                        self.output_filepath, self.netlist_filepath)
                     my_result = execute.execute_module3(self.netlist_filepath)
                     X_label, Y_label, X, Y = self.load_and_finalize_output(part, str_TID)
@@ -460,7 +502,7 @@ class Interface(object):
                 message = "No result to show"
                 self.result_text.set(message)
                 return
-            label_name = part + '_' + DR + '_' + H2 + '_' + temperature + '_' + dataset
+            label_name = part + '_' + DR + '_' + H2 + '_' + bias + '_' + temperature + '_' + dataset
             self.figure_input.clear()
             self.figure_input.extend(['TID level (rad)', Y_label, self.X_list, self.Y_list, part, simulation, label_name,
                                       num_TID_lower, num_TID_upper, TID_level_lower, TID_level_upper, None, None,
@@ -474,13 +516,13 @@ class Interface(object):
             cross_message = ""
             next_line = ""
             if len(cross_min) != 0:
-                cross_message += "Cross min at " + ",".join(cross_min) + " rad (DR=" + DR + ", H2=" + H2 + "). "
+                cross_message += "Cross min at " + ",".join(cross_min) + " rad (DR=" + DR + ", H2=" + H2 + ", Bias=" + bias + "). "
                 next_line = "\n"
             if len(cross_max) != 0:
                 cross_message += next_line
-                cross_message += "Cross max at " + ",".join(cross_max) + " rad (DR=" + DR + ", H2=" + H2 + "). "
+                cross_message += "Cross max at " + ",".join(cross_max) + " rad (DR=" + DR + ", H2=" + H2 + ", Bias=" + bias + "). "
             if cross_message == "":
-                cross_message = "Cross specification at > " + TID_level_upper + " rad (DR=" + DR + ", H2=" + H2 + "). "
+                cross_message = "Cross specification at > " + TID_level_upper + " rad (DR=" + DR + ", H2=" + H2 + ", Bias=" + bias + "). "
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
             # message = my_result
             if self.multiplot:
@@ -578,12 +620,12 @@ class Interface(object):
             messagebox.showerror("Input Missing", "please check your input")
             return False
         # data = [("0","0.02"), ("0","100"), ("1.3", "0.02"), ("1", "0.1"), ("1", "100"), ("100", "0.1"), ("100", "100")]
-        my_t = "DR=" + self.cb_dose.get() + "_H2=" + self.cb_hydrogen.get()
+        my_t = "DR=" + self.cb_dose.get() + "_H2=" + self.cb_hydrogen.get() + "_B=" + self.cb_bias.get()
         data1 = xlrd.open_workbook(FILEPATHS.NPN_IB_DATABASE_FILE_PATH)
         data2 = xlrd.open_workbook(FILEPATHS.PNP_IB_DATABASE_FILE_PATH)
         exist_data = [sheet_name for sheet_name in data1.sheet_names() if sheet_name in data2.sheet_names()]
         if my_t not in exist_data:
-            message = "please choose Dose Rate and Hydrogen Content from one of the following:\n"
+            message = "please choose Dose Rate, Hydrogen Content and Bias from one of the following:\n"
             for data in exist_data:
                 addon = data + ", "
                 message += addon
@@ -617,6 +659,13 @@ class Interface(object):
             self.label_spec_max_value['text'] = self.AD590_base_temperature + 5
         return
 
+    def switch_availability_check(self, part):
+        if part == Library.PART_LT1175 or part == Library.PART_LP2953 or part == Library.PART_LM3940:
+            self.frame_switch_button.grid(row=10, column=1)
+        else:
+            self.frame_switch_button.grid_remove()
+        return
+
     def part_onselect(self, evt):
         try:
             part = self.cb_parts.get()
@@ -628,13 +677,6 @@ class Interface(object):
             self.cb_parts.selection_clear()
         except:
             pass
-        return
-
-    def switch_availability_check(self, part):
-        if part == Library.PART_LT1175 or part == Library.PART_LP2953 or part == Library.PART_LM3940:
-            self.frame_switch_button.grid(row=10, column=1)
-        else:
-            self.frame_switch_button.grid_remove()
         return
 
     def simulation_onselect(self, evt):
@@ -698,6 +740,14 @@ class Interface(object):
         self.execute_hit()
         return
 
+    def get_num_TID(self, str_TID):
+        if str_TID == Library.TPRE_RAD:
+            return 0
+        num_TID = float(re.findall(r"\d+\.?\d*", str_TID)[0])
+        if str_TID.find("k") != -1:
+            num_TID = num_TID * 1000
+        return num_TID
+
     def start(self):
         # row 0
         row = 0
@@ -710,7 +760,7 @@ class Interface(object):
         # self.label_input_header.grid(row=row, rowspan=3)
 
         # frame_part layouts
-        self.label_parts.grid(row=0, column=1)
+        self.frame_part_help.grid(row=0, column=1)
         self.cb_parts.grid(row=1, column=1)
         self.label_output.grid(row=2, column=1, pady=(20, 0))
         self.cb_output.grid(row=3, column=1)
@@ -719,6 +769,10 @@ class Interface(object):
         self.entry_dataset.grid(row=6, column=1)
         self.frame_max.grid(row=7, column=1)
         self.frame_min.grid(row=8, column=1)
+
+        # frame part help layout
+        self.label_parts.grid(row=0, column=1)
+        self.button_part_help.grid(row=0, column=2)
 
         # frame_max layout
         self.label_spec_max.grid(row=0, column=1)
@@ -735,14 +789,16 @@ class Interface(object):
         # frame_environment layouts
         self.label_dose.grid(row=0, column=1)
         self.label_hydrogen.grid(row=0, column=2)
-        self.label_temperature.grid(row=0, column=3)
-        self.label_TID_level_lower_bound.grid(row=0, column=4)
-        self.label_TID_level_upper_bound.grid(row=0, column=5)
+        self.label_bias.grid(row=0, column=3)
+        self.label_temperature.grid(row=0, column=4)
+        self.label_TID_level_lower_bound.grid(row=0, column=5)
+        self.label_TID_level_upper_bound.grid(row=0, column=6)
         self.cb_dose.grid(row=1, column=1, padx=(5, 5), pady=(0, 5))
         self.cb_hydrogen.grid(row=1, column=2, padx=(5, 5))
-        self.entry_temperature.grid(row=1, column=3, padx=(5, 5))
-        self.entry_TID_lower_bound.grid(row=1, column=4, padx=(5, 5))
-        self.entry_TID_upper_bound.grid(row=1, column=5, padx=(5, 5))
+        self.cb_bias.grid(row=1, column=3, padx=(5, 5))
+        self.entry_temperature.grid(row=1, column=4, padx=(5, 5))
+        self.entry_TID_lower_bound.grid(row=1, column=5, padx=(5, 5))
+        self.entry_TID_upper_bound.grid(row=1, column=6, padx=(5, 5))
 
 
         # row 2
@@ -831,6 +887,7 @@ class Interface(object):
             self.cb_output.set('Vref')
             self.cb_dose.set('0.02')
             self.cb_hydrogen.set('1.3')
+            self.cb_bias.set('0')
             self.entry_temperature.insert(0, "27")
             self.label_dataset_range['text'] = "VCC:(0~25, step=1)"
             self.entry_dataset.insert(0, "25")
@@ -914,39 +971,6 @@ class Interface(object):
         self.empty.grid(row=0, column=2)
         return
 
-    def switch_hit(self):
-        if len(self.figure_input) == 0:
-            return
-        self.switched_plot = not self.switched_plot
-        if self.switched_plot:
-            self.figure.clf()
-            self.cb_switch_tid_put()
-            output_folder = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
-            str_TIDs = list()
-            for file in os.listdir(output_folder):
-                if file[-4:] == '.txt':
-                    str_TID = file.split('_')[1]
-                    str_TIDs.append(str_TID)
-            str_TIDs = sorted(str_TIDs)
-            self.cb_switch_tid['values'] = str_TIDs
-            self.cb_switch_tid.set(str_TIDs[0])
-            self.plot_switched_figure_for_tid(str_TIDs[0])
-
-        else:
-            self.cb_switch_tid_remove()
-            self.figure.clf()
-            self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
-                              self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
-                              self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
-                              self.figure_input[12], self.figure_input[13], self.figure_input[14],
-                              self.figure_input[15],
-                              self.figure_input[16])
-            display_message = ''
-            self.cross_message = self.cross_message[-1:]
-            for cur_message in self.cross_message:
-                display_message += cur_message + "\n"
-            self.cross_spec_text.set(display_message)
-        return
 
     def plot_switched_figure_for_tid(self, str_TID):
         X_label, Y_label, X, Y = self.load_and_finalize_output(self.figure_input[4], str_TID, costom_output_filepath=True)
@@ -1127,10 +1151,11 @@ class Interface(object):
         return
 
     def plot_scale(self, X_max, X_min, Y_max, Y_min, x_logscale, y_logscale):
-        if X_min > X_max:
-            tmp = X_min
-            X_min = X_max
-            X_max = tmp
+        if X_min is not None and X_max is not None:
+            if X_min > X_max:
+                tmp = X_min
+                X_min = X_max
+                X_max = tmp
         if Y_min is not None and Y_max is not None:
             if Y_min > Y_max:
                 tmp = Y_min
@@ -1145,6 +1170,7 @@ class Interface(object):
             subplot.set_yscale('log', nonposy='clip')
         else:
             subplot.set_yscale('linear')
+
         if Y_min is not None and Y_max is not None:
             subplot.set_ylim([float(Y_min), float(Y_max)])
         elif Y_min is not None:
@@ -1152,9 +1178,12 @@ class Interface(object):
         elif Y_max is not None:
             subplot.set_ylim(ymax=float(Y_max))
 
-        x_gap = X_max - X_min
-        if x_gap != 0:
-            subplot.set_xlim([X_min, X_max])
+        if X_min is not None and X_max is not None and X_max != X_min:
+            subplot.set_xlim([float(X_min), float(X_max)])
+        elif X_min is not None:
+            subplot.set_xlim(xmin=float(X_min))
+        elif X_max is not None:
+            subplot.set_xlim(xmax=float(X_max))
 
         figure_canvas_agg = FigureCanvasAgg(self.figure)
         figure_canvas_agg.draw()
@@ -1177,27 +1206,33 @@ class Interface(object):
             except:
                 return
             x_upper, x_lower, x_log, y_upper, y_lower, y_log = scaleinfo
-            # x upper bound
-            if x_upper != '':
-                self.figure_input[8] = self.get_num_TID(x_upper)
-            # x lower bound
-            if x_lower != '':
-                self.figure_input[7] = self.get_num_TID(x_lower)
-            # x log scale
-            if min(self.figure_input[3]) <= 0 and y_log is True:
-                self.result_text.set("can not use log scale on y axis \n non-positive value detected")
-            else:
-                self.figure_input[16] = y_log
-            # y upper bound
-            if scaleinfo[3] != '':
-                self.figure_input[12] = y_upper
-            # y lower bound
-            if scaleinfo[4] != '':
-                self.figure_input[11] = y_lower
-            # y log scale
-            self.figure_input[15] = x_log
+            x_upper = self.get_num_TID(x_upper) if x_upper != '' else None
+            x_lower = self.get_num_TID(x_lower) if x_lower != '' else None
+            y_upper = y_upper if y_upper != '' else None
+            y_lower = y_lower if y_lower != '' else None
 
-            self.plot_scale(self.figure_input[8], self.figure_input[7], self.figure_input[12], self.figure_input[11], self.figure_input[15], self.figure_input[16])
+            if self.switched_plot:
+                self.plot_scale(x_upper, x_lower, y_upper, y_lower, x_log, y_log)
+            else:
+                # x upper bound
+                if x_upper is not None:
+                    self.figure_input[8] = x_upper
+                # x lower bound
+                if x_lower is not None:
+                    self.figure_input[7] = x_lower
+                # x log scale
+                if min(self.figure_input[3]) <= 0 and y_log is True:
+                    self.result_text.set("can not use log scale on y axis \n non-positive value detected")
+                else:
+                    self.figure_input[16] = y_log
+                # y upper bound
+                self.figure_input[12] = y_upper
+                # y lower bound
+                self.figure_input[11] = y_lower
+                # y log scale
+                self.figure_input[15] = x_log
+
+                self.plot_scale(self.figure_input[8], self.figure_input[7], self.figure_input[12], self.figure_input[11], self.figure_input[15], self.figure_input[16])
         return
 
     def save(self):
