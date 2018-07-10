@@ -21,7 +21,7 @@ from GUI import execute, NetListGenerator, Library, FILEPATHS
 
 class Interface(object):
     def __init__(self):
-        element_width = 20
+        element_width = 18
         element_height = 2
         element_half_width = int(element_width/2 + 2)
         self.backgroundcolor = '#CBE7CE'
@@ -53,7 +53,7 @@ class Interface(object):
         self.button_part_help = Button(self.frame_part_help, text='?', font=my_font, width=1, height=1, command=self.part_help_hit)
         self.parts_options = StringVar()
         self.parts_options_tuple = (Library.PARTS)
-        self.cb_parts = ttk.Combobox(self.frame_part, textvariable=self.parts_options, exportselection=False, state='readonly')
+        self.cb_parts = ttk.Combobox(self.frame_part, width=element_half_width, textvariable=self.parts_options, exportselection=False, state='readonly')
         self.cb_parts['values'] = self.parts_options_tuple
 
 
@@ -61,18 +61,18 @@ class Interface(object):
                                        height=1, bg=self.backgroundcolor)
         self.label_dataset_range = Label(self.frame_part, text='(Range)', font=my_font, width=element_width,
                                        height=element_height, bg=self.backgroundcolor)
-        self.entry_dataset = FloatEntry(self.frame_part, width=element_width)
+        self.entry_dataset = FloatEntry(self.frame_part, width=element_half_width)
 
         self.label_simulation = Label(self.frame_part, text='Simulation Mode:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.simulation_options = StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
-        self.cb_simulation = ttk.Combobox(self.frame_part, textvariable=self.simulation_options, exportselection=False, state='readonly')
+        self.cb_simulation = ttk.Combobox(self.frame_part, width=element_half_width, textvariable=self.simulation_options, exportselection=False, state='readonly')
         self.cb_simulation['values'] = self.simulation_options_tuple
 
         self.label_output = Label(self.frame_part, text='Specification:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.output_options = StringVar()
         self.output_options_tuple = ()
-        self.cb_output = ttk.Combobox(self.frame_part, textvariable=self.output_options, exportselection=False, state='readonly')
+        self.cb_output = ttk.Combobox(self.frame_part, width=element_half_width, textvariable=self.output_options, exportselection=False, state='readonly')
         self.cb_output['values'] = self.output_options_tuple
 
         self.frame_environment = Frame(height=element_height * 2, width=element_width * 6, bg=self.backgroundcolor, bd=2, relief=RIDGE)
@@ -81,32 +81,32 @@ class Interface(object):
                                  bg=self.backgroundcolor)
         self.dose_options = StringVar()
         self.dose_options_tuple = ["100","0.1","0.02"]
-        self.cb_dose = ttk.Combobox(self.frame_environment, textvariable=self.dose_options, exportselection=False, state='readonly')
+        self.cb_dose = ttk.Combobox(self.frame_environment, width=element_half_width, textvariable=self.dose_options, exportselection=False, state='readonly')
         self.cb_dose['values'] = self.dose_options_tuple
 
         self.label_hydrogen = Label(self.frame_environment, text='Hydrogen Content(%):', font=my_font, width=element_width + 1, height=element_height,
                                  bg=self.backgroundcolor)
         self.hydrogen_options = StringVar()
         self.hydrogen_options_tuple = ["0","0.1","1","1.3","100"]
-        self.cb_hydrogen = ttk.Combobox(self.frame_environment, textvariable=self.hydrogen_options, exportselection=False, state='readonly')
+        self.cb_hydrogen = ttk.Combobox(self.frame_environment, width=element_half_width, textvariable=self.hydrogen_options, exportselection=False, state='readonly')
         self.cb_hydrogen['values'] = self.hydrogen_options_tuple
 
-        self.label_bias = Label(self.frame_environment, text='Bias(%):', font=my_font, width=element_width + 1, height=element_height,
+        self.label_bias = Label(self.frame_environment, text='Bias(V):', font=my_font, width=element_width + 1, height=element_height,
                                  bg=self.backgroundcolor)
         self.bias_options = StringVar()
         self.bias_options_tuple = ["0","-6","+6","-12","+12","-30","+30"]
-        self.cb_bias = ttk.Combobox(self.frame_environment, textvariable=self.bias_options, exportselection=False, state='readonly')
+        self.cb_bias = ttk.Combobox(self.frame_environment, width=element_half_width, textvariable=self.bias_options, exportselection=False, state='readonly')
         self.cb_bias['values'] = self.bias_options_tuple
 
         self.label_temperature = Label(self.frame_environment, text='Temperature(C):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        self.entry_temperature = FloatEntry(self.frame_environment, width=element_width)
+        self.entry_temperature = FloatEntry(self.frame_environment, width=element_half_width)
 
 
         self.label_TID_level_lower_bound = Label(self.frame_environment, text='TID min(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        self.entry_TID_lower_bound = TIDEntry(self.frame_environment, width=element_width)
+        self.entry_TID_lower_bound = TIDEntry(self.frame_environment, width=element_half_width)
 
         self.label_TID_level_upper_bound = Label(self.frame_environment, text='TID max(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        self.entry_TID_upper_bound = TIDEntry(self.frame_environment, width=element_width)
+        self.entry_TID_upper_bound = TIDEntry(self.frame_environment, width=element_half_width)
 
         self.frame_max = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
         self.label_spec_max = Label(self.frame_max, text='max:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
@@ -333,7 +333,10 @@ class Interface(object):
                 if file[-4:] == '.txt':
                     str_TID = file.split('_')[1]
                     str_TIDs.append(str_TID)
-            str_TIDs = sorted(str_TIDs)
+            num_TIDs = [self.get_num_TID(str_TID) for str_TID in str_TIDs]
+            num_str_TID_dict = {self.get_num_TID(str_TID):str_TID for str_TID in str_TIDs}
+            num_TIDs = sorted(num_TIDs)
+            str_TIDs = [num_str_TID_dict.get(num_TID) for num_TID in num_TIDs]
             self.cb_switch_tid['values'] = str_TIDs
             self.cb_switch_tid.set(str_TIDs[0])
             self.plot_switched_figure_for_tid(str_TIDs[0])
@@ -793,12 +796,12 @@ class Interface(object):
         self.label_temperature.grid(row=0, column=4)
         self.label_TID_level_lower_bound.grid(row=0, column=5)
         self.label_TID_level_upper_bound.grid(row=0, column=6)
-        self.cb_dose.grid(row=1, column=1, padx=(5, 5), pady=(0, 5))
-        self.cb_hydrogen.grid(row=1, column=2, padx=(5, 5))
-        self.cb_bias.grid(row=1, column=3, padx=(5, 5))
-        self.entry_temperature.grid(row=1, column=4, padx=(5, 5))
-        self.entry_TID_lower_bound.grid(row=1, column=5, padx=(5, 5))
-        self.entry_TID_upper_bound.grid(row=1, column=6, padx=(5, 5))
+        self.cb_dose.grid(row=1, column=1, padx=(5, 0), pady=(0, 5))
+        self.cb_hydrogen.grid(row=1, column=2)
+        self.cb_bias.grid(row=1, column=3)
+        self.entry_temperature.grid(row=1, column=4)
+        self.entry_TID_lower_bound.grid(row=1, column=5)
+        self.entry_TID_upper_bound.grid(row=1, column=6)
 
 
         # row 2
