@@ -145,7 +145,7 @@ class Interface(object):
                                        width=element_width * 2,
                                        height=5, bg=self.backgroundcolor, justify='center')
         self.cross_spec_text = StringVar()
-        self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=('Arial', 16,'bold'),
+        self.label_cross_spec_text = Label(self.window, textvariable=self.cross_spec_text, font=('Arial', 12,'bold'),
                                        width=element_width * 3,
                                        height=5, bg=self.backgroundcolor, justify='center')
 
@@ -155,6 +155,7 @@ class Interface(object):
         self.previous_part = ''
         self.previous_Y_label = ''
         self.cross_message = list()
+        self.switched_cross_message = list()
         self.AD590_base_temperature = 25
         self.multiplot = False
         self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
@@ -326,6 +327,7 @@ class Interface(object):
         self.switched_plot = not self.switched_plot
         if self.switched_plot:
             self.figure.clf()
+            self.switched_cross_message = list()
             self.cb_switch_tid_put()
             output_folder = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
             str_TIDs = list()
@@ -983,6 +985,7 @@ class Interface(object):
         spec_min = self.figure_input[13]
         spec_max = self.figure_input[14]
         cross_min, cross_max = self.get_cross_points(X, Y, spec_min, spec_max, useDouble=True)
+
         cross_message = ""
         next_line = ""
         if len(cross_min) != 0:
@@ -994,7 +997,13 @@ class Interface(object):
         if cross_message == "":
             cross_message = "Cross specification at > " + str(max(X)) + ". "
 
-        display_message = cross_message
+        if len(self.switched_cross_message) == 4:
+            self.switched_cross_message.pop(0)
+        self.switched_cross_message.append(cross_message)
+        display_message = ''
+        for cur_message in self.switched_cross_message:
+            display_message += cur_message + "\n"
+
         self.cross_spec_text.set(display_message)
         self.plot_switched_figureTK(X_label, Y_label, X, Y, label_name, spec_min=spec_min, spec_max=spec_max)
 
@@ -1319,14 +1328,14 @@ class Interface(object):
         return s and s.strip() != ''
 
     def clear(self):
+        if (self.switched_plot):
+            self.switch_hit()
         self.figure.clf()
         self.getClearGraph()
         self.previous_part = ''
         self.previous_Y_label = ''
         self.result_text.set('')
         self.cross_spec_text.set('')
-        self.cb_switch_tid['values']=()
-        self.cb_switch_tid.set('')
         figure_canvas_agg = FigureCanvasAgg(self.figure)
         figure_canvas_agg.draw()
         figure_x, figure_y, figure_w, figure_h = self.figure.bbox.bounds
