@@ -21,6 +21,7 @@ from GUI import execute, NetListGenerator, Library, FILEPATHS
 
 class Interface(object):
     def __init__(self):
+        part_element_width = 20
         element_width = 18
         element_height = 2
         element_half_width = int(element_width/2 + 2)
@@ -45,34 +46,34 @@ class Interface(object):
         self.label_output_header = Label(self.window, text="Output: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
         self.label_spec_header = Label(self.window, text="Specification: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
 
-        self.frame_part = Frame(height=element_height * 9, width=element_width, bg=self.backgroundcolor, bd=2, relief=RIDGE)
+        self.frame_part = Frame(height=element_height * 9, width=part_element_width, bg=self.backgroundcolor, bd=2, relief=RIDGE)
         # self.frame_part.config(highlightbackground="black", highlightthickness=1)
 
-        self.frame_part_help = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
+        self.frame_part_help = Frame(self.frame_part, height=element_height, width=part_element_width, bg=self.backgroundcolor)
         self.label_parts = Label(self.frame_part_help, text='Parts:', font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
         self.button_part_help = Button(self.frame_part_help, text='?', font=my_font, width=1, height=1, command=self.part_help_hit)
         self.parts_options = StringVar()
         self.parts_options_tuple = (Library.PARTS)
-        self.cb_parts = ttk.Combobox(self.frame_part, width=element_half_width, textvariable=self.parts_options, exportselection=False, state='readonly')
+        self.cb_parts = ttk.Combobox(self.frame_part, width=part_element_width, textvariable=self.parts_options, exportselection=False, state='readonly')
         self.cb_parts['values'] = self.parts_options_tuple
 
 
-        self.label_dataset = Label(self.frame_part, text='Dataset:', font=my_font, width=element_width,
+        self.label_dataset = Label(self.frame_part, text='Dataset:', font=my_font, width=part_element_width,
                                        height=1, bg=self.backgroundcolor)
-        self.label_dataset_range = Label(self.frame_part, text='(Range)', font=my_font, width=element_width,
+        self.label_dataset_range = Label(self.frame_part, text='(Range)', font=my_font, width=part_element_width,
                                        height=element_height, bg=self.backgroundcolor)
-        self.entry_dataset = FloatEntry(self.frame_part, width=element_half_width)
+        self.entry_dataset = FloatEntry(self.frame_part, width=part_element_width)
 
         self.label_simulation = Label(self.frame_part, text='Simulation Mode:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
         self.simulation_options = StringVar()
         self.simulation_options_tuple = (Library.SIMULATION)
-        self.cb_simulation = ttk.Combobox(self.frame_part, width=element_half_width, textvariable=self.simulation_options, exportselection=False, state='readonly')
+        self.cb_simulation = ttk.Combobox(self.frame_part, width=part_element_width, textvariable=self.simulation_options, exportselection=False, state='readonly')
         self.cb_simulation['values'] = self.simulation_options_tuple
 
-        self.label_output = Label(self.frame_part, text='Specification:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.label_output = Label(self.frame_part, text='Specification:', font=my_font, width=part_element_width, height=element_height, bg=self.backgroundcolor)
         self.output_options = StringVar()
         self.output_options_tuple = ()
-        self.cb_output = ttk.Combobox(self.frame_part, width=element_half_width, textvariable=self.output_options, exportselection=False, state='readonly')
+        self.cb_output = ttk.Combobox(self.frame_part, width=part_element_width, textvariable=self.output_options, exportselection=False, state='readonly')
         self.cb_output['values'] = self.output_options_tuple
 
         self.frame_environment = Frame(height=element_height * 2, width=element_width * 6, bg=self.backgroundcolor, bd=2, relief=RIDGE)
@@ -325,8 +326,8 @@ class Interface(object):
         if len(self.figure_input) == 0:
             return
         self.switched_plot = not self.switched_plot
+        self.figure.clf()
         if self.switched_plot:
-            self.figure.clf()
             self.switched_cross_message = list()
             self.cb_switch_tid_put()
             output_folder = relative_path(FILEPATHS.OUTPUT_DIR_PATH)
@@ -345,7 +346,6 @@ class Interface(object):
 
         else:
             self.cb_switch_tid_remove()
-            self.figure.clf()
             self.plotfigureTK(self.figure_input[0], self.figure_input[1], self.figure_input[2], self.figure_input[3],
                               self.figure_input[4], self.figure_input[5], self.figure_input[6], self.figure_input[7],
                               self.figure_input[8], self.figure_input[9], self.figure_input[10], self.figure_input[11],
@@ -371,6 +371,8 @@ class Interface(object):
     def execute_hit(self):
         # do input check first and then execute:
         if self.input_check():
+            if self.switched_plot:
+                self.clear()
             # remove every .txt file in Output folder
             execute.rm_all()
             self.temp_focus_out_helper()
@@ -542,11 +544,6 @@ class Interface(object):
                 display_message += cur_message + "\n"
             self.cross_spec_text.set(display_message)
             self.result_text.set(message)
-
-            if self.switched_plot:
-                self.switched_plot = not self.switched_plot
-                self.cb_switch_tid_remove()
-
             self.switch_availability_check(part)
 
         # except Exception as error:
@@ -988,14 +985,15 @@ class Interface(object):
 
         cross_message = ""
         next_line = ""
+        ending = ". (TID=" + str_TID + ")"
         if len(cross_min) != 0:
-            cross_message += "Cross min at " + X_label + " = " + ",".join(cross_min) + ". "
+            cross_message += "Cross min at " + X_label + " = " + ",".join(cross_min) + ending
             next_line = "\n"
         if len(cross_max) != 0:
             cross_message += next_line
-            cross_message += "Cross max at " + X_label + " = " + ",".join(cross_max) + ". "
+            cross_message += "Cross max at " + X_label + " = " + ",".join(cross_max) + ending
         if cross_message == "":
-            cross_message = "Cross specification at > " + str(max(X)) + ". "
+            cross_message = "Cross specification at > " + str(max(X)) + ending
 
         if len(self.switched_cross_message) == 4:
             self.switched_cross_message.pop(0)
