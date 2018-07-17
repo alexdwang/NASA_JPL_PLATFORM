@@ -1,7 +1,7 @@
 import json
 import GUI.FILEPATHS as FILEPATHS
 import GUI.createNaLJson as NaLJson
-import os
+import GUI.reset
 """
 ' Library.py is used to load constant values from json files
 ' Contents in this file should not be modified by program unless you are updating the library
@@ -25,28 +25,47 @@ TEMPERATURE_ERROR = NaLJson.Temperature_Error
 Load_Regulation = NaLJson.Load_Regulation
 
 # os.chdir("/home/dwang/NASA_JPL/NASA_JPL_PLATFORM")
-with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
-    name_jsonObject = f.readline()
-f.close()
-name_json_dict = json.loads(name_jsonObject)
+import_error = False
+try:
+    with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
+        name_jsonObject = f.readline()
+    f.close()
+    name_json_dict = json.loads(name_jsonObject)
 
-with open(FILEPATHS.LIBRARY_FILE_PATH, 'r') as f:
-    library_jsonObject = f.readline()
-f.close()
-library_json_dict = json.loads(library_jsonObject)
+    with open(FILEPATHS.LIBRARY_FILE_PATH, 'r') as f:
+        library_jsonObject = f.readline()
+    f.close()
+    library_json_dict = json.loads(library_jsonObject)
 
-with open(FILEPATHS.SPECIFICATION_FILE_PATH, 'r') as f:
-    specification_jsonObject = f.readline()
-f.close()
-specification_json_dict = json.loads(specification_jsonObject)
+    with open(FILEPATHS.SPECIFICATION_FILE_PATH, 'r') as f:
+        specification_jsonObject = f.readline()
+    f.close()
+    specification_json_dict = json.loads(specification_jsonObject)
+    SPECIFICATION = specification_json_dict
+except OSError as e:
+    GUI.reset.do()
+    import_error = True
+    with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
+        name_jsonObject = f.readline()
+    f.close()
+    name_json_dict = json.loads(name_jsonObject)
 
-with open(FILEPATHS.SCALE_FILE_PATH, 'r') as f:
-    scale_jsonObject = f.readline()
-f.close()
-scale_json_dict = json.loads(scale_jsonObject)
+    with open(FILEPATHS.LIBRARY_FILE_PATH, 'r') as f:
+        library_jsonObject = f.readline()
+    f.close()
+    library_json_dict = json.loads(library_jsonObject)
 
-SPECIFICATION = specification_json_dict
-SCALELIB = scale_json_dict
+    with open(FILEPATHS.SPECIFICATION_FILE_PATH, 'r') as f:
+        specification_jsonObject = f.readline()
+    f.close()
+    specification_json_dict = json.loads(specification_jsonObject)
+    SPECIFICATION = specification_json_dict
+
+# with open(FILEPATHS.SCALE_FILE_PATH, 'r') as f:
+#     scale_jsonObject = f.readline()
+# f.close()
+# scale_json_dict = json.loads(scale_jsonObject)
+# SCALELIB = scale_json_dict
 
 TITLE = name_json_dict['TITLE']
 PARTS = name_json_dict['PARTS']

@@ -6,17 +6,21 @@ import GUI.createNaLJson as createNaLJson
 '''
 '   create specification.json and scale.json
 '''
-def save_specification_to_json(SPECIFICATION):
+
+def save():
+    save_specification_to_json(SPECIFICATION, path=FILEPATHS.SPECIFICATION_FILE_PATH)
+
+def save_specification_to_json(SPECIFICATION, path="../" + FILEPATHS.SPECIFICATION_FILE_PATH):
     output_object = SPECIFICATION
-    with open("../" + FILEPATHS.SPECIFICATION_FILE_PATH, 'w') as f:
+    with open(path, 'w') as f:
         json.dump(output_object, f)
     f.close()
     return
 
 
-def save_scale_to_json(Scale):
+def save_scale_to_json(Scale, path="../" + FILEPATHS.SCALE_FILE_PATH):
     output_object = Scale
-    with open("../" + FILEPATHS.SCALE_FILE_PATH, 'w') as f:
+    with open(path, 'w') as f:
         json.dump(output_object, f)
     f.close()
     return
@@ -73,8 +77,9 @@ SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1, '
                                             "Dataset": [0]}
                  }
 
-save_specification_to_json(SPECIFICATION)
-#
-# SCALE = {createNaLJson.PART_TL431: {'scale': [2, 3, 2, 1, 1, 7.2, 0.9, 1, 1, 2.5, 50],
-#                                     'type': ['NPN', 'NPN', 'PNP', 'PNP', 'NPN', 'NPN', 'NPN', 'NPN', 'NPN', 'NPN', 'NPN']}}
-# save_scale_to_json(SCALE)
+if __name__=='__main__':
+    save_specification_to_json(SPECIFICATION)
+    #
+    # SCALE = {createNaLJson.PART_TL431: {'scale': [2, 3, 2, 1, 1, 7.2, 0.9, 1, 1, 2.5, 50],
+    #                                     'type': ['NPN', 'NPN', 'PNP', 'PNP', 'NPN', 'NPN', 'NPN', 'NPN', 'NPN', 'NPN', 'NPN']}}
+    # save_scale_to_json(SCALE)

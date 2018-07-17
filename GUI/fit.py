@@ -10,7 +10,7 @@ import GUI.FILEPATHS as FILEPATHS
 
 def fit(sheet, TID_level, DR, H2, bias):
     choice = 5
-    if choice == 1: # fit curve with 3-paras function without log-scaled
+    if choice == 1: # fit curve with 3-paras function (a + b * x + c * x^2) without log-scaled
         Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         ydata = np.array(Ib)
@@ -18,7 +18,7 @@ def fit(sheet, TID_level, DR, H2, bias):
 
         # plot_log_scale(xdata, ydata, popt, func_eabxcx2)
         return popt
-    elif choice == 2:   # fit curve with 3-paras function with log-scaled
+    elif choice == 2:   # fit curve with 3-paras function (a + b * x + c * x^2) with log-scaled
         Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Ib))
@@ -26,7 +26,7 @@ def fit(sheet, TID_level, DR, H2, bias):
 
         # plot_data(xdata, logged_ydata, popt, func_loged_abxcx2)
         return popt
-    elif choice == 3:   # fit curve with 2-paras function without log-scaled
+    elif choice == 3:   # fit curve with 2-paras function (a * e^(b * x)) without log-scaled
         Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         scale = 1e10
         xdata = np.array(Ve)
@@ -37,7 +37,7 @@ def fit(sheet, TID_level, DR, H2, bias):
         # plot_log_scale(xdata, ydata, popt, func_aebx)
         popt[0] = popt[0]/scale
         return popt
-    elif choice == 4:   # fit curve with 2-paras function with log-scaled
+    elif choice == 4:   # fit curve with 2-paras function (a * e^(b * x)) with log-scaled
         Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Ib))
@@ -45,7 +45,7 @@ def fit(sheet, TID_level, DR, H2, bias):
         # if TID_level != Library.TPRE_RAD:
         #     plot_data(xdata, logged_ydata, popt, func_loged_logabx)
         return popt
-    elif choice == 5:
+    elif choice == 5:	# fit curve with 2-paras function (a * e^(b * x)) with log-scaled from the original data
         Ve, Delta_Ib = excel_table_byname2delta(sheet, TID_level, DR, H2, bias)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Delta_Ib))

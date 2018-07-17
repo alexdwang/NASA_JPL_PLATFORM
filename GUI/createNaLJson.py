@@ -1,22 +1,27 @@
 import json
 import GUI.FILEPATHS as FILEPATHS
 
+def save():
+    save_name_to_json(TITLE, PARTS, OUTPUT_NAME, SIMULATION, TID_LEVEL, COL_NAME, path=FILEPATHS.NAME_FILE_PATH)
+    save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, INPUT, OUTPUT,
+                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, EXTRA_LIBRARY, path=FILEPATHS.LIBRARY_FILE_PATH)
+    return
 
-def save_name_to_json(TITLE, PARTS, OUTPUT_NAME, SIMULATION, TID_LEVEL, COL_NAME):
+def save_name_to_json(TITLE, PARTS, OUTPUT_NAME, SIMULATION, TID_LEVEL, COL_NAME, path="../" + FILEPATHS.NAME_FILE_PATH):
     output_object = {'TITLE': TITLE,
                      'PARTS': PARTS,
                      'OUTPUT_NAME': OUTPUT_NAME,
                      'SIMULATION': SIMULATION,
                      'TID_LEVEL': TID_LEVEL,
                      'COL_NAME': COL_NAME}
-    with open("../" + FILEPATHS.NAME_FILE_PATH, 'w') as f:
+    with open(path, 'w') as f:
         json.dump(output_object, f)
     f.close()
     return
 
 
 def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, INPUT, OUTPUT,
-                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, EXTRA_LIBRARY):
+                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, EXTRA_LIBRARY, path="../" + FILEPATHS.LIBRARY_FILE_PATH):
     output_object = {'INPUT_VOLTAGE_SOURCE': INPUT_VOLTAGE_SOURCE,
                      'CIRCUIT_CORE': CIRCUIT_CORE,
                      'INPUT': INPUT,
@@ -25,7 +30,7 @@ def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, INPUT, OUTPUT,
                      'LIBRARY_TID_LEVEL_MODEL': LIBRARY_TID_LEVEL_MODEL,
                      'EXTRA_LIBRARY': EXTRA_LIBRARY}
 
-    with open("../" + FILEPATHS.LIBRARY_FILE_PATH, 'w') as f:
+    with open(path, 'w') as f:
         json.dump(output_object, f)
     f.close()
     return
@@ -1741,6 +1746,7 @@ if __name__=='__main__':
     save_name_to_json(TITLE, PARTS, OUTPUT_NAME, SIMULATION, TID_LEVEL, COL_NAME)
     save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, INPUT, OUTPUT,
                          SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, EXTRA_LIBRARY)
+
 
 
 # with open(CONSTANT.LIBRARY_FILE_PATH,'r') as f:
