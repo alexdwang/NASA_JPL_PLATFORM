@@ -1,0 +1,163 @@
+***************
+*Specification*
+***************
+
+*******
+*AD590*
+*******
+*Nonlinearity (C)
+min=-1
+max=1
+
+*Temperature (C)
+min=20
+max=30
+
+*Temperature Error (C)
+min=-5
+max=5
+
+*******
+*LM193*
+*******
+*Supply Current (A)
+min=0
+max=3e-3
+
+*Input Offset Voltage (V)
+min=-5e-3
+max=5e-3
+
+*Positive Input Bias Current (A)
+min=-100e-9
+max=+100e-9
+
+*Negative Input Bias Current (A)
+min=-100e-9
+max=+100e-9
+
+*Input Offset Current (A)
+min=-25e-9
+max=+25e-9
+
+*******
+*TL431*
+*******
+*Reference Voltage (V)
+min=2.44
+max=2.55
+
+*Reference Input Current (A)
+min=-4e-6
+max=4e-6
+
+*Cathode Current Ika (A)
+min=-1e-6
+max=1e-6
+
+*Cathode Voltage Vka (V)
+min=
+max=
+
+*Ratio DVref/DVka (mV/V)
+min=0
+max=-2.7
+
+********
+*LT1175*
+********
+*Line Regulation (%/V)
+min=0
+max=0.015
+
+*Output Voltage (V)
+min=4.93
+max=5.075
+
+*Dropoff voltage (V)
+min=0
+max=0.7
+
+*Load Regulation (%)
+min=0
+max=0.35
+
+********
+*LT1006*
+********
+*Positive Supply Current (A)
+min=-0.1e-6
+max=599.9e-6
+
+*Negative Supply Current (A)
+min=-0.1e-6
+max=599.9e-6
+
+*Input Offset Voltage (V)
+min=-180e-6
+max=180e-6
+
+*Input Offset Current (A)
+min=-0.9e-9
+max=0.9e-9
+
+*Positive Input Bias Current (A)
+min=-20e-9
+max=20e-9
+
+*Negative Input Bias Current (A)
+min=-20e-9
+max=20e-9
+
+********
+*LP2953*
+********
+*Output Voltage (V)
+min=4.93
+max=5.07
+
+*Reference Voltage (V)
+min=1.215
+max=1.245
+
+********
+*LM3940*
+********
+*Supply Current (A)
+min=0
+max=1.7
+
+*Output Voltage (V)
+min=3.2
+max=3.4
+
+*Reference Voltage (V)
+min=1.215
+max=1.245
+
+*******
+*LM111*
+*******
+*Positive Supply Current (A)
+min=0
+max=6e-3
+
+*Negative Supply Current (A)
+min=-5e-6
+max=0
+
+*Input Offset Voltage (V)
+min=-3e-3
+max=3e-3
+
+*Input Offset Current (A)
+min=-1e-8
+max=1e-8
+
+*Positive Input Bias Current (A)
+min=-1e-7
+max=1e-10
+
+*Negative Input Bias Current (A)
+min=-1e-7
+max=1e-10
