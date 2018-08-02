@@ -1,5 +1,5 @@
 import json
-
+import re
 import GUI.FILEPATHS as FILEPATHS
 import GUI.createNaLJson as createNaLJson
 
@@ -24,6 +24,85 @@ def save_scale_to_json(Scale, path="../" + FILEPATHS.SCALE_FILE_PATH):
         json.dump(output_object, f)
     f.close()
     return
+
+
+
+def save_txt_to_specfication(path="../" + FILEPATHS.SPEC_TXT_FILE_PATH):
+    SPEC = {}
+    is_the_right_file = 0
+    part_name = ''
+    properity_name = ''
+    data_set = []
+    #min_limit = None
+    #max_limit = None
+    i = 0
+    with open(path, "r") as f:
+        for line in f.readlines():
+
+            #print(line.strip())
+            #print(re.match(r'\*+', line))
+
+            if re.match(r'\*+\n', line):
+                i = i+1
+                #print(line.strip())
+            elif re.match(r'\*Specification\*\n', line):
+                i = i+1
+                #print(line.strip())
+            elif re.match(r'\*.+\*\n', line):
+                temp = line.strip()
+                temp = temp.strip('*')
+                part_name = temp
+                SPEC[temp] = {}
+                #print("part name: ", temp)
+            elif re.match(r'Dataset=.+', line):
+                temp = line.strip()
+                equal = temp.find('=')
+                data_set = temp[equal+1:].split(',')
+                results = list(map(int, data_set))
+                SPEC[part_name]['Dataset'] = results
+
+                #print("DATASET: ", temp[equal+1:])
+
+
+            elif re.match(r'\*.+\n', line):
+
+                last = line.find('(')
+                temp = line[1:last].strip()
+                properity_name = temp
+                SPEC[part_name][properity_name] = []
+                #print("properity: ", line[1:last])
+            elif re.match(r'min=.+\n', line):
+                first = line.find('=')
+                try:
+                    min_limit = int(line[first+1:])
+                except ValueError:
+                    min_limit = float(line[first + 1:])
+                #min_limit = float(line[first+1:])
+                SPEC[part_name][properity_name].append(min_limit)
+                #print("MIN: ", line[first+1:].strip())
+            elif re.match(r'max=.+\n', line):
+                first = line.find('=')
+                try:
+                    max_limit = int(line[first+1:])
+                except ValueError:
+                    max_limit = float(line[first + 1:])
+                #max_limit = float(line[first + 1:])
+                SPEC[part_name][properity_name].append(max_limit)
+                #print("MAX: ", line[first+1:].strip())
+            elif re.match(r'unit=.+\n', line):
+                first = line.find('=')
+                unit = line[first + 1:].strip()
+                SPEC[part_name][properity_name].append(unit)
+
+                data_temp = SPEC[part_name]['Dataset']
+                SPEC[part_name].pop('Dataset')
+                SPEC[part_name]['Dataset'] = data_temp
+
+                #print("UNIT: ", line[first+1:].strip())
+    f.close()
+    #print(SPEC)
+    return SPEC
+
 
 # SPECIFICATION = {PART_NAME: {OUTPUT_NAME: [MIN, MAX, UNIT]}}
 SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1, 'C'],
@@ -78,6 +157,10 @@ SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1, '
                  }
 
 if __name__=='__main__':
+
+    #s = save_txt_to_specfication()
+    #save_specification_to_json(s)
+
     save_specification_to_json(SPECIFICATION)
     #
     # SCALE = {createNaLJson.PART_TL431: {'scale': [2, 3, 2, 1, 1, 7.2, 0.9, 1, 1, 2.5, 50],
