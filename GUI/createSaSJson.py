@@ -158,8 +158,8 @@ SPECIFICATION = {createNaLJson.PART_AD590: {createNaLJson.Nonlinearity: [-1,1, '
 
 if __name__=='__main__':
 
-    #s = save_txt_to_specfication()
-    #save_specification_to_json(s)
+    # s = save_txt_to_specfication()
+    # save_specification_to_json(s)
 
     save_specification_to_json(SPECIFICATION)
     #

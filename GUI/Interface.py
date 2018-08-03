@@ -16,7 +16,7 @@ import os
 import datetime
 import xlrd
 
-from GUI import execute, NetListGenerator, Library, FILEPATHS, Entry, ChangeScaleWindow, reset
+from GUI import execute, NetListGenerator, Library, FILEPATHS, Entry, ChangeScaleWindow, reset, createSaSJson
 import Main
 
 
@@ -41,6 +41,7 @@ class Interface(object):
         menubar.add_cascade(label="File", menu=filemenu)
         filemenu.add_command(label="Import", command=self.import_hit)
         filemenu.add_command(label="Reset", command=self.reset_hit)
+        filemenu.add_command(label="refresh spec", command=self.refresh_spec_hit)
         self.window.config(menu=menubar)
 
         self.label_topline = Label(self.window, text=Library.TITLE, font=my_font, width=30, height=element_height, bg=self.backgroundcolor)
@@ -97,7 +98,7 @@ class Interface(object):
         self.label_bias = Label(self.frame_environment, text='Bias(V):', font=my_font, width=element_width + 1, height=element_height,
                                  bg=self.backgroundcolor)
         self.bias_options = StringVar()
-        self.bias_options_tuple = ["0","-6","+6","-12","+12","-30","+30"]
+        self.bias_options_tuple = ["0"]
         self.cb_bias = ttk.Combobox(self.frame_environment, width=element_half_width, textvariable=self.bias_options, exportselection=False, state='readonly')
         self.cb_bias['values'] = self.bias_options_tuple
 
@@ -331,6 +332,12 @@ class Interface(object):
 
     def reset_hit(self):
         reset.do()
+        self.refresh()
+        return
+
+    def refresh_spec_hit(self):
+        s = createSaSJson.save_txt_to_specfication(FILEPATHS.SPEC_TXT_FILE_PATH)
+        createSaSJson.save_specification_to_json(s, FILEPATHS.SPECIFICATION_FILE_PATH)
         self.refresh()
         return
 
@@ -635,10 +642,10 @@ class Interface(object):
         self.cb_hydrogen.set('1.3')
         self.cb_bias.set('0')
         self.entry_temperature.insert(0, "27")
-        self.label_dataset_range['text'] = "VCC:(0~25, step=1)"
-        self.entry_dataset.insert(0, "25")
-        self.label_spec_min_value['text'] = 2.44
-        self.label_spec_max_value['text'] = 2.55
+        # self.label_dataset_range['text'] = "VCC:(0~25, step=1)"
+        # self.entry_dataset.insert(0, "25")
+        # self.label_spec_min_value['text'] = 2.44
+        # self.label_spec_max_value['text'] = 2.55
         self.label_spec_max_unit['text'] = 'V'
         self.label_spec_min_unit['text'] = 'V'
         self.entry_TID_lower_bound.insert(0, "0")
