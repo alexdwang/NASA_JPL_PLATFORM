@@ -254,6 +254,7 @@ class NetListGenerator:
     #     except:
     #         return False
 
+    # generate netlist based on user input
     def generater(self, part, simulation, DR, H2, bias, temperature, TID_level, output_option, output_filepath, netlist_filepath):
         content = []
         if TID_level == Library.TPRE_RAD:
@@ -397,10 +398,10 @@ class NetListGenerator:
                                '',
                                '.model DMODNPN D (IS = ' + str(a2),
                                '+ N = ' + str(1 / (b2 * 0.02585)) + ')'])
-                content.extend(['*End Library',
-                                '',
-                                '*end of the netlist',
-                                '.end'])
+            content.extend(['*End Library',
+                            '',
+                            '*end of the netlist',
+                            '.end'])
 
             # print content to netlist file
             file = open(netlist_filepath, 'wb')

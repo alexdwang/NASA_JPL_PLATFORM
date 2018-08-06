@@ -6,11 +6,15 @@ import os
 
 import GUI.Library as Library
 import GUI.FILEPATHS as FILEPATHS
+import Main
 
 
+# fit curve based on the data in database
 def fit(sheet, TID_level, DR, H2, bias):
+    # choose which equation we need to fit
     choice = 5
-    if choice == 1: # fit curve with 3-paras function (a + b * x + c * x^2) without log-scaled
+    # fit curve with 3-paras function (a + b * x + c * x^2) without log-scaled
+    if choice == 1:
         Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         ydata = np.array(Ib)
@@ -18,7 +22,8 @@ def fit(sheet, TID_level, DR, H2, bias):
 
         # plot_log_scale(xdata, ydata, popt, func_eabxcx2)
         return popt
-    elif choice == 2:   # fit curve with 3-paras function (a + b * x + c * x^2) with log-scaled
+    # fit curve with 3-paras function (a + b * x + c * x^2) with log-scaled
+    elif choice == 2:
         Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Ib))
@@ -26,7 +31,8 @@ def fit(sheet, TID_level, DR, H2, bias):
 
         # plot_data(xdata, logged_ydata, popt, func_loged_abxcx2)
         return popt
-    elif choice == 3:   # fit curve with 2-paras function (a * e^(b * x)) without log-scaled
+    # fit curve with 2-paras function (a * e^(b * x)) without log-scaled
+    elif choice == 3:
         Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         scale = 1e10
         xdata = np.array(Ve)
@@ -37,7 +43,8 @@ def fit(sheet, TID_level, DR, H2, bias):
         # plot_log_scale(xdata, ydata, popt, func_aebx)
         popt[0] = popt[0]/scale
         return popt
-    elif choice == 4:   # fit curve with 2-paras function (a * e^(b * x)) with log-scaled
+    # fit curve with 2-paras function (a * e^(b * x)) with log-scaled
+    elif choice == 4:
         Ve, Ib = excel_table_byname(sheet, TID_level, DR, H2)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Ib))
@@ -45,7 +52,8 @@ def fit(sheet, TID_level, DR, H2, bias):
         # if TID_level != Library.TPRE_RAD:
         #     plot_data(xdata, logged_ydata, popt, func_loged_logabx)
         return popt
-    elif choice == 5:	# fit curve with 2-paras function (a * e^(b * x)) with log-scaled from the original data
+    # fit curve with 2-paras function (a * e^(b * x)) with log-scaled from the original data
+    elif choice == 5:
         Ve, Delta_Ib = excel_table_byname2delta(sheet, TID_level, DR, H2, bias)
         xdata = np.array(Ve)
         logged_ydata = np.array(np.log(Delta_Ib))
@@ -54,12 +62,7 @@ def fit(sheet, TID_level, DR, H2, bias):
         #     plot_data(xdata, logged_ydata, popt, func_loged_logabx)
         return popt
 
-
-def relative_path(path):
-    dirname = os.path.dirname(os.path.realpath('__file__'))
-    path = os.path.join(dirname, path)
-    return os.path.normpath(path)
-
+# get titles from a given table
 def get_titles(table):
     col_dict = {}
     for i in range(table.ncols):
@@ -68,9 +71,10 @@ def get_titles(table):
             col_dict[title] = i
     return col_dict
 
+# get data from a given table, not in use in current version
 def excel_table_byname(sheet, TID_level, DR, H2):
     file_path = FILEPATHS.NPN_IB_DATABASE_FILE_PATH if sheet == "NPN" else FILEPATHS.PNP_IB_DATABASE_FILE_PATH
-    file = relative_path(file_path)
+    file = Main.relative_path(file_path)
     data = xlrd.open_workbook(file)
     table = data.sheet_by_name("DR=" + str(DR) + "_H2=" + str(H2))
 
@@ -89,9 +93,10 @@ def excel_table_byname(sheet, TID_level, DR, H2):
             Ib.append(ib)
     return Ve, Ib
 
+# get data from a given table and calculate delta from pre-rad to current TID level
 def excel_table_byname2delta(sheet, TID_level, DR, H2, bias):
     file_path = FILEPATHS.NPN_IB_DATABASE_FILE_PATH if sheet == "NPN" else FILEPATHS.PNP_IB_DATABASE_FILE_PATH
-    file = relative_path(file_path)
+    file = Main.relative_path(file_path)
     data = xlrd.open_workbook(file)
     table = data.sheet_by_name("DR=" + str(DR) + "_H2=" + str(H2) + "_B=" + str(bias))
 
@@ -114,7 +119,7 @@ def excel_table_byname2delta(sheet, TID_level, DR, H2, bias):
             Delta_Ib.append(delta_ib)
     return Ve, Delta_Ib
 
-
+# plot data in a graph, debugging use only
 def plot_data(xdata, ydata, popt, function):
     plt.figure(1)
     plt.plot(xdata, ydata, 'b*', label='data')
@@ -127,7 +132,7 @@ def plot_data(xdata, ydata, popt, function):
     plt.show()
     return
 
-
+# plot data in a graph in log scale, debugging use only
 def plot_log_scale(xdata, y2, popt, function):
     plt.subplot()
     plt.plot(xdata, y2, 'b*', label='data')
@@ -142,10 +147,8 @@ def plot_log_scale(xdata, y2, popt, function):
     plt.show(block=False)
     return
 
-
 def func_loged_abxcx2(x, a, b, c):
     return a + b * x + c * x**2
-
 
 def func_eabxcx2(x, a, b, c):
     return np.exp(a + b * x + c * x**2)

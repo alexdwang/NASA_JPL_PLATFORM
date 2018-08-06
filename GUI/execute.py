@@ -1,19 +1,25 @@
 import os
 import subprocess
 
+'''
+execute system commands
+'''
 class Execute:
+    # Create necessary directories and files if not exist
     def mkdirs(self):
         command = 'mkdir -p Database Output Library Library/temp'
         os.system(command)
         command = 'touch Library/library.json Library/name.json'
         os.system(command)
         return
-    
+
+    # remove all output files
     def rm_all(self):
         command = 'rm -f ./Output/*.txt'
         os.system(command)
         return
 
+    # call Xyce to run simulations
     def execute_module3(self, path):
         # command = 'whereis bin/Xyce'# the command that going to be executed
         #Xyce_path = subprocess.getoutput(command)
@@ -31,6 +37,7 @@ class Execute:
             result = subprocess.getoutput(command)
         return result
 
+    # open a file from file system using default system application
     def open_file(self, path):
         command = 'xdg-open ' + path
         os.system(command)

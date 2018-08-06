@@ -16,26 +16,31 @@ import os
 import datetime
 import xlrd
 
-from GUI import execute, NetListGenerator, Library, FILEPATHS, Entry, ChangeScaleWindow, reset, createSaSJson
+from GUI import execute, NetListGenerator, Library, FILEPATHS, Entry, ChangeScaleWindow, reset, createSaSJson, createNaLJson
 import Main
 
+'''
+Interface class uses tk and ttk to implement the GUI for this program. 
+'''
 
 class Interface(object):
     def __init__(self):
-        part_element_width = 20
-        element_width = 18
-        element_height = 2
-        element_half_width = int(element_width/2 + 2)
-        self.backgroundcolor = '#CBE7CE'
-        self.figsize = (8, 4)
-        my_font = ('Arial', 10)
+        part_element_width = 20                             # elements' width in part frame
+        element_width = 18                                  # elements' width in other frames
+        element_height = 2                                  # elements' hight in all frames
+        element_half_width = int(element_width/2 + 2)       # smaller width for some of the elements
+        self.backgroundcolor = '#CBE7CE'                    # background color for the main interface and the figure
+        self.figsize = (8, 4)                               # size of the graph on main interface
+        my_font = ('Arial', 10)                             # font size for all elements on main interface
 
+        # tk main interface configuration
         self.window = Tk()
         self.window.title('Platform')
         self.window.configure(background=self.backgroundcolor)
         self.window.option_add("*Font", my_font)
         # self.window.geometry('1150x700')
 
+        # menu configuration on top
         menubar = Menu(self.window, bg="DarkSeaGreen1")
         filemenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=filemenu)
@@ -44,104 +49,158 @@ class Interface(object):
         filemenu.add_command(label="refresh spec", command=self.refresh_spec_hit)
         self.window.config(menu=menubar)
 
-        self.label_topline = Label(self.window, text=Library.TITLE, font=my_font, width=30, height=element_height, bg=self.backgroundcolor)
-        self.label_input_header = Label(self.window, text="Input: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
-        self.label_output_header = Label(self.window, text="Output: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
-        self.label_spec_header = Label(self.window, text="Specification: ", font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
+        # header for each section, not in use in current version
+        self.label_topline = Label(self.window, text=Library.TITLE, font=my_font, width=30, height=element_height,
+                                   bg=self.backgroundcolor)
+        self.label_input_header = Label(self.window, text="Input: ", font=my_font, width=element_half_width,
+                                        height=element_height, bg=self.backgroundcolor)
+        self.label_output_header = Label(self.window, text="Output: ", font=my_font, width=element_half_width,
+                                         height=element_height, bg=self.backgroundcolor)
+        self.label_spec_header = Label(self.window, text="Specification: ", font=my_font, width=element_half_width,
+                                       height=element_height, bg=self.backgroundcolor)
 
-        self.frame_part = Frame(height=element_height * 9, width=part_element_width, bg=self.backgroundcolor, bd=2, relief=RIDGE)
+        # part frame, place all elements related to part in this frame
+        self.frame_part = Frame(height=element_height * 9, width=part_element_width, bg=self.backgroundcolor, bd=2,
+                                relief=RIDGE)
         # self.frame_part.config(highlightbackground="black", highlightthickness=1)
 
-        self.frame_part_help = Frame(self.frame_part, height=element_height, width=part_element_width, bg=self.backgroundcolor)
-        self.label_parts = Label(self.frame_part_help, text='Parts:', font=my_font, width=element_half_width, height=element_height, bg=self.backgroundcolor)
-        self.button_part_help = Button(self.frame_part_help, text='?', font=my_font, width=1, height=1, command=self.part_help_hit)
+        # part selection combobox and help button (open datasheet)
+        self.frame_part_help = Frame(self.frame_part, height=element_height, width=part_element_width,
+                                     bg=self.backgroundcolor)
+        self.label_parts = Label(self.frame_part_help, text='Parts:', font=my_font, width=element_half_width,
+                                 height=element_height, bg=self.backgroundcolor)
+        self.button_part_help = Button(self.frame_part_help, text='?', font=my_font, width=1, height=1,
+                                       command=self.part_help_hit)
         self.parts_options = StringVar()
         self.parts_options_tuple = (Library.PARTS)
-        self.cb_parts = ttk.Combobox(self.frame_part, width=part_element_width, textvariable=self.parts_options, exportselection=False, state='readonly')
+        self.cb_parts = ttk.Combobox(self.frame_part, width=part_element_width, textvariable=self.parts_options,
+                                     exportselection=False, state='readonly')
         self.cb_parts['values'] = self.parts_options_tuple
 
+        # simulation selection combobox, not in use in current version
+        self.label_simulation = Label(self.frame_part, text='Simulation Mode:', font=my_font, width=element_width,
+                                      height=element_height, bg=self.backgroundcolor)
+        self.simulation_options = StringVar()
+        self.simulation_options_tuple = (Library.SIMULATION)
+        self.cb_simulation = ttk.Combobox(self.frame_part, width=part_element_width,
+                                          textvariable=self.simulation_options, exportselection=False, state='readonly')
+        self.cb_simulation['values'] = self.simulation_options_tuple
 
+        # output(specification) selection combobox
+        self.label_output = Label(self.frame_part, text='Specification:', font=my_font, width=part_element_width,
+                                  height=element_height, bg=self.backgroundcolor)
+        self.output_options = StringVar()
+        self.output_options_tuple = ()
+        self.cb_output = ttk.Combobox(self.frame_part, width=part_element_width, textvariable=self.output_options,
+                                      exportselection=False, state='readonly')
+        self.cb_output['values'] = self.output_options_tuple
+
+        # sub-frame for dataset input box
         self.label_dataset = Label(self.frame_part, text='Dataset:', font=my_font, width=part_element_width,
                                        height=1, bg=self.backgroundcolor)
         self.label_dataset_range = Label(self.frame_part, text='(Range)', font=my_font, width=part_element_width,
                                        height=element_height, bg=self.backgroundcolor)
         self.entry_dataset = Entry.FloatEntry(self.frame_part, width=part_element_width)
 
-        self.label_simulation = Label(self.frame_part, text='Simulation Mode:', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
-        self.simulation_options = StringVar()
-        self.simulation_options_tuple = (Library.SIMULATION)
-        self.cb_simulation = ttk.Combobox(self.frame_part, width=part_element_width, textvariable=self.simulation_options, exportselection=False, state='readonly')
-        self.cb_simulation['values'] = self.simulation_options_tuple
+        # sub-frame for showing specification max
+        self.frame_max = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
+        self.label_spec_max = Label(self.frame_max, text='max:', font=my_font, width=int(element_width/3 - 1),
+                                    height=element_height, bg=self.backgroundcolor)
+        self.label_spec_max_value = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 + 3),
+                                          height=element_height, bg=self.backgroundcolor)
+        self.label_spec_max_unit = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 - 2),
+                                         height=element_height, bg=self.backgroundcolor)
 
-        self.label_output = Label(self.frame_part, text='Specification:', font=my_font, width=part_element_width, height=element_height, bg=self.backgroundcolor)
-        self.output_options = StringVar()
-        self.output_options_tuple = ()
-        self.cb_output = ttk.Combobox(self.frame_part, width=part_element_width, textvariable=self.output_options, exportselection=False, state='readonly')
-        self.cb_output['values'] = self.output_options_tuple
+        # sub-frame for showing specification min
+        self.frame_min = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
+        self.label_spec_min = Label(self.frame_min, text='min:', font=my_font, width=int(element_width/3 - 1),
+                                    height=element_height, bg=self.backgroundcolor)
+        self.label_spec_min_value = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 + 3),
+                                          height=element_height, bg=self.backgroundcolor)
+        self.label_spec_min_unit = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 - 2),
+                                         height=element_height, bg=self.backgroundcolor)
 
-        self.frame_environment = Frame(height=element_height * 2, width=element_width * 6, bg=self.backgroundcolor, bd=2, relief=RIDGE)
+        # environment frame, place all elements related to environment inputs in this frame
+        self.frame_environment = Frame(height=element_height * 2, width=element_width * 6, bg=self.backgroundcolor,
+                                       bd=2, relief=RIDGE)
 
-        self.label_dose = Label(self.frame_environment, text='Dose Rate(rad/s):', font=my_font, width=element_width, height=element_height,
+        # dose rate selection combobox
+        self.label_dose = Label(self.frame_environment, text='Dose Rate(rad/s):', font=my_font, width=element_width,
+                                height=element_height,
                                  bg=self.backgroundcolor)
         self.dose_options = StringVar()
         self.dose_options_tuple = ["100","0.1","0.02"]
-        self.cb_dose = ttk.Combobox(self.frame_environment, width=element_half_width, textvariable=self.dose_options, exportselection=False, state='readonly')
+        self.cb_dose = ttk.Combobox(self.frame_environment, width=element_half_width, textvariable=self.dose_options,
+                                    exportselection=False, state='readonly')
         self.cb_dose['values'] = self.dose_options_tuple
 
-        self.label_hydrogen = Label(self.frame_environment, text='Hydrogen Content(%):', font=my_font, width=element_width + 1, height=element_height,
-                                 bg=self.backgroundcolor)
+        # hydrogen content selection combobox
+        self.label_hydrogen = Label(self.frame_environment, text='Hydrogen Content(%):', font=my_font,
+                                    width=element_width + 1, height=element_height, bg=self.backgroundcolor)
         self.hydrogen_options = StringVar()
         self.hydrogen_options_tuple = ["0","0.1","1","1.3","100"]
-        self.cb_hydrogen = ttk.Combobox(self.frame_environment, width=element_half_width, textvariable=self.hydrogen_options, exportselection=False, state='readonly')
+        self.cb_hydrogen = ttk.Combobox(self.frame_environment, width=element_half_width,
+                                        textvariable=self.hydrogen_options, exportselection=False, state='readonly')
         self.cb_hydrogen['values'] = self.hydrogen_options_tuple
 
-        self.label_bias = Label(self.frame_environment, text='Bias(V):', font=my_font, width=element_width + 1, height=element_height,
-                                 bg=self.backgroundcolor)
+        # input bias selection combobox
+        self.label_bias = Label(self.frame_environment, text='Bias(V):', font=my_font, width=element_width + 1,
+                                height=element_height, bg=self.backgroundcolor)
         self.bias_options = StringVar()
         self.bias_options_tuple = ["0"]
-        self.cb_bias = ttk.Combobox(self.frame_environment, width=element_half_width, textvariable=self.bias_options, exportselection=False, state='readonly')
+        self.cb_bias = ttk.Combobox(self.frame_environment, width=element_half_width, textvariable=self.bias_options,
+                                    exportselection=False, state='readonly')
         self.cb_bias['values'] = self.bias_options_tuple
 
-        self.label_temperature = Label(self.frame_environment, text='Temperature(C):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        # temperature input box
+        self.label_temperature = Label(self.frame_environment, text='Temperature(C):', font=my_font,
+                                       width=element_width, height=element_height, bg=self.backgroundcolor)
         self.entry_temperature = Entry.FloatEntry(self.frame_environment, width=element_half_width)
 
-
-        self.label_TID_level_lower_bound = Label(self.frame_environment, text='TID min(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        # TID level range input boxes
+        self.label_TID_level_lower_bound = Label(self.frame_environment, text='TID min(rad):', font=my_font,
+                                                 width=element_width, height=element_height, bg=self.backgroundcolor)
         self.entry_TID_lower_bound = Entry.TIDEntry(self.frame_environment, width=element_half_width)
 
-        self.label_TID_level_upper_bound = Label(self.frame_environment, text='TID max(rad):', font=my_font, width=element_width, height=element_height, bg=self.backgroundcolor)
+        self.label_TID_level_upper_bound = Label(self.frame_environment, text='TID max(rad):', font=my_font,
+                                                 width=element_width, height=element_height, bg=self.backgroundcolor)
         self.entry_TID_upper_bound = Entry.TIDEntry(self.frame_environment, width=element_half_width)
 
-        self.frame_max = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
-        self.label_spec_max = Label(self.frame_max, text='max:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
-        self.label_spec_max_value = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
-        self.label_spec_max_unit = Label(self.frame_max, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
-
-        self.frame_min = Frame(self.frame_part, height=element_height, width=element_width, bg=self.backgroundcolor)
-        self.label_spec_min = Label(self.frame_min, text='min:', font=my_font, width=int(element_width/3 - 1), height=element_height, bg=self.backgroundcolor)
-        self.label_spec_min_value = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 + 3), height=element_height, bg=self.backgroundcolor)
-        self.label_spec_min_unit = Label(self.frame_min, text='', font=my_font, width=int(element_width/3 - 2), height=element_height, bg=self.backgroundcolor)
-
+        # frame for switch button
         self.frame_switch_button = Frame(self.window, height=element_height, width=element_width, bg=self.backgroundcolor)
 
-        self.button_switch = Button(self.frame_switch_button, text='Switch', font=my_font, width=10, height=2, command=self.switch_hit, bg="CadetBlue2", activebackground ="CadetBlue1")
+        self.button_switch = Button(self.frame_switch_button, text='Switch', font=my_font, width=10, height=2,
+                                    command=self.switch_hit, bg="CadetBlue2", activebackground ="CadetBlue1")
         self.switched_plot = False
         self.switch_tids = StringVar()
-        self.cb_switch_tid = ttk.Combobox(self.frame_switch_button, width=10, textvariable=self.switch_tids, exportselection=False, state='readonly')
-        self.empty = Label(self.frame_switch_button, text="", font=my_font, width=13, height=element_height, bg=self.backgroundcolor)
+        self.cb_switch_tid = ttk.Combobox(self.frame_switch_button, width=10, textvariable=self.switch_tids,
+                                          exportselection=False, state='readonly')
+        self.empty = Label(self.frame_switch_button, text="", font=my_font, width=13, height=element_height,
+                           bg=self.backgroundcolor)
 
-        self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2, command=self.import_hit)
+        # input button, not in use in current version
+        self.button_import = Button(self.window, text='Import', font=my_font, width=15, height=2,
+                                    command=self.import_hit)
 
+        # frame for execute button and change scale button
+        self.frame_execute_or_change_scale = Frame(height=element_height, width=element_width * 2,
+                                                   bg=self.backgroundcolor)
+        self.button_execute = Button(self.frame_execute_or_change_scale, text='Execute', font=my_font, width=10,
+                                     height=2, command=self.execute_hit, bg="PaleGreen2", activebackground ="PaleGreen1")
+        self.button_change_scale = Button(self.frame_execute_or_change_scale, text='Change Scale', font=my_font,
+                                          width=10, height=2, command=self.change_scale, bg="LemonChiffon2",
+                                          activebackground ="lemon chiffon")
 
-        self.frame_execute_or_change_scale = Frame(height=element_height, width=element_width * 2, bg=self.backgroundcolor)
-        self.button_execute = Button(self.frame_execute_or_change_scale, text='Execute', font=my_font, width=10, height=2, command=self.execute_hit, bg="PaleGreen2", activebackground ="PaleGreen1")
-        self.button_change_scale = Button(self.frame_execute_or_change_scale, text='Change Scale', font=my_font, width=10, height=2, command=self.change_scale, bg="LemonChiffon2", activebackground ="lemon chiffon")
-
+        # frame for save button and clear button
         self.frame_save_or_clear = Frame(height=element_height, width=element_width * 2, bg=self.backgroundcolor)
-        self.button_save = Button(self.frame_save_or_clear, text='Save', font=my_font, width=10, height=2, command=self.save_hit, bg="SlateGray2", activebackground="SlateGray1")
-        self.button_clear = Button(self.frame_save_or_clear, text='Clear', font=my_font, width=10, height=2, command=self.clear, bg="PeachPuff2", activebackground="peach puff")
+        self.button_save = Button(self.frame_save_or_clear, text='Save', font=my_font, width=10, height=2,
+                                  command=self.save_hit, bg="SlateGray2", activebackground="SlateGray1")
+        self.button_clear = Button(self.frame_save_or_clear, text='Clear', font=my_font, width=10, height=2,
+                                   command=self.clear, bg="PeachPuff2", activebackground="peach puff")
 
-        self.canvas_plot = Canvas(self.window, width=800, height=400, bg=self.backgroundcolor, highlightbackground=self.backgroundcolor)
+        # canvas for showing the graph
+        self.canvas_plot = Canvas(self.window, width=800, height=400, bg=self.backgroundcolor,
+                                  highlightbackground=self.backgroundcolor)
         self.figure = mpl.figure.Figure(figsize=self.figsize, facecolor=self.backgroundcolor, edgecolor='w')
 
         self.result_text = StringVar()
@@ -153,22 +212,23 @@ class Interface(object):
                                        width=element_width * 3,
                                        height=5, bg=self.backgroundcolor, justify='center')
 
-        self.X_list = list()
-        self.Y_list = list()
-        self.figure_input = list()
-        self.previous_part = ''
-        self.previous_Y_label = ''
-        self.cross_message = list()
-        self.switched_cross_message = list()
-        self.AD590_base_temperature = 25
-        self.multiplot = False
-        self.image = PhotoImage()  # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
-        self.netlist_filepath = Main.relative_path(FILEPATHS.TEMP_DIR_PATH + 'myNetlist.cir')
-        self.output_filepath = ''
-        self.color_gen = cycle('bgcmyk')
+        self.X_list = list()                    # store all the X value for displaying on the graph
+        self.Y_list = list()                    # store all the Y value for displaying on the graph
+        self.figure_input = list()              # store all the data for plotting the graph
+        self.previous_part = ''                 # store the last plotted part
+        self.previous_Y_label = ''              # store the last plotted Y label (specification)
+        self.cross_message = list()             # store the cross specification messages
+        self.switched_cross_message = list()    # store the cross specification messages for switched graphs
+        self.AD590_base_temperature = 27        # default temperature
+        self.multiplot = False                  # indicate if is multiploting
+        self.image = PhotoImage()               # keep a reference to ploted photo. Otherwise, the ploted photo will disappear
+        self.netlist_filepath = Main.relative_path(FILEPATHS.TEMP_DIR_PATH + 'myNetlist.cir')   # file path to the generated netlist
+        self.output_filepath = ''               # file path to the result generated by Xyce
+        self.color_gen = cycle('bgcmyk')        # color generator for plotting graphs
 
         return
 
+    # read all netlist in Netlist folder and add/update the all parts into library
     def import_hit(self):
         # filename = filedialog.askopenfilename(initialdir=relative_path('Netlist'))
         # print(filename)
@@ -178,6 +238,8 @@ class Interface(object):
                 # # print(filename)
                 # if filename == () or filename == '':
                 #     return
+                if filename[-4:] != '.cir':
+                    continue
                 f = open('Netlist/' + filename, 'r')
                 line = next(f)
                 while line[0:5] != 'Title':
@@ -185,9 +247,9 @@ class Interface(object):
                     if line is None:
                         print('Missing Title')
                         return
-                title = line.split(':')[1].replace(' ', '').split('/')
-                my_part = title[0]
-                my_spec = title[1]
+                title = line.split(':')[1].split('/')
+                my_part = title[0].strip()
+                my_spec = title[1].strip()
                 my_voltage_source = list()
                 my_circuit_core = list()
                 my_input = list()
@@ -283,16 +345,19 @@ class Interface(object):
                     print('ERROR!!! Missing \'*Subcircuit\', abort import')
                     return
 
-                Library.PARTS.append(my_part)
-                Library.PARTS = list(set(Library.PARTS))
+                if my_part not in Library.PARTS:
+                    Library.PARTS.append(my_part)
+                # Library.PARTS = list(set(Library.PARTS))
                 if Library.OUTPUT_NAME.get(my_part) is None:
                     Library.OUTPUT_NAME[my_part] = list()
-                Library.OUTPUT_NAME[my_part].append(my_spec)
+                if my_spec not in Library.OUTPUT_NAME[my_part]:
+                    Library.OUTPUT_NAME[my_part].append(my_spec)
+                # Library.OUTPUT_NAME[my_part] = list(set(Library.OUTPUT_NAME[my_part]))
 
 
-                Library.INPUT_VOLTAGE_SOURCE[my_part] = my_voltage_source
-                Library.CIRCUIT_CORE[my_part] = my_circuit_core
-                Library.INPUT[my_part] = my_input
+                Library.INPUT_VOLTAGE_SOURCE[my_part + my_spec] = my_voltage_source
+                Library.CIRCUIT_CORE[my_part + my_spec] = my_circuit_core
+                Library.INPUT[my_part + my_spec] = my_input
                 m_output_dict = Library.OUTPUT.get(my_part)
                 if m_output_dict is not None:
                     m_output_dict[my_spec] = my_output
@@ -319,28 +384,31 @@ class Interface(object):
                 elif Library.EXTRA_LIBRARY.get(my_part) is None:
                     Library.EXTRA_LIBRARY[my_part] = []
 
-                Library.save_name_to_json(Library.TITLE, Library.PARTS, Library.OUTPUT_NAME, Library.SIMULATION,
-                                          Library.TID_LEVEL, Library.COL_NAME)
-                Library.save_library_to_json(Library.INPUT_VOLTAGE_SOURCE, Library.CIRCUIT_CORE, Library.INPUT,
+                createNaLJson.save_name_to_json(Library.TITLE, Library.PARTS, Library.OUTPUT_NAME, Library.SIMULATION,
+                                          Library.TID_LEVEL, Library.COL_NAME, path=FILEPATHS.NAME_FILE_PATH)
+                createNaLJson.save_library_to_json(Library.INPUT_VOLTAGE_SOURCE, Library.CIRCUIT_CORE, Library.INPUT,
                                              Library.OUTPUT,
-                                             Library.SUBCIRCUIT, Library.LIBRARY_TID_LEVEL_MODEL, Library.EXTRA_LIBRARY)
+                                             Library.SUBCIRCUIT, Library.LIBRARY_TID_LEVEL_MODEL, Library.EXTRA_LIBRARY, path=FILEPATHS.LIBRARY_FILE_PATH)
             except:
                 messagebox.showerror("Import Error", "Import Error for file " + filename)
         self.refresh()
         self.result_text.set("Import complete")
         return
 
+    # reset the library
     def reset_hit(self):
         reset.do()
         self.refresh()
         return
 
+    # update the specification library based on the Specification_template.txt file
     def refresh_spec_hit(self):
         s = createSaSJson.save_txt_to_specfication(FILEPATHS.SPEC_TXT_FILE_PATH)
         createSaSJson.save_specification_to_json(s, FILEPATHS.SPECIFICATION_FILE_PATH)
         self.refresh()
         return
 
+    # switch to ILOAD vs OUTPUT graph
     def switch_hit(self):
         if len(self.figure_input) == 0:
             return
@@ -378,6 +446,7 @@ class Interface(object):
             self.cross_spec_text.set(display_message)
         return
 
+    # open datasheet for the selected part using system default pdf reader
     def part_help_hit(self):
         part = self.cb_parts.get()
         datasheet_path = Main.relative_path('Datasheet') + '/' + part + '.pdf'
@@ -387,6 +456,7 @@ class Interface(object):
             messagebox.showinfo("Failed", "No datasheet for this part")
         return
 
+    # execute the simulation based on user input
     def execute_hit(self):
         # do input check first and then execute:
         if self.input_check():
@@ -466,8 +536,8 @@ class Interface(object):
                             if X[i] == plotted_X:
                                 self.Y_list.append(Y[i])
                                 break
+            unit = Library.SPECIFICATION.get(part).get(output_option)[2]    # read unit from library
 
-            unit = Library.SPECIFICATION.get(part).get(output_option)[2]
             # post-processing for input bias
             if output_option == Library.Positive_Input_Bias_Current or output_option == Library.Negative_Input_Bias_Current:
                 pre_rad_y = 0
@@ -522,6 +592,7 @@ class Interface(object):
                 tmp_list = [(y - pre_rad_y) / divider for y in self.Y_list]
                 # print(tmp_list)
                 self.Y_list = tmp_list
+
             # prepare data for plotting
             Y_label = output_option + ' (' + unit + ')'
             if len(self.X_list) == 0 or len(self.Y_list) == 0:
@@ -550,6 +621,7 @@ class Interface(object):
             if cross_message == "":
                 cross_message = "Cross specification at > " + TID_level_upper + " rad (DR=" + DR + ", H2=" + H2 + ", Bias=" + bias + "). "
             message = 'part: ' + part + ', TID level = ' + TID_level_lower + ' ~ ' + TID_level_upper + '\n'
+
             # message = my_result
             if self.multiplot:
                 if len(self.cross_message) == 4:
@@ -570,6 +642,7 @@ class Interface(object):
         #     self.result_text.set('Error! Do you have ' + str(error) + ' data in excel?')
         return
 
+    # find all of the cross specification points
     def get_cross_points(self, X_list, Y_list, spec_min, spec_max, useDouble=False):
         # calculate the point that exceed specification limits
         cross_min = []
@@ -604,6 +677,7 @@ class Interface(object):
                         # print(cross)
         return cross_min, cross_max
 
+    # calculate the X value of the cross specification point
     def get_cross_point(self, x1, y1, x2, y2, spec_line):
         y1 -= spec_line
         y2 -= spec_line
@@ -612,14 +686,7 @@ class Interface(object):
         result = - (b / a)
         return result
 
-    def getClearGraph(self):
-        self.figure_input.clear()
-        self.plotfigureTK('TID level (rad)', "", [], [], "", "", "", 0, 300000, "0", "300k", None, None, None, None, False, False)
-        self.result_text.set('')
-        self.cross_spec_text.set('')
-        self.cross_message.clear()
-        self.switched_cross_message.clear()
-
+    # refresh the program to get all the up-to-date data from library
     def refresh(self):
         importlib.reload(Library)
         self.parts_options_tuple = (Library.PARTS)
@@ -652,6 +719,7 @@ class Interface(object):
         self.entry_TID_upper_bound.insert(0, "300k")
         return
 
+    # check if the input is valid
     def input_check(self):
         if self.entry_TID_upper_bound.get() == '' or \
                 self.entry_TID_upper_bound.get() == '' or \
@@ -678,6 +746,7 @@ class Interface(object):
         self.result_text.set('in process, please wait...')
         return True
 
+    # update the TID options, not in use in current version
     def TID_option_update(self):
         cur_sim = self.cb_simulation.get()
         self.TID_options_tuple = Library.TID_LIST[cur_sim]
@@ -686,6 +755,7 @@ class Interface(object):
         self.cb_TID_lower_bound['values'] = self.TID_options_tuple
         self.cb_TID_upper_bound['values'] = self.TID_options_tuple
 
+    # change spec min and spec max when user edit the temperature
     def temp_focus_out(self, evt):
         self.temp_focus_out_helper()
         return
@@ -697,12 +767,14 @@ class Interface(object):
             self.AD590_spec_change()
         return
 
+    # change spec min and spec max based on the input
     def AD590_spec_change(self):
         if self.cb_parts.get() == Library.PART_AD590 and self.cb_output.get() == Library.TEMPERATURE:
             self.label_spec_min_value['text'] = self.AD590_base_temperature - 5
             self.label_spec_max_value['text'] = self.AD590_base_temperature + 5
         return
 
+    # check if the selected part should have switch button
     def switch_availability_check(self, part):
         if part == Library.PART_LT1175 or part == Library.PART_LP2953 or part == Library.PART_LM3940:
             self.frame_switch_button.grid(row=10, column=1)
@@ -710,6 +782,7 @@ class Interface(object):
             self.frame_switch_button.grid_remove()
         return
 
+    # update the output options when a part is selected
     def part_onselect(self, evt):
         try:
             part = self.cb_parts.get()
@@ -723,6 +796,7 @@ class Interface(object):
             pass
         return
 
+    # update TID options when a simulation type is selected, not in use in current version
     def simulation_onselect(self, evt):
         # try:
         #     self.TID_option_update()
@@ -730,6 +804,7 @@ class Interface(object):
         #     pass
         return
 
+    # update dataset and spec min/max when a specification is selected
     def output_onselect(self, evt):
         part = self.cb_parts.get()
         output = self.cb_output.get()
@@ -765,10 +840,13 @@ class Interface(object):
         self.cb_output.selection_clear()
         return
 
+    # plot the data if a tid level is selected
+    # only in use under switched plot mode
     def switch_tid_onselect(self, evt):
         tid = self.cb_switch_tid.get()
         self.plot_switched_figure_for_tid(tid)
 
+    # clear all the specification max and min values
     def clear_specs(self):
         self.label_spec_min_value['text'] = ''
         self.label_spec_max_value['text'] = ''
@@ -776,14 +854,18 @@ class Interface(object):
         self.label_spec_min_unit['text'] = ''
         return
 
+    # clear the dataset values
     def clear_dataset(self):
         self.label_dataset_range['text'] = ''
         self.entry_dataset.delete('0', 'end')
         return
+
+    # callback function when ENTER is hit
     def callback(self, event):
         self.execute_hit()
         return
 
+    # get the numeric TID value for a given str TID
     def get_num_TID(self, str_TID):
         if str_TID == Library.TPRE_RAD:
             return 0
@@ -792,6 +874,7 @@ class Interface(object):
             num_TID = num_TID * 1000
         return num_TID
 
+    # start the GUI interface
     def start(self):
         # row 0
         row = 0
@@ -959,12 +1042,14 @@ class Interface(object):
         self.window.mainloop()
         return
 
+    # quit message box before closing the GUI
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.window.destroy()
             self.window.quit()
         return
 
+    # read all data from output files generated by Xyce
     def load_and_finalize_output(self, part, TID_level, costom_output_filepath=False):
 
         X_label = ''
@@ -1008,51 +1093,20 @@ class Interface(object):
                 Y.append(XnY[i])
         return X_label, Y_label, X, Y
 
+    # put switch tid combobox
+    # only in use under switched mode
     def cb_switch_tid_put(self):
         self.empty.grid_remove()
         self.cb_switch_tid.grid(row=0, column=2, padx=(8,0))
         return
 
+    # remove switch tid combobox
     def cb_switch_tid_remove(self):
         self.cb_switch_tid.grid_remove()
         self.empty.grid(row=0, column=2)
         return
 
-
-    def plot_switched_figure_for_tid(self, str_TID):
-        X_label, Y_label, X, Y = self.load_and_finalize_output(self.figure_input[4], str_TID, costom_output_filepath=True)
-        X_label = 'ILOAD (A)'
-        Y_label = self.figure_input[1]
-        label_name = self.figure_input[6][0:self.figure_input[6].rfind('_') + 1] + str_TID
-        spec_min = self.figure_input[13]
-        spec_max = self.figure_input[14]
-        cross_min, cross_max = self.get_cross_points(X, Y, spec_min, spec_max, useDouble=True)
-
-        cross_message = ""
-        next_line = ""
-        ending = ". (TID=" + str_TID + ")"
-        if len(cross_min) != 0:
-            cross_message += "Cross min at " + X_label + " = " + ",".join(cross_min) + ending
-            next_line = "\n"
-        if len(cross_max) != 0:
-            cross_message += next_line
-            cross_message += "Cross max at " + X_label + " = " + ",".join(cross_max) + ending
-        if cross_message == "":
-            cross_message = "Cross specification at > " + str(max(X)) + ending
-
-        if len(self.switched_cross_message) == 4:
-            self.switched_cross_message.pop(0)
-        self.switched_cross_message.append(cross_message)
-        display_message = ''
-        for cur_message in self.switched_cross_message:
-            display_message += cur_message + "\n"
-
-        self.cross_spec_text.set(display_message)
-        self.plot_switched_figureTK(X_label, Y_label, X, Y, label_name, spec_min=spec_min, spec_max=spec_max)
-
-    '''
-    ' plot figure in a pop up window
-    '''
+    # plot figure in a pop up window
     def plotfigure(self, X_label, Y_label, X, Y, part, simulation, TID_level, TID_level2=None, spec_min=None, spec_max=None):
         plt.figure(part + simulation + ' X=' + X_label + ' Y=' + Y_label, figsize=self.figsize)
         if TID_level2:
@@ -1079,10 +1133,7 @@ class Interface(object):
         plt.show(block=False)
         return
 
-    ''' 
-    ' plot figure in the main window
-    ' X_label: 
-    '''
+    # plot figure in the main GUI
     def plotfigureTK(self, X_label, Y_label, X, Y, part, simulation, label_name, X_min, X_max, TID_level, TID_level2=None,
                      Y_min=None, Y_max=None, spec_min=None, spec_max=None, x_logscale=False, y_logscale=False):
         # preprocessing input
@@ -1162,6 +1213,39 @@ class Interface(object):
         # self.canvas_plot.get_tk_widget().grid(row=4, column=2, rowspan=10, columnspan=4, padx=(20,0))
         return
 
+    # plot the switched graph in GUI
+    def plot_switched_figure_for_tid(self, str_TID):
+        X_label, Y_label, X, Y = self.load_and_finalize_output(self.figure_input[4], str_TID, costom_output_filepath=True)
+        X_label = 'ILOAD (A)'
+        Y_label = self.figure_input[1]
+        label_name = self.figure_input[6][0:self.figure_input[6].rfind('_') + 1] + str_TID
+        spec_min = self.figure_input[13]
+        spec_max = self.figure_input[14]
+        cross_min, cross_max = self.get_cross_points(X, Y, spec_min, spec_max, useDouble=True)
+
+        cross_message = ""
+        next_line = ""
+        ending = ". (TID=" + str_TID + ")"
+        if len(cross_min) != 0:
+            cross_message += "Cross min at " + X_label + " = " + ",".join(cross_min) + ending
+            next_line = "\n"
+        if len(cross_max) != 0:
+            cross_message += next_line
+            cross_message += "Cross max at " + X_label + " = " + ",".join(cross_max) + ending
+        if cross_message == "":
+            cross_message = "Cross specification at > " + str(max(X)) + ending
+
+        if len(self.switched_cross_message) == 4:
+            self.switched_cross_message.pop(0)
+        self.switched_cross_message.append(cross_message)
+        display_message = ''
+        for cur_message in self.switched_cross_message:
+            display_message += cur_message + "\n"
+
+        self.cross_spec_text.set(display_message)
+        self.plot_switched_figureTK(X_label, Y_label, X, Y, label_name, spec_min=spec_min, spec_max=spec_max)
+
+    # plot the graph using tk
     def plot_switched_figureTK(self, X_label, Y_label, X, Y, label_name, spec_min=None, spec_max=None, x_logscale=False, y_logscale=False):
         # preprocessing input
         font = {'size': 10}
@@ -1205,6 +1289,7 @@ class Interface(object):
         tkagg.blit(photo, figure_canvas_agg.get_renderer()._renderer, colormode=2)
         return
 
+    # change the scale of the graph
     def plot_scale(self, X_max, X_min, Y_max, Y_min, x_logscale, y_logscale):
         if X_min is not None and X_max is not None:
             if X_min > X_max:
@@ -1250,6 +1335,7 @@ class Interface(object):
         tkagg.blit(photo, figure_canvas_agg.get_renderer()._renderer, colormode=2)
         return
 
+    # change the scale of the graph
     def change_scale(self):
         if len(self.figure_input) != 0:
             changeScaleDialog = ChangeScaleWindow.ChangeScaleWindow()
@@ -1290,6 +1376,7 @@ class Interface(object):
                 self.plot_scale(self.figure_input[8], self.figure_input[7], self.figure_input[12], self.figure_input[11], self.figure_input[15], self.figure_input[16])
         return
 
+    # save the output in a xlsx file
     def save_hit(self):
         if len(self.figure_input) == 0:
             messagebox.showinfo("Failed", "Please run a simulation first before save data")
@@ -1367,9 +1454,11 @@ class Interface(object):
         self.result_text.set(message)
         return
 
+    # check if the given str is not empty
     def not_empty(self, s):
         return s and s.strip() != ''
 
+    # clear all data and user input
     def clear(self):
         if (self.switched_plot):
             self.switch_hit()
@@ -1388,7 +1477,16 @@ class Interface(object):
         self.image = photo  # make a reference to our plot. If not, the image will disappear because Python's garbage collection is like shit
         tkagg.blit(photo, figure_canvas_agg.get_renderer()._renderer, colormode=2)
 
+    # clear all the content on the graph
+    def getClearGraph(self):
+        self.figure_input.clear()
+        self.plotfigureTK('TID level (rad)', "", [], [], "", "", "", 0, 300000, "0", "300k", None, None, None, None, False, False)
+        self.result_text.set('')
+        self.cross_spec_text.set('')
+        self.cross_message.clear()
+        self.switched_cross_message.clear()
 
+# initialize all necessary classes
 execute = execute.Execute()
 netListGenerator = NetListGenerator.NetListGenerator()
 execute.mkdirs()

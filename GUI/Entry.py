@@ -26,7 +26,7 @@ class ValidatingEntry(Entry):
         # override: return value, new value, or None if invalid
         return value
 
-
+# entry that only accept floats
 class FloatEntry(ValidatingEntry):
 
     def validate(self, value):
@@ -46,7 +46,7 @@ class FloatEntry(ValidatingEntry):
         except ValueError:
             return None
 
-
+# entry that accept TID level values (floats and float + k)
 class TIDEntry(ValidatingEntry):
 
     def validate(self, value):

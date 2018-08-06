@@ -26,6 +26,7 @@ Load_Regulation = NaLJson.Load_Regulation
 
 # os.chdir("/home/dwang/NASA_JPL/NASA_JPL_PLATFORM")
 import_error = False
+# read data from library
 try:
     with open(FILEPATHS.NAME_FILE_PATH, 'r') as f:
         name_jsonObject = f.readline()
@@ -85,34 +86,3 @@ OUTPUT = library_json_dict['OUTPUT']
 SUBCIRCUIT = library_json_dict['SUBCIRCUIT']
 LIBRARY_TID_LEVEL_MODEL = library_json_dict['LIBRARY_TID_LEVEL_MODEL']
 EXTRA_LIBRARY = library_json_dict['EXTRA_LIBRARY']
-
-def save_name_to_json(TITLE, PARTS, SIMULATION, TID_LEVEL, TID_LIST, COL_NAME):
-    output_object = {'TITLE': TITLE,
-                     'PARTS': PARTS,
-                     'SIMULATION': SIMULATION,
-                     'TID_LEVEL': TID_LEVEL,
-                     'TID_LIST': TID_LIST,
-                     'COL_NAME': COL_NAME}
-    with open(FILEPATHS.NAME_FILE_PATH, 'w') as f:
-        json.dump(output_object, f)
-    f.close()
-    return
-
-
-def save_library_to_json(INPUT_VOLTAGE_SOURCE, CIRCUIT_CORE, SCALE, FUNCTIONS, INPUT, OUTPUT_OPTION, OUTPUT,
-                         SUBCIRCUIT, LIBRARY_TID_LEVEL_MODEL, LIBRARY_JFET):
-    output_object = {'INPUT_VOLTAGE_SOURCE': INPUT_VOLTAGE_SOURCE,
-                     'CIRCUIT_CORE': CIRCUIT_CORE,
-                     'SCALE': SCALE,
-                     'FUNCTIONS': FUNCTIONS,
-                     'INPUT': INPUT,
-                     'OUTPUT': OUTPUT,
-                     'OUTPUT_OPTION': OUTPUT_OPTION,
-                     'SUBCIRCUIT': SUBCIRCUIT,
-                     'LIBRARY_TID_LEVEL_MODEL': LIBRARY_TID_LEVEL_MODEL,
-                     'LIBRARY_JFET': LIBRARY_JFET}
-
-    with open(FILEPATHS.LIBRARY_FILE_PATH, 'w') as f:
-        json.dump(output_object, f)
-    f.close()
-    return
